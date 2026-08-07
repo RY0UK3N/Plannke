@@ -8,6 +8,7 @@ const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
+const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 
 function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
@@ -25,6 +26,12 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
+});
+
+test('revamp assets are loaded from the trusted local bridge', () => {
+  assert.match(bridge, /stylesheet\.href = 'revamp\.css'/);
+  assert.match(bridge, /script\.src = 'revamp\.js'/);
+  assert.match(bridge, /loadRevampAssets\(\)/);
 });
 
 test('third-party JavaScript dependencies are version-pinned and consolidated', () => {
@@ -62,8 +69,8 @@ test('all external resources are limited to approved hosts', () => {
   });
 });
 
-test('PWA navigation is network-first and cache version is explicit', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v6'/);
+test('PWA navigation is network-first and revamp assets are cached', () => {
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v7'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -72,4 +79,6 @@ test('PWA navigation is network-first and cache version is explicit', () => {
   assert.match(sw, /insights\.js/);
   assert.match(sw, /ui-bridge\.js/);
   assert.match(sw, /safe-renderers\.js/);
+  assert.match(sw, /revamp\.js/);
+  assert.match(sw, /revamp\.css/);
 });
