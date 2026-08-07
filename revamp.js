@@ -40,6 +40,7 @@
             subtitle: 'Leve seus dados com você e importe extratos sem conectar seu banco.'
         }
     };
+    const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css'];
 
     let initialized = false;
     let pageObserver = null;
@@ -57,12 +58,14 @@
     }
 
     function ensureViewStyles() {
-        if (document.querySelector('link[data-plannke-revamp-dashboard]')) return;
-        const link = document.createElement('link');
-        link.rel = 'stylesheet';
-        link.href = 'revamp-dashboard.css';
-        link.dataset.plannkeRevampDashboard = 'true';
-        document.head.appendChild(link);
+        VIEW_STYLES.forEach(asset => {
+            if (document.querySelector(`link[href="${asset}"]`)) return;
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = asset;
+            link.dataset.plannkeRevampView = asset;
+            document.head.appendChild(link);
+        });
     }
 
     function findLegacyNavigation(target) {
