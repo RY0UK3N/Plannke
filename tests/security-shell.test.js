@@ -7,18 +7,20 @@ const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
+const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 
 function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
 }
 
-test('product layer is loaded by the application shell', () => {
+test('product layer and migration bridge are loaded by the application shell', () => {
   assert.match(index, /<link rel="stylesheet" href="product\.css">/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
   assert.match(index, /<script src="product\.js"><\/script>/);
   assert.ok(index.indexOf('app.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
+  assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
 });
 
 test('third-party JavaScript dependencies are version-pinned and consolidated', () => {
@@ -55,11 +57,12 @@ test('all external resources are limited to approved hosts', () => {
 });
 
 test('PWA navigation is network-first and cache version is explicit', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v4'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v5'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
   assert.match(sw, /product-core\.js/);
   assert.match(sw, /product\.js/);
   assert.match(sw, /insights\.js/);
+  assert.match(sw, /ui-bridge\.js/);
 });
