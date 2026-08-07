@@ -67,15 +67,23 @@
         return localDateString(new Date(year, monthIndex, Math.min(Math.max(Number(day) || 1, 1), last)));
     }
 
+    function hasPlanningContent(planning) {
+        const p = planning || {};
+        return ['goals', 'reserves', 'recurringRules', 'categoryRules'].some(key => Array.isArray(p[key]) && p[key].length > 0) || !!p.onboardingComplete;
+    }
+
     function ensurePlanning(data) {
         const out = data && typeof data === 'object' ? data : {};
-        const p = out.planning && typeof out.planning === 'object' ? out.planning : {};
+        const savedPlanning = out.settings?.productState?.planning;
+        const source = (!hasPlanningContent(out.planning) && savedPlanning && typeof savedPlanning === 'object')
+            ? savedPlanning
+            : (out.planning && typeof out.planning === 'object' ? out.planning : {});
         out.planning = {
-            goals: Array.isArray(p.goals) ? p.goals : [],
-            reserves: Array.isArray(p.reserves) ? p.reserves : [],
-            recurringRules: Array.isArray(p.recurringRules) ? p.recurringRules : [],
-            categoryRules: Array.isArray(p.categoryRules) ? p.categoryRules : [],
-            onboardingComplete: !!p.onboardingComplete
+            goals: Array.isArray(source.goals) ? source.goals : [],
+            reserves: Array.isArray(source.reserves) ? source.reserves : [],
+            recurringRules: Array.isArray(source.recurringRules) ? source.recurringRules : [],
+            categoryRules: Array.isArray(source.categoryRules) ? source.categoryRules : [],
+            onboardingComplete: !!source.onboardingComplete
         };
         return out.planning;
     }
@@ -114,57 +122,6 @@
         return data;
     }
 
-    function migrateLedger(data, today = localDateString()) {
-        if (!data || typeof data !== 'object') return { data, changed: false };
-        ensurePlanning(data);
-        const txs = Array.isArray(data.transactions) ? data.transactions : [];
-        let changed = false;
-
-        (data.accounts || []).forEach(account => {
-            if (!Number.isFinite(Number(account.openingBalance))) {
-                const allLegacyEffects = txs.reduce((sum, tx) => sum + transactionEffect(tx, account.id), 0);
-                account.openingBalance = toNumber(account.balance, 0) - allLegacyEffects;
-                changed = true;
-            }
-        });
-
-        txs.forEach(tx => {
-            if (tx.status !== 'planned' && tx.status !== 'completed') {
-                tx.status = String(tx.date || '') > today ? 'planned' : 'completed';
-                changed = true;
-            }
-        });
-
-        const before = (data.accounts || []).map(a => Number(a.balance));
-        recomputeAccountBalances(data);
-        if ((data.accounts || []).some((a, i) => Math.abs(Number(a.balance) - before[i]) > 0.005)) changed = true;
-
-        return { data, changed };
-    }
-
-    function billingPeriod(dateStr, closingDay) {
-        const d = parseISO(dateStr);
-        if (!d) return '';
-        if (d.getDate() > Number(closingDay || 1)) {
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-        }
-        const prev = new Date(d.getFullYear(), d.getMonth() - 1, 1);
-        return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
-    }
-
-    function outstandingCardBalance(data, cardId) {
-        const card = (data.cards || []).find(c => c.id === cardId);
-        if (!card) return 0;
-        return (data.transactions || [])
-            .filter(tx => tx.accountId === cardId && tx.type === 'expense')
-            .filter(tx => {
-                const period = billingPeriod(tx.date, card.closingDay);
-                const billing = (data.cardBillings || []).find(b => b.cardId === cardId && b.period === period);
-                return !billing?.isPaid;
-            })
-            .reduce((sum, tx) => sum + Math.abs(toNumber(tx.amount, 0)), 0);
-    }
-
     function sanitizePlanning(planning) {
         const p = planning || {};
         return {
@@ -199,6 +156,117 @@
                 category: cleanText(r.category, 100)
             })).filter(r => r.contains && r.category)
         };
+    }
+
+    function restoreProductState(data) {
+        const state = data?.settings?.productState;
+        if (!state || typeof state !== 'object') return false;
+        let changed = false;
+        const openings = state.openingBalances && typeof state.openingBalances === 'object' ? state.openingBalances : {};
+        const meta = state.transactionMeta && typeof state.transactionMeta === 'object' ? state.transactionMeta : {};
+
+        (data.accounts || []).forEach(account => {
+            if (!Number.isFinite(Number(account.openingBalance)) && Number.isFinite(Number(openings[account.id]))) {
+                account.openingBalance = Number(openings[account.id]);
+                changed = true;
+            }
+        });
+
+        (data.transactions || []).forEach(tx => {
+            const saved = meta[tx.id];
+            if (!saved || typeof saved !== 'object') return;
+            if (tx.status !== 'planned' && tx.status !== 'completed' && ['planned', 'completed'].includes(saved.status)) {
+                tx.status = saved.status;
+                changed = true;
+            }
+            if ((!Array.isArray(tx.tags) || !tx.tags.length) && Array.isArray(saved.tags)) {
+                tx.tags = saved.tags.map(tag => cleanText(tag, 40)).filter(Boolean).slice(0, 10);
+                changed = true;
+            }
+        });
+
+        if (!hasPlanningContent(data.planning) && state.planning) {
+            data.planning = sanitizePlanning(state.planning);
+            changed = true;
+        }
+        return changed;
+    }
+
+    function snapshotProductState(data) {
+        if (!data || typeof data !== 'object') return data;
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        const openingBalances = {};
+        (data.accounts || []).forEach(account => {
+            if (Number.isFinite(Number(account.openingBalance))) openingBalances[account.id] = Number(account.openingBalance);
+        });
+        const transactionMeta = {};
+        (data.transactions || []).forEach(tx => {
+            transactionMeta[tx.id] = {
+                status: tx.status === 'planned' ? 'planned' : 'completed',
+                tags: Array.isArray(tx.tags) ? tx.tags.map(tag => cleanText(tag, 40)).filter(Boolean).slice(0, 10) : []
+            };
+        });
+        data.planning = sanitizePlanning(ensurePlanning(data));
+        data.settings.productState = {
+            version: 1,
+            planning: data.planning,
+            openingBalances,
+            transactionMeta
+        };
+        return data;
+    }
+
+    function migrateLedger(data, today = localDateString()) {
+        if (!data || typeof data !== 'object') return { data, changed: false };
+        let changed = restoreProductState(data);
+        ensurePlanning(data);
+        const txs = Array.isArray(data.transactions) ? data.transactions : [];
+
+        (data.accounts || []).forEach(account => {
+            if (!Number.isFinite(Number(account.openingBalance))) {
+                const allLegacyEffects = txs.reduce((sum, tx) => sum + transactionEffect(tx, account.id), 0);
+                account.openingBalance = toNumber(account.balance, 0) - allLegacyEffects;
+                changed = true;
+            }
+        });
+
+        txs.forEach(tx => {
+            if (tx.status !== 'planned' && tx.status !== 'completed') {
+                tx.status = String(tx.date || '') > today ? 'planned' : 'completed';
+                changed = true;
+            }
+            if (!Array.isArray(tx.tags)) tx.tags = [];
+        });
+
+        const before = (data.accounts || []).map(a => Number(a.balance));
+        recomputeAccountBalances(data);
+        if ((data.accounts || []).some((a, i) => Math.abs(Number(a.balance) - before[i]) > 0.005)) changed = true;
+        snapshotProductState(data);
+
+        return { data, changed };
+    }
+
+    function billingPeriod(dateStr, closingDay) {
+        const d = parseISO(dateStr);
+        if (!d) return '';
+        if (d.getDate() > Number(closingDay || 1)) {
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+        const prev = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+        return `${prev.getFullYear()}-${String(prev.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function outstandingCardBalance(data, cardId) {
+        const card = (data.cards || []).find(c => c.id === cardId);
+        if (!card) return 0;
+        return (data.transactions || [])
+            .filter(tx => tx.accountId === cardId && tx.type === 'expense')
+            .filter(tx => {
+                const period = billingPeriod(tx.date, card.closingDay);
+                const billing = (data.cardBillings || []).find(b => b.cardId === cardId && b.period === period);
+                return !billing?.isPaid;
+            })
+            .reduce((sum, tx) => sum + Math.abs(toNumber(tx.amount, 0)), 0);
     }
 
     function recurringOccurrences(rules, fromDate, toDate) {
@@ -463,6 +531,8 @@
         transactionEffect,
         normalizeStatuses,
         recomputeAccountBalances,
+        restoreProductState,
+        snapshotProductState,
         migrateLedger,
         billingPeriod,
         outstandingCardBalance,
