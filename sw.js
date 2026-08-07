@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plannke-shell-v7';
+const CACHE_NAME = 'plannke-shell-v8';
 const LOCAL_ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const LOCAL_ASSETS = [
   './safe-renderers.js',
   './revamp.js',
   './revamp.css',
+  './revamp-dashboard.css',
   './product-core.js',
   './product.js',
   './insights.js',
