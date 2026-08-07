@@ -18,16 +18,16 @@
     };
 
     const ALLOWED_CALLS = new Set([
-        'openSettingsPanel', 'openBudgetManager', 'filterDashboardToTransactions',
-        'changeMonth', 'setMovViewMode', 'renderMovimentacao', 'clearTxSearch',
-        'openModal', 'openTxModal', 'exportToExcel', 'switchCatTabModal',
-        'addCustomCategoryModal', 'toggleTheme', 'switchCatTab', 'addCustomCategory',
-        'confirmClearData', 'mobileNav', 'toggleInstallmentField',
-        'updateInstallmentHelper', 'importFromExcel', 'deleteCategoryModal',
-        'openColorPicker', 'deleteCategory', 'selectCatColor', 'handleBudgetInput',
-        'saveBudgetEntry', 'dupTx', 'edTx', 'delTx', 'edAcc', 'delAcc',
-        'viewAccountStatement', 'edCard', 'delCard', 'handlePayFatura',
-        'viewCardInvoice'
+        'openSettingsPanel', 'openBudgetManager', 'openCategoryManager',
+        'filterDashboardToTransactions', 'changeMonth', 'setMovViewMode',
+        'renderMovimentacao', 'clearTxSearch', 'openModal', 'openTxModal',
+        'exportToExcel', 'switchCatTabModal', 'addCustomCategoryModal',
+        'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
+        'mobileNav', 'toggleInstallmentField', 'updateInstallmentHelper',
+        'importFromExcel', 'deleteCategoryModal', 'openColorPicker',
+        'deleteCategory', 'selectCatColor', 'handleBudgetInput', 'saveBudgetEntry',
+        'dupTx', 'edTx', 'delTx', 'edAcc', 'delAcc', 'viewAccountStatement',
+        'edCard', 'delCard', 'handlePayFatura', 'viewCardInvoice'
     ]);
 
     function splitArgs(source) {
