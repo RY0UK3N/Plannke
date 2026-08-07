@@ -1,0 +1,156 @@
+/* Dashboard composition for the desktop/tablet revamp */
+@media (min-width: 768px) {
+    .revamp-dashboard-primary {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+        margin-bottom: 14px;
+        align-items: stretch;
+    }
+
+    .revamp-dashboard-primary > #financial-pulse,
+    .revamp-dashboard-primary > #product-smart-insights {
+        height: 100%;
+        margin: 0 !important;
+    }
+
+    .revamp-smart-insights .card-body {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        padding: 20px !important;
+    }
+
+    .revamp-smart-insights .product-card-title {
+        padding-bottom: 14px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .revamp-smart-insights .product-card-title > div {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .revamp-smart-insights .product-card-title i {
+        color: var(--rv-accent);
+    }
+
+    .revamp-smart-insights .product-card-title small {
+        color: var(--rv-muted);
+        font-size: 0.68rem;
+    }
+
+    .revamp-smart-insights .product-insights-list {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .revamp-smart-insights .product-insight-row {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr);
+        gap: 10px;
+        align-items: start;
+        padding: 10px;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        background: var(--rv-bg-soft);
+    }
+
+    .revamp-smart-insights .product-insight-row.warning {
+        border-color: rgba(255, 117, 143, 0.16);
+    }
+
+    .revamp-smart-insights .product-insight-row.good {
+        border-color: rgba(80, 199, 167, 0.14);
+    }
+
+    .revamp-smart-insights .product-insight-icon {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 10px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+    }
+
+    .revamp-smart-insights .product-insight-row.warning .product-insight-icon {
+        color: var(--rv-danger);
+        background: rgba(255, 117, 143, 0.1);
+    }
+
+    .revamp-smart-insights .product-insight-row.good .product-insight-icon {
+        color: var(--rv-success);
+        background: rgba(80, 199, 167, 0.1);
+    }
+
+    .revamp-smart-insights .product-insight-row strong {
+        display: block;
+        color: var(--rv-text);
+        font-size: 0.78rem;
+        line-height: 1.35;
+    }
+
+    .revamp-smart-insights .product-insight-row small {
+        display: block;
+        margin-top: 3px;
+        color: var(--rv-muted);
+        font-size: 0.68rem;
+        line-height: 1.45;
+    }
+
+    .revamp-dashboard-accounts,
+    .revamp-dashboard-analysis,
+    .revamp-dashboard-activity,
+    .revamp-dashboard-comparison {
+        margin-bottom: 14px !important;
+    }
+
+    .revamp-dashboard-accounts .card-body,
+    .revamp-dashboard-analysis .card-body,
+    .revamp-dashboard-activity .card-body {
+        min-height: 100%;
+    }
+
+    .revamp-dashboard-analysis .card-body > .d-flex:first-child,
+    .revamp-dashboard-activity .card-body > .d-flex:first-child {
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .revamp-dashboard-analysis .card-body > .d-flex:first-child h6,
+    .revamp-dashboard-activity h6,
+    .revamp-dashboard-comparison h6 {
+        color: var(--rv-text);
+        letter-spacing: -0.015em;
+    }
+}
+
+@media (min-width: 1180px) {
+    .revamp-dashboard-primary {
+        grid-template-columns: minmax(0, 1.9fr) minmax(320px, 0.85fr);
+    }
+
+    .revamp-smart-insights .product-insights-list {
+        max-height: 365px;
+        overflow: auto;
+        scrollbar-width: thin;
+    }
+}
+
+@media (min-width: 1320px) {
+    .revamp-dashboard-analysis > .col-lg-5 {
+        width: 48%;
+    }
+
+    .revamp-dashboard-analysis > .col-lg-3 {
+        width: 24%;
+    }
+
+    .revamp-dashboard-analysis > .col-lg-4 {
+        width: 28%;
+    }
+}
