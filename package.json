@@ -1,0 +1,7 @@
+{
+  "name": "plannke",
+  "private": true,
+  "scripts": {
+    "test": "node --test tests/storage.test.js"
+  }
+}
