@@ -1,4 +1,7 @@
 (function (root, factory) {
+    if (typeof document !== 'undefined' && document.currentScript) {
+        document.currentScript.dataset.plannkeProduct = 'static-shell';
+    }
     const api = factory(root);
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeUIBridge = api;
