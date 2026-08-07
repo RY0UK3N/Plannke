@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Plannke">
+  <rect width="512" height="512" rx="112" fill="#0d0d14"/>
+  <rect x="72" y="72" width="368" height="368" rx="92" fill="#121822" stroke="#00c896" stroke-width="14"/>
+  <path d="M178 354V158h92c70 0 112 35 112 94 0 62-45 99-119 99h-32v3h-53zm53-101h35c39 0 60-15 60-43 0-27-20-41-57-41h-38v84z" fill="#00c896"/>
+</svg>
