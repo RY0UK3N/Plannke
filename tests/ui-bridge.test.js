@@ -46,3 +46,10 @@ test('inline argument parser only accepts the migration vocabulary', () => {
   assert.deepEqual(call.args, ["'Mercado'", 'this.dataset.rawValue || this.value']);
   assert.equal(bridge.parseCall('unknownFunction()'), null);
 });
+
+test('static shell marks product layer as present before legacy loader runs', () => {
+  const bridgeSource = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+  const storageSource = fs.readFileSync(path.join(root, 'storage.js'), 'utf8');
+  assert.match(bridgeSource, /currentScript\.dataset\.plannkeProduct\s*=\s*['"]static-shell['"]/);
+  assert.match(storageSource, /querySelector\(['"]script\[data-plannke-product\]['"]\)/);
+});
