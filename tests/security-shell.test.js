@@ -9,6 +9,7 @@ const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+const revamp = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
 
 function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
@@ -28,10 +29,11 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
 });
 
-test('revamp assets are loaded from the trusted local bridge', () => {
+test('revamp assets are loaded from trusted local scripts', () => {
   assert.match(bridge, /stylesheet\.href = 'revamp\.css'/);
   assert.match(bridge, /script\.src = 'revamp\.js'/);
   assert.match(bridge, /loadRevampAssets\(\)/);
+  assert.match(revamp, /link\.href = 'revamp-dashboard\.css'/);
 });
 
 test('third-party JavaScript dependencies are version-pinned and consolidated', () => {
@@ -69,8 +71,8 @@ test('all external resources are limited to approved hosts', () => {
   });
 });
 
-test('PWA navigation is network-first and revamp assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v7'/);
+test('PWA navigation is network-first and all revamp assets are cached', () => {
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v8'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -81,4 +83,5 @@ test('PWA navigation is network-first and revamp assets are cached', () => {
   assert.match(sw, /safe-renderers\.js/);
   assert.match(sw, /revamp\.js/);
   assert.match(sw, /revamp\.css/);
+  assert.match(sw, /revamp-dashboard\.css/);
 });
