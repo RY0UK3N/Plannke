@@ -15,9 +15,11 @@ function externalUrls(html) {
 
 test('product layer and migration bridge are loaded by the application shell', () => {
   assert.match(index, /<link rel="stylesheet" href="product\.css">/);
+  assert.match(index, /<script src="ui-bridge\.js" data-plannke-ui-bridge="true"><\/script>/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
   assert.match(index, /<script src="product\.js"><\/script>/);
-  assert.ok(index.indexOf('app.js') < index.indexOf('product-core.js'));
+  assert.ok(index.indexOf('app.js') < index.indexOf('ui-bridge.js'));
+  assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
@@ -37,7 +39,7 @@ test('third-party JavaScript dependencies are version-pinned and consolidated', 
   scriptUrls.forEach(url => assert.equal(new URL(url).hostname, 'cdn.jsdelivr.net'));
 });
 
-test('application shell ships a restrictive compatibility CSP', () => {
+test('application shell blocks inline script execution', () => {
   const match = index.match(/<meta http-equiv="Content-Security-Policy"\s+content="([^"]+)"/);
   assert.ok(match, 'CSP meta tag should exist');
   const policy = match[1];
@@ -45,8 +47,10 @@ test('application shell ships a restrictive compatibility CSP', () => {
   assert.match(policy, /object-src 'none'/);
   assert.match(policy, /base-uri 'self'/);
   assert.match(policy, /form-action 'self'/);
-  assert.match(policy, /script-src 'self' 'unsafe-inline' https:\/\/cdn\.jsdelivr\.net/);
-  assert.doesNotMatch(policy, /'unsafe-eval'/);
+  assert.match(policy, /script-src 'self' https:\/\/cdn\.jsdelivr\.net/);
+  const scriptPolicy = policy.match(/script-src[^;]*/)?.[0] || '';
+  assert.doesNotMatch(scriptPolicy, /'unsafe-inline'/);
+  assert.doesNotMatch(scriptPolicy, /'unsafe-eval'/);
 });
 
 test('all external resources are limited to approved hosts', () => {
