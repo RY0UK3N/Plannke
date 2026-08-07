@@ -13,13 +13,15 @@ function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
 }
 
-test('product layer and migration bridge are loaded by the application shell', () => {
+test('product layer, UI bridge and safe renderers are loaded in the required order', () => {
   assert.match(index, /<link rel="stylesheet" href="product\.css">/);
   assert.match(index, /<script src="ui-bridge\.js" data-plannke-ui-bridge="true"><\/script>/);
+  assert.match(index, /<script src="safe-renderers\.js"><\/script>/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
   assert.match(index, /<script src="product\.js"><\/script>/);
   assert.ok(index.indexOf('app.js') < index.indexOf('ui-bridge.js'));
-  assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('product-core.js'));
+  assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('safe-renderers.js'));
+  assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
@@ -61,7 +63,7 @@ test('all external resources are limited to approved hosts', () => {
 });
 
 test('PWA navigation is network-first and cache version is explicit', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v5'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v6'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -69,4 +71,5 @@ test('PWA navigation is network-first and cache version is explicit', () => {
   assert.match(sw, /product\.js/);
   assert.match(sw, /insights\.js/);
   assert.match(sw, /ui-bridge\.js/);
+  assert.match(sw, /safe-renderers\.js/);
 });
