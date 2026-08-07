@@ -187,11 +187,27 @@
         });
     }
 
+    function arrangeDashboardPrimary(dashboard) {
+        let primary = document.getElementById('revamp-dashboard-primary');
+        if (!primary) {
+            primary = make('div', 'revamp-dashboard-primary');
+            primary.id = 'revamp-dashboard-primary';
+            dashboard.prepend(primary);
+        }
+
+        const pulse = document.getElementById('financial-pulse');
+        const insights = document.getElementById('product-smart-insights');
+        if (pulse && pulse.parentElement !== primary) primary.appendChild(pulse);
+        if (insights && insights.parentElement !== primary) primary.appendChild(insights);
+        if (pulse) pulse.classList.add('revamp-financial-pulse');
+        if (insights) insights.classList.add('revamp-smart-insights');
+    }
+
     function decorateDashboard() {
         const dashboard = document.getElementById('dashboard-view');
         if (!dashboard) return;
         dashboard.classList.add('revamp-dashboard');
-        document.getElementById('financial-pulse')?.classList.add('revamp-financial-pulse');
+        arrangeDashboardPrimary(dashboard);
 
         const rows = [...dashboard.children].filter(node => node.classList?.contains('row'));
         const names = [
