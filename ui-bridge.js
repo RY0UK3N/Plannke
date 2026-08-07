@@ -167,6 +167,24 @@
         }
     }
 
+    function loadRevampAssets() {
+        if (typeof document === 'undefined') return;
+        if (!document.querySelector('link[data-plannke-revamp]')) {
+            const stylesheet = document.createElement('link');
+            stylesheet.rel = 'stylesheet';
+            stylesheet.href = 'revamp.css';
+            stylesheet.dataset.plannkeRevamp = 'desktop-tablet';
+            document.head.appendChild(stylesheet);
+        }
+        if (!document.querySelector('script[data-plannke-revamp]')) {
+            const script = document.createElement('script');
+            script.src = 'revamp.js';
+            script.defer = true;
+            script.dataset.plannkeRevamp = 'desktop-tablet';
+            document.body.appendChild(script);
+        }
+    }
+
     let initialized = false;
     function init() {
         if (initialized || typeof document === 'undefined') return;
@@ -181,7 +199,8 @@
             records.forEach(record => record.addedNodes.forEach(node => migrateElement(node)));
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
+        loadRevampAssets();
     }
 
-    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, init };
+    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, loadRevampAssets, init };
 });
