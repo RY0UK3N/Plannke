@@ -186,6 +186,12 @@
         if (!document.querySelector('link[rel="manifest"]')) {
             const manifest = document.createElement('link'); manifest.rel = 'manifest'; manifest.href = 'manifest.webmanifest'; document.head.appendChild(manifest);
         }
+        if (!document.querySelector('script[src="insights.js"]')) {
+            const script = document.createElement('script');
+            script.src = 'insights.js';
+            script.defer = true;
+            document.body.appendChild(script);
+        }
         if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA indisponível:', err));
     }
 
