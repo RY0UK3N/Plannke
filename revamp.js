@@ -56,6 +56,15 @@
         return make('i', `ph ${name}`);
     }
 
+    function ensureViewStyles() {
+        if (document.querySelector('link[data-plannke-revamp-dashboard]')) return;
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'revamp-dashboard.css';
+        link.dataset.plannkeRevampDashboard = 'true';
+        document.head.appendChild(link);
+    }
+
     function findLegacyNavigation(target) {
         return [...document.querySelectorAll('.planner-pill-nav [data-target]')]
             .find(link => link.dataset.target === target) || null;
@@ -250,6 +259,7 @@
     function init() {
         if (initialized || typeof document === 'undefined') return;
         initialized = true;
+        ensureViewStyles();
         buildShell();
         decorateViews();
         syncPage();
