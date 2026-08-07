@@ -863,3 +863,21 @@ function formatPeriod(periodStr) {
     const [y, m] = periodStr.split('-').map(Number);
     return `${MONTH_LABELS[m - 1]}/${y}`;
 }
+
+/* ---------- General-audience product layer loader ---------- */
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelector('script[data-plannke-product]')) return;
+        const load = src => new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.dataset.plannkeProduct = src;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.body.appendChild(script);
+        });
+        load('product-core.js')
+            .then(() => load('product.js'))
+            .catch(error => console.error('Falha ao carregar camada de produto do Plannke:', error));
+    }, { once: true });
+}
