@@ -11,6 +11,7 @@ function baseData() {
       { id: 'future', type: 'expense', amount: 300, date: '2026-08-20', accountId: 'acc' }
     ],
     cardBillings: [],
+    settings: {},
     planning: {}
   };
 }
@@ -54,6 +55,7 @@ test('dinheiro livre desconta cartão, reservas, metas e previstos', () => {
       { id: 'salary', type: 'income', amount: 3000, date: '2026-08-20', accountId: 'acc', status: 'planned' }
     ],
     cardBillings: [],
+    settings: {},
     planning: {
       reserves: [{ id: 'res', name: 'Emergência', amount: 500 }],
       goals: [{ id: 'goal', name: 'Viagem', targetAmount: 2000, currentAmount: 300 }],
@@ -95,4 +97,33 @@ test('OFX básico é convertido para transações', () => {
   assert.equal(parsed[0].date, '2026-08-07');
   assert.equal(parsed[0].amount, 42.5);
   assert.equal(parsed[0].category, 'Combustível');
+});
+
+test('metadata de produto sobrevive ao ciclo Memory Card via Configuracoes', () => {
+  const data = baseData();
+  data.planning = {
+    goals: [{ id: 'g', name: 'Viagem', targetAmount: 5000, currentAmount: 1200, targetDate: '2027-01-10' }],
+    reserves: [{ id: 'r', name: 'Emergência', amount: 800 }],
+    recurringRules: [],
+    categoryRules: [{ id: 'c', contains: 'uber', category: 'Transporte' }]
+  };
+  data.transactions[0].tags = ['trabalho'];
+  C.migrateLedger(data, '2026-08-07');
+  const exportedSettings = structuredClone(data.settings);
+
+  const imported = {
+    accounts: [{ id: 'acc', name: 'Conta', balance: data.accounts[0].balance }],
+    cards: [],
+    transactions: data.transactions.map(({ id, type, amount, date, accountId }) => ({ id, type, amount, date, accountId })),
+    cardBillings: [],
+    settings: exportedSettings
+  };
+  C.migrateLedger(imported, '2026-08-07');
+
+  assert.equal(imported.accounts[0].openingBalance, data.accounts[0].openingBalance);
+  assert.equal(imported.transactions.find(t => t.id === 'future').status, 'planned');
+  assert.deepEqual(imported.transactions.find(t => t.id === 'old').tags, ['trabalho']);
+  assert.equal(imported.planning.goals[0].name, 'Viagem');
+  assert.equal(imported.planning.reserves[0].amount, 800);
+  assert.equal(imported.planning.categoryRules[0].category, 'Transporte');
 });
