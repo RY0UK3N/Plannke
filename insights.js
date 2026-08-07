@@ -17,6 +17,14 @@
         };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
         else init();
+
+        if (!document.querySelector('script[data-plannke-ui-bridge]')) {
+            const bridge = document.createElement('script');
+            bridge.src = './ui-bridge.js';
+            bridge.dataset.plannkeUiBridge = 'true';
+            bridge.defer = true;
+            document.head.appendChild(bridge);
+        }
     }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (C) {
     'use strict';
