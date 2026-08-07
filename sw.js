@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plannke-shell-v2';
+const CACHE_NAME = 'plannke-shell-v3';
 const LOCAL_ASSETS = [
   './',
   './index.html',
@@ -13,7 +13,11 @@ const LOCAL_ASSETS = [
 ];
 
 self.addEventListener('install', event => {
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(LOCAL_ASSETS)).then(() => self.skipWaiting()));
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(LOCAL_ASSETS))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', event => {
@@ -28,19 +32,37 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  if (url.origin === self.location.origin) {
+  // Navegações priorizam a versão publicada para evitar que o app instalado
+  // fique preso em um HTML antigo. Offline, usa o último shell válido.
+  if (event.request.mode === 'navigate') {
     event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-        return response;
-      }).catch(() => caches.match('./index.html')))
+      fetch(event.request)
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put('./index.html', copy));
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
     );
     return;
   }
 
-  // Third-party libraries are cached after the first successful load so the
-  // installed app can reopen offline. They remain replaceable by local assets later.
+  if (url.origin === self.location.origin) {
+    event.respondWith(
+      caches.match(event.request).then(cached => {
+        const refresh = fetch(event.request).then(response => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+          return response;
+        }).catch(() => cached);
+        return cached || refresh;
+      })
+    );
+    return;
+  }
+
+  // Dependências de terceiros são fixadas por versão no HTML e armazenadas
+  // após o primeiro carregamento bem-sucedido para reabertura offline.
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       const copy = response.clone();
