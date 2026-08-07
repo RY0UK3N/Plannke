@@ -2,7 +2,7 @@
   "name": "plannke",
   "private": true,
   "scripts": {
-    "test": "node --test tests/*.test.js"
+    "test": "node --check product.js && node --check product-core.js && node --test tests/*.test.js"
   },
   "engines": {
     "node": ">=18"
