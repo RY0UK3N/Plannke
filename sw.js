@@ -1,14 +1,15 @@
-const CACHE_NAME = 'plannke-shell-v5';
+const CACHE_NAME = 'plannke-shell-v6';
 const LOCAL_ASSETS = [
   './',
   './index.html',
   './styles.css',
   './storage.js',
   './app.js',
+  './ui-bridge.js',
+  './safe-renderers.js',
   './product-core.js',
   './product.js',
   './insights.js',
-  './ui-bridge.js',
   './product.css',
   './manifest.webmanifest',
   './plannke-icon.svg'
@@ -34,8 +35,6 @@ self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
 
-  // Navegações priorizam a versão publicada para evitar que o app instalado
-  // fique preso em um HTML antigo. Offline, usa o último shell válido.
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
@@ -63,8 +62,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Dependências de terceiros são fixadas por versão no HTML e armazenadas
-  // após o primeiro carregamento bem-sucedido para reabertura offline.
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       const copy = response.clone();
