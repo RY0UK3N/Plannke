@@ -62,21 +62,22 @@
         }
     }
 
-    const legacyInitApp = root?.initApp;
+    const applicationInit = root?.initApp;
     const storageReady = loadStorageAdapter();
     storageReady.then(loadStorageUiAssets).catch(error => {
         console.error('Interface de persistência indisponível.', error);
     });
 
-    if (root && typeof legacyInitApp === 'function') {
-        root.initApp = function (...args) {
-            return storageReady
-                .then(() => legacyInitApp.apply(this, args))
-                .catch(error => {
-                    console.error('StorageAdapter indisponível; iniciando com o cache em memória.', error);
-                    return legacyInitApp.apply(this, args);
-                });
-        };
+    let applicationStarted = false;
+    function startApplication() {
+        if (applicationStarted || typeof applicationInit !== 'function') return Promise.resolve();
+        applicationStarted = true;
+        return storageReady
+            .catch(error => {
+                console.error('StorageAdapter indisponível; iniciando com o cache em memória.', error);
+                return null;
+            })
+            .then(() => applicationInit.call(root));
     }
 
     const api = factory(root);
@@ -84,6 +85,7 @@
     api.waitForStorageReady = waitForStorageReady;
     api.loadStorageAdapter = loadStorageAdapter;
     api.loadStorageUiAssets = loadStorageUiAssets;
+    api.startApplication = startApplication;
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeUIBridge = api;
 
@@ -91,7 +93,10 @@
         api.primeCanonicalShell();
         api.loadRevampAssets();
 
-        const start = () => api.init();
+        const start = () => {
+            api.init();
+            startApplication();
+        };
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
         else start();
     }
