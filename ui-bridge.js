@@ -8,6 +8,11 @@
         return Promise.resolve(api.ready).then(() => api);
     }
 
+    function canonicalStylesPresent() {
+        if (typeof document === 'undefined') return false;
+        return !!document.querySelector('link[href="product.css"], link[href$="/product.css"]');
+    }
+
     function loadStorageAdapter() {
         if (!root || typeof document === 'undefined') return Promise.resolve(root?.PlannkeStorage || null);
         if (root.PlannkeStorage) return waitForStorageReady(root.PlannkeStorage);
@@ -41,7 +46,7 @@
 
     function loadStorageUiAssets() {
         if (typeof document === 'undefined') return;
-        if (!document.querySelector('link[data-plannke-storage-ui]')) {
+        if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-storage-ui]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
             stylesheet.href = 'storage-ui.css';
@@ -79,6 +84,7 @@
     api.waitForStorageReady = waitForStorageReady;
     api.loadStorageAdapter = loadStorageAdapter;
     api.loadStorageUiAssets = loadStorageUiAssets;
+    api.canonicalStylesPresent = canonicalStylesPresent;
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeUIBridge = api;
     if (typeof document !== 'undefined') {
@@ -245,7 +251,7 @@
 
     function loadDesktopAssets() {
         if (typeof document === 'undefined') return;
-        if (!document.querySelector('link[data-plannke-desktop-style]')) {
+        if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-desktop-style]')) {
             const desktopStyle = document.createElement('link');
             desktopStyle.rel = 'stylesheet';
             desktopStyle.href = 'revamp-desktop.css';
@@ -263,7 +269,7 @@
 
     function loadRevampAssets() {
         if (typeof document === 'undefined') return;
-        if (!document.querySelector('link[data-plannke-revamp]')) {
+        if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-revamp]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
             stylesheet.href = 'revamp.css';
