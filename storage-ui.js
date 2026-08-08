@@ -32,31 +32,42 @@
         }).format(date);
     }
 
+    function setTextOnce(node, text) {
+        if (node && node.textContent !== text) node.textContent = text;
+    }
+
+    function setClassOnce(node, className) {
+        if (node && node.className !== className) node.className = className;
+    }
+
+    function setAttributeOnce(node, name, value) {
+        if (node && node.getAttribute(name) !== value) node.setAttribute(name, value);
+    }
+
     function updateStatus(detail) {
         const status = document.querySelector('.revamp-local-status');
         if (!status) return;
         const label = status.querySelector('span');
         const statusIcon = status.querySelector('i');
         const state = detail?.state || (root.PlannkeStorage?.getStatus?.().error ? 'error' : 'saved');
-
-        status.dataset.storageState = state;
-        if (label) {
-            label.textContent = state === 'saving'
-                ? 'Salvando…'
-                : state === 'error'
-                    ? 'Erro ao salvar'
-                    : 'Salvo localmente';
-        }
-        if (statusIcon) {
-            statusIcon.className = state === 'saving'
-                ? 'ph ph-circle-notch'
-                : state === 'error'
-                    ? 'ph ph-warning-circle'
-                    : 'ph ph-shield-check';
-        }
-        status.title = state === 'error'
+        const labelText = state === 'saving'
+            ? 'Salvando…'
+            : state === 'error'
+                ? 'Erro ao salvar'
+                : 'Salvo localmente';
+        const iconClass = state === 'saving'
+            ? 'ph ph-circle-notch'
+            : state === 'error'
+                ? 'ph ph-warning-circle'
+                : 'ph ph-shield-check';
+        const titleText = state === 'error'
             ? (detail?.error || 'Não foi possível persistir os dados neste dispositivo.')
             : 'As alterações são persistidas automaticamente neste dispositivo.';
+
+        if (status.dataset.storageState !== state) status.dataset.storageState = state;
+        setTextOnce(label, labelText);
+        setClassOnce(statusIcon, iconClass);
+        setAttributeOnce(status, 'title', titleText);
     }
 
     function snapshotReason(reason) {
@@ -178,6 +189,18 @@
         if (panel) renderSnapshotList(panel);
     }
 
+    let observerRefreshScheduled = false;
+    function scheduleObserverRefresh() {
+        if (observerRefreshScheduled) return;
+        observerRefreshScheduled = true;
+        queueMicrotask(() => {
+            observerRefreshScheduled = false;
+            updateStatus();
+            retireLegacyMemoryCardPrompt();
+            mountRecoveryPanel();
+        });
+    }
+
     function init() {
         if (!root.PlannkeStorage || typeof document === 'undefined') return;
         root.addEventListener?.('plannke:storage-status', event => updateStatus(event.detail));
@@ -187,11 +210,7 @@
         });
         document.addEventListener('click', protectSmallBankImport, true);
 
-        const observer = new MutationObserver(() => {
-            updateStatus();
-            retireLegacyMemoryCardPrompt();
-            mountRecoveryPanel();
-        });
+        const observer = new MutationObserver(scheduleObserverRefresh);
         observer.observe(document.documentElement, { childList: true, subtree: true });
         refresh();
     }
