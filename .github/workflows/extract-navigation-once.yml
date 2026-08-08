@@ -1,0 +1,74 @@
+name: Extract canonical navigation once
+
+on:
+  push:
+    branches:
+      - feature/storage-adapter-autosave
+    paths:
+      - '.github/workflows/extract-navigation-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  refactor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/storage-adapter-autosave
+          fetch-depth: 0
+      - name: Extract navigation from app monolith
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          app = Path('app.js')
+          source = app.read_text(encoding='utf-8')
+          for start, end in [
+              ("/* ============================================================\n   ATALHOS DE TECLADO\n   ============================================================ */",
+               "/* ============================================================\n   CAMPO DE VALOR FORMATADO (R$ 0,00)\n   ============================================================ */"),
+              ("/* ============================================================\n   NAVIGATION\n   ============================================================ */",
+               "/* ============================================================\n   VALORES DE DETALHE (Extratos / Faturas)\n   ============================================================ */"),
+          ]:
+              if start not in source or end not in source:
+                  raise SystemExit(f'Missing extraction marker: {start}')
+              before, rest = source.split(start, 1)
+              _, after = rest.split(end, 1)
+              source = before.rstrip() + "\n\n" + end + after
+          for token in ['function setupKeyboardShortcuts()', 'function setupNavigation()', 'function _navigateTo(', 'function mobileNav(']:
+              if token in source:
+                  raise SystemExit(f'Navigation token still present in app.js: {token}')
+          app.write_text(source, encoding='utf-8')
+
+          index = Path('index.html')
+          html = index.read_text(encoding='utf-8')
+          needle = '    <script src="app.js"></script>\n'
+          replacement = needle + '    <script src="app-navigation.js"></script>\n'
+          if needle not in html or 'src="app-navigation.js"' in html:
+              raise SystemExit('Unexpected index script state')
+          index.write_text(html.replace(needle, replacement, 1), encoding='utf-8')
+
+          sw = Path('sw.js')
+          sws = sw.read_text(encoding='utf-8')
+          needle = "  './app.js',\n"
+          if needle not in sws or "'./app-navigation.js'" in sws:
+              raise SystemExit('Unexpected service worker state')
+          sw.write_text(sws.replace(needle, needle + "  './app-navigation.js',\n", 1), encoding='utf-8')
+
+          package = Path('package.json')
+          pkg = package.read_text(encoding='utf-8')
+          needle = 'node --check storage.js && node --check storage-adapter.js'
+          replacement = 'node --check storage.js && node --check app-navigation.js && node --check storage-adapter.js'
+          if needle not in pkg or 'node --check app-navigation.js' in pkg:
+              raise SystemExit('Unexpected package test script state')
+          package.write_text(pkg.replace(needle, replacement, 1), encoding='utf-8')
+          PY
+      - name: Remove one-time workflow and commit
+        run: |
+          rm .github/workflows/extract-navigation-once.yml
+          git config user.name "plannke-refactor-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app.js app-navigation.js index.html sw.js package.json .github/workflows/extract-navigation-once.yml
+          git commit -m "Extract canonical navigation module"
+          git push origin HEAD:feature/storage-adapter-autosave
