@@ -167,6 +167,19 @@
         welcome.addEventListener('show.bs.modal', event => event.preventDefault());
     }
 
+    function finalizeCanonicalShell() {
+        const shell = document.getElementById('revamp-shell');
+        if (!shell || !document.body.classList.contains('plannke-revamp')) return;
+
+        ['.planner-nav', '.mobile-tab-bar', '.fab-btn'].forEach(selector => {
+            document.querySelectorAll(`body > ${selector}`).forEach(node => node.remove());
+        });
+
+        if (document.body.dataset.plannkeCanonicalReady !== 'true') {
+            document.body.dataset.plannkeCanonicalReady = 'true';
+        }
+    }
+
     function protectSmallBankImport(event) {
         const button = event.target?.closest?.('#revamp-import-review .revamp-import-actions .btn-primary');
         if (!button || !/Confirmar selecionadas/i.test(button.textContent || '')) return;
@@ -183,6 +196,7 @@
     function refresh() {
         updateStatus();
         retireLegacyMemoryCardPrompt();
+        finalizeCanonicalShell();
         mountRecoveryPanel();
         const panel = document.getElementById('plannke-recovery-panel');
         if (panel) renderSnapshotList(panel);
@@ -196,6 +210,7 @@
             observerRefreshScheduled = false;
             updateStatus();
             retireLegacyMemoryCardPrompt();
+            finalizeCanonicalShell();
             mountRecoveryPanel();
         });
     }
