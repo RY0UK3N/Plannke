@@ -63,10 +63,20 @@ test('canonical desktop shell is primed synchronously before DOMContentLoaded', 
   assert.match(bridge, /Central financeira/);
   assert.match(bridge, /CANONICAL_PAGES/);
   assert.match(bridge, /\['backup', 'ph-database', 'Dados'\]/);
-  assert.match(bridge, /body > \.planner-nav, body > \.fab-btn, body > \.mobile-tab-bar/);
-  assert.match(bridge, /document\.getElementById\('welcomeModal'\)\?\.remove\(\)/);
-  assert.match(bridge, /document\.getElementById\('backupReminderModal'\)\?\.remove\(\)/);
   assert.doesNotMatch(bridge, /function canonicalStylesPresent\([^)]*\)[\s\S]*?\}\);\n\}\)\(/);
+});
+
+test('source document contains no legacy application chrome or Memory Card entry flow', () => {
+  assert.doesNotMatch(index, /class="navbar sticky-top planner-nav"/);
+  assert.doesNotMatch(index, /class="fab-btn"/);
+  assert.doesNotMatch(index, /id="mobile-tab-bar"/);
+  assert.doesNotMatch(index, /id="welcomeModal"/);
+  assert.doesNotMatch(index, /id="backupReminderModal"/);
+  assert.doesNotMatch(index, /id="excelUpload"/);
+  assert.doesNotMatch(index, /Inserir Memory Card|Salvar Backup Agora|Carregar Planilha/);
+  assert.match(index, /id="backup-view"/);
+  assert.match(index, /Dados e relatórios/);
+  assert.match(index, /Exportar relatório Excel/);
 });
 
 test('canonical desktop styles are part of the first paint', () => {
@@ -79,7 +89,6 @@ test('canonical desktop styles are part of the first paint', () => {
     'revamp-desktop.css',
     'storage-ui.css'
   ].forEach(asset => assert.ok(productCss.includes(`@import url('./${asset}')`), `missing canonical CSS import: ${asset}`));
-  assert.match(productCss, /body:not\(\.plannke-revamp\) > \.planner-nav/);
   assert.match(productCss, /body:not\(\.plannke-revamp\) > main/);
   assert.match(productCss, /visibility: hidden !important/);
   assert.match(bridge, /function canonicalStylesPresent\(/);
@@ -162,6 +171,7 @@ test('one-time repository automations are not shipped with the application branc
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/vendor-runtime-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/apply-storage-adapter-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/canonical-desktop-shell-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github/workflows/retire-legacy-bootstrap-once.yml')), false);
 });
 
 test('application shell uses local scripts and scopes inline style compatibility', () => {
@@ -191,7 +201,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v25'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v26'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
