@@ -51,7 +51,7 @@ test('StorageAdapter is ready before the legacy initApp body is allowed to run',
   assert.match(storageAdapter, /plannke:storage-status/);
 });
 
-test('storage status and recovery UI are local and DOM-safe', () => {
+test('storage status and recovery UI are local, safe and retire Memory Card as startup storage', () => {
   assert.match(bridge, /stylesheet\.href = 'storage-ui\.css'/);
   assert.match(bridge, /script\.src = 'storage-ui\.js'/);
   assert.match(storageUi, /Salvando…/);
@@ -59,6 +59,10 @@ test('storage status and recovery UI are local and DOM-safe', () => {
   assert.match(storageUi, /Recuperação local/);
   assert.match(storageUi, /createSnapshot\('manual'\)/);
   assert.match(storageUi, /restoreSnapshot\(snapshot\.id\)/);
+  assert.match(storageUi, /show\.bs\.modal/);
+  assert.match(storageUi, /event => event\.preventDefault\(\)/);
+  assert.match(storageUi, /before-bank-import/);
+  assert.match(storageUi, /selectedCount <= 0 \|\| selectedCount >= 5/);
   assert.match(storageUiCss, /\.plannke-recovery-panel/);
   assert.doesNotMatch(storageUi, /\.innerHTML\s*=/);
   assert.doesNotMatch(storageUi, /\.outerHTML\s*=/);
@@ -143,7 +147,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v20'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v21'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
