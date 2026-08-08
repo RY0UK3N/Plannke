@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'revamp-desktop.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
+const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 
 test('final shell explicitly targets desktop app windows', () => {
   assert.match(css, /body\.plannke-revamp\s*\{[\s\S]*min-width: 1080px/);
@@ -13,6 +14,13 @@ test('final shell explicitly targets desktop app windows', () => {
   assert.match(css, /mobile-tab-bar/);
   assert.match(css, /display: none !important/);
   assert.match(js, /dataset\.plannkeTarget = 'desktop'/);
+});
+
+test('desktop finishing assets load only after the base revamp is ready', () => {
+  assert.match(bridge, /function loadDesktopAssets\(/);
+  assert.match(bridge, /script\.addEventListener\('load', loadDesktopAssets/);
+  assert.match(bridge, /desktopStyle\.href = 'revamp-desktop\.css'/);
+  assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
 });
 
 test('dashboard prevents text and value collisions', () => {
@@ -31,6 +39,7 @@ test('backup is presented as autosave plus portable export/import', () => {
   assert.match(js, /Exportar Excel/);
   assert.match(js, /Importar Excel/);
   assert.match(js, /Excel não é mais o armazenamento principal/);
+  assert.match(js, /revampDesktopLabel/);
   assert.match(css, /revamp-backup-status/);
   assert.match(css, /revamp-backup-grid/);
   assert.match(css, /revamp-bank-import-panel/);
