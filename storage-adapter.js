@@ -1,11 +1,10 @@
 /**
  * Plannke — StorageAdapter
  *
- * Transitional persistence layer for the desktop-app architecture.
- * The finance/domain layer keeps using getData()/saveData(), while this file
- * owns the runtime cache, durable browser persistence, migration and recovery
- * snapshots. A future SQLite adapter can replace LocalStorageAdapter without
- * changing the financial features.
+ * Persistence boundary for the desktop-app architecture. The financial/domain
+ * layer keeps a synchronous in-memory getData()/saveData() surface, while the
+ * backend contract may load and persist asynchronously. This is intentional:
+ * SQLite/Tauri can replace LocalStorageAdapter without changing finance code.
  */
 (function (root) {
     'use strict';
@@ -63,7 +62,15 @@
             this.storage.setItem(key, value);
         }
 
-        load() {
+        _mirrorLegacy(data) {
+            try { this._write(LEGACY_AUTOSAVE_KEY, JSON.stringify(data)); }
+            catch (error) {
+                // Compatibility mirroring must never make the primary save fail.
+                console.warn('Espelho legado de autosave indisponível:', error);
+            }
+        }
+
+        async load() {
             const envelope = safeParse(this._read(DATA_KEY));
             if (envelope?.version === STORAGE_VERSION && envelope.data) {
                 return { data: envelope.data, source: 'adapter', savedAt: envelope.savedAt || null };
@@ -83,19 +90,17 @@
             return { data: null, source: 'empty', savedAt: null };
         }
 
-        save(data) {
+        async save(data) {
             const envelope = {
                 version: STORAGE_VERSION,
                 savedAt: nowIso(),
                 data
             };
-            const serialized = JSON.stringify(envelope);
-            this._write(DATA_KEY, serialized);
-
-            // Temporary rollback bridge while browser preview and desktop runtime coexist.
-            // All legacy mirroring is centralized here and can be removed with SQLite.
-            this._write(LEGACY_AUTOSAVE_KEY, JSON.stringify(data));
-            return Promise.resolve({ savedAt: envelope.savedAt });
+            // This write is synchronous today, even though the method intentionally
+            // exposes a Promise-compatible contract for the future SQLite backend.
+            this._write(DATA_KEY, JSON.stringify(envelope));
+            this._mirrorLegacy(data);
+            return { savedAt: envelope.savedAt };
         }
 
         saveNow(data) {
@@ -105,7 +110,7 @@
                 data
             };
             this._write(DATA_KEY, JSON.stringify(envelope));
-            this._write(LEGACY_AUTOSAVE_KEY, JSON.stringify(data));
+            this._mirrorLegacy(data);
             return envelope.savedAt;
         }
 
@@ -127,10 +132,6 @@
             this._write(SNAPSHOT_KEY, JSON.stringify(snapshots.slice(0, MAX_SNAPSHOTS)));
             return clone(entry);
         }
-
-        replaceSnapshots(snapshots) {
-            this._write(SNAPSHOT_KEY, JSON.stringify((snapshots || []).slice(0, MAX_SNAPSHOTS)));
-        }
     }
 
     class StorageCoordinator {
@@ -138,6 +139,7 @@
             this.adapter = adapter;
             this.data = normalize(fallbackData) || {};
             this.initialized = false;
+            this.initializePromise = null;
             this.lifecycleInstalled = false;
             this.saveQueue = Promise.resolve();
             this.lastSavedAt = null;
@@ -146,34 +148,53 @@
         }
 
         initialize() {
-            if (this.initialized) return this.getStatus();
-            const loaded = this.adapter.load();
-            const next = normalize(loaded.data) || normalize(this.data) || {};
-            this.data = next;
-            this.source = loaded.source;
-            this.lastSavedAt = loaded.savedAt;
-            this.initialized = true;
+            if (this.initialized) return Promise.resolve(this.getStatus());
+            if (this.initializePromise) return this.initializePromise;
 
-            // Persist the normalized form immediately, which also migrates legacy data.
-            try {
-                this.adapter.saveNow(this.data);
-                this.lastSavedAt = nowIso();
-                this._emit('saved');
-            } catch (error) {
-                this.lastError = error;
-                this._emit('error', error);
-            }
-            return this.getStatus();
+            this.initializePromise = Promise.resolve(this.adapter.load())
+                .then(loaded => {
+                    const next = normalize(loaded?.data) || normalize(this.data) || {};
+                    this.data = next;
+                    this.source = loaded?.source || 'empty';
+                    this.lastSavedAt = loaded?.savedAt || null;
+                    this.initialized = true;
+                    return this.adapter.save(clone(this.data));
+                })
+                .then(result => {
+                    this.lastSavedAt = result?.savedAt || nowIso();
+                    this.lastError = null;
+                    this._emit('saved');
+                    return this.getStatus();
+                })
+                .catch(error => {
+                    // Keep the normalized in-memory fallback usable even if durable
+                    // storage is unavailable. The UI receives an explicit error state.
+                    this.initialized = true;
+                    this.lastError = error;
+                    this._emit('error', error);
+                    console.error('Falha ao inicializar persistência do Plannke:', error);
+                    return this.getStatus();
+                });
+
+            return this.initializePromise;
         }
 
         getData() {
-            if (!this.initialized) this.initialize();
             return clone(this.data);
         }
 
         saveData(nextData) {
-            if (!this.initialized) this.initialize();
             const normalized = normalize(nextData) || {};
+
+            if (!this.initialized) {
+                // Normal UI boot waits for `ready`; this is a defensive path for a
+                // caller that writes during bootstrap. Preserve the write in memory
+                // and persist it immediately after initialization completes.
+                this.data = normalized;
+                this.initialize().then(() => this.saveData(normalized));
+                return clone(this.data);
+            }
+
             const previous = this.data;
             this._snapshotBeforeRiskyChange(previous, normalized);
             this._snapshotDaily(previous);
@@ -181,21 +202,10 @@
             this.lastError = null;
             this._emit('saving');
 
-            let write;
-            try {
-                // LocalStorageAdapter performs the durable write synchronously before
-                // returning its promise. This keeps today's browser runtime safe while
-                // preserving an async-shaped contract for the future SQLite adapter.
-                write = this.adapter.save(this.data);
-            } catch (error) {
-                this.lastError = error;
-                this._emit('error', error);
-                throw error;
-            }
-
+            const payload = clone(this.data);
             this.saveQueue = this.saveQueue
                 .catch(() => undefined)
-                .then(() => write)
+                .then(() => this.adapter.save(payload))
                 .then(result => {
                     this.lastSavedAt = result?.savedAt || nowIso();
                     this._emit('saved');
@@ -218,7 +228,6 @@
         }
 
         createSnapshot(reason = 'manual') {
-            if (!this.initialized) this.initialize();
             if (!hasMeaningfulData(this.data)) return null;
             return this.adapter.createSnapshot(this.data, reason);
         }
@@ -238,8 +247,8 @@
             const beforeRestore = this.createSnapshot('before-restore');
             const restored = normalize(snapshot.data) || {};
             this.data = restored;
-            this.adapter.saveNow(this.data);
-            this.lastSavedAt = nowIso();
+            this.lastSavedAt = this._saveNowIfSupported(this.data) || this.lastSavedAt;
+            if (!this.lastSavedAt) this.saveData(this.data);
             this._emit('saved');
             try {
                 if (typeof root._markDataDirty === 'function') root._markDataDirty();
@@ -248,24 +257,22 @@
         }
 
         flush() {
-            if (!this.initialized) return Promise.resolve();
-            try {
-                this.adapter.saveNow(this.data);
-                this.lastSavedAt = nowIso();
-            } catch (error) {
-                this.lastError = error;
-                this._emit('error', error);
-            }
+            if (!this.initialized) return this.initialize();
+            this._saveNowIfSupported(this.data);
             return this.saveQueue.catch(() => undefined);
         }
 
         installLifecycleHandlers() {
-            if (this.lifecycleInstalled || typeof root.addEventListener !== 'function') return;
+            if (this.lifecycleInstalled) return;
             this.lifecycleInstalled = true;
-            root.addEventListener('pagehide', () => { this.flush(); });
-            root.addEventListener('visibilitychange', () => {
-                if (root.document?.visibilityState === 'hidden') this.flush();
-            });
+            if (typeof root.addEventListener === 'function') {
+                root.addEventListener('pagehide', () => { this.flush(); });
+            }
+            if (root.document?.addEventListener) {
+                root.document.addEventListener('visibilitychange', () => {
+                    if (root.document.visibilityState === 'hidden') this.flush();
+                });
+            }
         }
 
         getStatus() {
@@ -276,6 +283,19 @@
                 savedAt: this.lastSavedAt,
                 error: this.lastError ? String(this.lastError.message || this.lastError) : null
             };
+        }
+
+        _saveNowIfSupported(data) {
+            if (typeof this.adapter.saveNow !== 'function') return null;
+            try {
+                const savedAt = this.adapter.saveNow(clone(data));
+                this.lastSavedAt = savedAt || nowIso();
+                return this.lastSavedAt;
+            } catch (error) {
+                this.lastError = error;
+                this._emit('error', error);
+                return null;
+            }
         }
 
         _snapshotBeforeRiskyChange(previous, next) {
@@ -290,21 +310,27 @@
 
         _snapshotDaily(previous) {
             if (!hasMeaningfulData(previous)) return;
-            const latest = this.adapter.listSnapshots()[0];
-            const latestTime = latest?.createdAt ? new Date(latest.createdAt).getTime() : 0;
-            if (!latestTime || Date.now() - latestTime >= DAILY_SNAPSHOT_MS) {
-                this.adapter.createSnapshot(previous, 'daily');
+            try {
+                const latest = this.adapter.listSnapshots()[0];
+                const latestTime = latest?.createdAt ? new Date(latest.createdAt).getTime() : 0;
+                if (!latestTime || Date.now() - latestTime >= DAILY_SNAPSHOT_MS) {
+                    this.adapter.createSnapshot(previous, 'daily');
+                }
+            } catch (error) {
+                // Recovery history must never block the primary financial save.
+                console.warn('Ponto diário de recuperação indisponível:', error);
             }
         }
 
         _createSnapshotThrottled(data, reason) {
-            const latest = this.adapter.listSnapshots()[0];
-            if (latest?.reason === reason && latest.createdAt) {
-                const age = Date.now() - new Date(latest.createdAt).getTime();
-                if (Number.isFinite(age) && age < SNAPSHOT_COOLDOWN_MS) return null;
-            }
-            try { return this.adapter.createSnapshot(data, reason); }
-            catch (error) {
+            try {
+                const latest = this.adapter.listSnapshots()[0];
+                if (latest?.reason === reason && latest.createdAt) {
+                    const age = Date.now() - new Date(latest.createdAt).getTime();
+                    if (Number.isFinite(age) && age < SNAPSHOT_COOLDOWN_MS) return null;
+                }
+                return this.adapter.createSnapshot(data, reason);
+            } catch (error) {
                 console.warn('Não foi possível criar ponto de recuperação:', error);
                 return null;
             }
@@ -331,20 +357,15 @@
 
     const adapter = new LocalStorageAdapter(root.localStorage);
     const coordinator = new StorageCoordinator(adapter, fallback);
-    coordinator.initialize();
-    coordinator.installLifecycleHandlers();
 
-    // Compatibility surface: the domain layer stays synchronous for this PR.
-    // Persistence itself is already isolated behind the adapter contract.
+    // Compatibility surface: finance code remains synchronous against the
+    // in-memory cache. ui-bridge waits for `ready` before running initApp().
     root.getData = function () { return coordinator.getData(); };
     root.saveData = function (data) { return coordinator.saveData(data); };
-
-    // app.js still calls these boot hooks; they now delegate instead of touching
-    // localStorage/sessionStorage directly.
     root.loadFromLocalStorage = function () { return coordinator.initialize(); };
     root.setupBeforeUnload = function () { coordinator.installLifecycleHandlers(); };
 
-    root.PlannkeStorage = Object.freeze({
+    const api = {
         version: STORAGE_VERSION,
         backend: adapter.kind,
         initialize: () => coordinator.initialize(),
@@ -354,6 +375,11 @@
         listSnapshots: () => coordinator.listSnapshots(),
         restoreSnapshot: id => coordinator.restoreSnapshot(id),
         LocalStorageAdapter,
-        StorageCoordinator
-    });
+        StorageCoordinator,
+        ready: null
+    };
+
+    root.PlannkeStorage = Object.freeze(api);
+    coordinator.installLifecycleHandlers();
+    api.ready = coordinator.initialize();
 })(globalThis);
