@@ -149,8 +149,30 @@
         renderSnapshotList(panel);
     }
 
+    function retireLegacyMemoryCardPrompt() {
+        const welcome = document.getElementById('welcomeModal');
+        if (!welcome || welcome.dataset.storageAdapterGuard) return;
+        welcome.dataset.storageAdapterGuard = 'true';
+        welcome.addEventListener('show.bs.modal', event => event.preventDefault());
+    }
+
+    function protectSmallBankImport(event) {
+        const button = event.target?.closest?.('#revamp-import-review .revamp-import-actions .btn-primary');
+        if (!button || !/Confirmar selecionadas/i.test(button.textContent || '')) return;
+        const rows = [...document.querySelectorAll('#revamp-import-review .revamp-import-row[data-import-index]')];
+        const selectedCount = rows.filter(row => row.querySelector('.revamp-import-check input[type="checkbox"]')?.checked).length;
+        if (selectedCount <= 0 || selectedCount >= 5) return;
+        try {
+            root.PlannkeStorage?.createSnapshot('before-bank-import');
+        } catch (error) {
+            // Recovery is best-effort; it must never block a reviewed import.
+            console.warn('Ponto de recuperação da importação indisponível:', error);
+        }
+    }
+
     function refresh() {
         updateStatus();
+        retireLegacyMemoryCardPrompt();
         mountRecoveryPanel();
         const panel = document.getElementById('plannke-recovery-panel');
         if (panel) renderSnapshotList(panel);
@@ -163,9 +185,11 @@
             const panel = document.getElementById('plannke-recovery-panel');
             if (panel) renderSnapshotList(panel);
         });
+        document.addEventListener('click', protectSmallBankImport, true);
 
         const observer = new MutationObserver(() => {
             updateStatus();
+            retireLegacyMemoryCardPrompt();
             mountRecoveryPanel();
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
