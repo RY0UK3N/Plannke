@@ -1,3 +1,5 @@
+@import url('./revamp-states.css');
+
 /* Plannke desktop/tablet modal and form language */
 @media (min-width: 768px) {
     .plannke-revamp .modal {
