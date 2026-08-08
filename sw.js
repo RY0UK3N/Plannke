@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plannke-shell-v24';
+const CACHE_NAME = 'plannke-shell-v25';
 const LOCAL_ASSETS = [
   './',
   './index.html',
@@ -69,14 +69,13 @@ self.addEventListener('fetch', event => {
 
   if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
-        const refresh = fetch(event.request).then(response => {
+      fetch(event.request)
+        .then(response => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
-        }).catch(() => cached);
-        return cached || refresh;
-      })
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }
