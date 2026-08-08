@@ -6,6 +6,8 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const manifest = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
@@ -49,7 +51,7 @@ test('canonical bridge owns application boot and waits for StorageAdapter', () =
   assert.match(bridge, /storageReady[\s\S]*applicationInit\.call\(root\)/);
   assert.match(bridge, /api\.init\(\);\s*startApplication\(\);/);
   assert.doesNotMatch(app, /document\.addEventListener\(['"]DOMContentLoaded['"][\s\S]*initApp/);
-  assert.doesNotMatch(app, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload|_backupDone/);
+  assert.doesNotMatch(app, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload/);
   assert.match(storageAdapter, /class LocalStorageAdapter/);
   assert.match(storageAdapter, /class StorageCoordinator/);
   assert.match(storageAdapter, /const ready = coordinator\.initialize\(\)/);
@@ -58,6 +60,21 @@ test('canonical bridge owns application boot and waits for StorageAdapter', () =
   assert.doesNotMatch(storageAdapter, /root\.(?:loadFromLocalStorage|setupBeforeUnload|checkImportPrompt)\s*=/);
   assert.match(storageAdapter, /function recoveryFootprint\(/);
   assert.match(storageAdapter, /plannke:storage-status/);
+});
+
+test('canonical data actions replace the retired browser-storage and Memory Card runtime', () => {
+  assert.match(navigation, /script\.src = 'app-data\.js'/);
+  assert.match(navigation, /root\.PlannkeDataReady = dataActionsReady/);
+  assert.match(navigation, /\['confirmClearData', 'exportToExcel'\]/);
+  assert.match(appData, /root\.confirmClearData = confirmClearData/);
+  assert.match(appData, /root\.exportToExcel = exportToExcel/);
+  assert.match(appData, /Plannke_Relatorio_/);
+  assert.match(appData, /'Resumo'/);
+  assert.match(appData, /'Movimentações'/);
+  assert.match(appData, /'Planejamento'/);
+  assert.doesNotMatch(appData, /localStorage|sessionStorage|planner_autosave|planner_session_cache/);
+  assert.doesNotMatch(appData, /Memory Card|importFromExcel|FileReader|_backupDone/);
+  assert.doesNotMatch(appData, /\.innerHTML\s*=|\beval\s*\(|new\s+Function\s*\(/);
 });
 
 test('canonical desktop shell is primed synchronously before DOMContentLoaded', () => {
@@ -178,6 +195,7 @@ test('one-time repository automations are not shipped with the application branc
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/canonical-desktop-shell-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/retire-legacy-bootstrap-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/retire-app-bootstrap-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github/workflows/retire-excel-legacy-once.yml')), false);
 });
 
 test('application shell uses local scripts and scopes inline style compatibility', () => {
@@ -207,7 +225,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v26'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v27'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -223,6 +241,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
   assert.equal(parsedManifest.theme_color, '#0b0d12');
 
   [
+    'app-navigation.js', 'app-data.js',
     'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
