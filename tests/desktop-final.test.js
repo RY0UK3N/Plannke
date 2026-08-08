@@ -23,45 +23,73 @@ test('desktop finishing assets load only after the base revamp is ready', () => 
   assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
 });
 
-test('dashboard prevents text and value collisions', () => {
-  assert.match(css, /product-insight-row strong/);
-  assert.match(css, /overflow-wrap: anywhere/);
-  assert.match(css, /revamp-dashboard-accounts \.qa-item/);
-  assert.match(css, /grid-template-columns: minmax\(0, 1fr\) auto/);
-  assert.match(css, /revamp-dashboard-activity \.tx-item-desc/);
+test('dashboard has dedicated non-colliding empty states', () => {
+  assert.match(js, /function decorateDashboardEmptyStates\(/);
+  assert.match(js, /Nenhuma transação registrada/);
+  assert.match(js, /Nenhuma conta futura/);
+  assert.match(css, /\.revamp-dashboard-empty\s*\{/);
+  assert.match(css, /justify-content: center/);
+  assert.match(css, /\.revamp-dashboard-activity \.tx-item-desc/);
   assert.match(css, /text-overflow: ellipsis/);
-  assert.match(css, /upcoming-item/);
 });
 
-test('backup is presented as autosave plus portable export/import', () => {
+test('accounts and cards use the same desktop card system', () => {
+  assert.match(js, /revamp-entity-unified/);
+  assert.match(js, /revamp-account-card/);
+  assert.match(js, /revamp-credit-card/);
+  assert.match(js, /revamp-account-meta/);
+  assert.match(css, /#accounts-grid,[\s\S]*#cards-grid[\s\S]*grid-template-columns: repeat\(2/);
+  assert.match(css, /\.revamp-entity-unified[\s\S]*min-height: 360px/);
+  assert.match(css, /\.revamp-credit-card::before/);
+});
+
+test('data page treats Excel as a report and bank files as reviewed imports', () => {
   assert.match(js, /Salvamento automático ativo/);
-  assert.match(js, /Backup e portabilidade/);
-  assert.match(js, /Exportar Excel/);
-  assert.match(js, /Importar Excel/);
-  assert.match(js, /Excel não é mais o armazenamento principal/);
-  assert.match(js, /revampDesktopLabel/);
-  assert.match(css, /revamp-backup-status/);
-  assert.match(css, /revamp-backup-grid/);
-  assert.match(css, /revamp-bank-import-panel/);
+  assert.match(js, /Dados e relatórios/);
+  assert.match(js, /Exportar relatório Excel/);
+  assert.match(js, /planilha é somente um relatório externo/i);
+  assert.match(js, /importLabel\.hidden = true/);
+  assert.match(js, /function captureBankImport\(/);
+  assert.match(js, /event\.stopImmediatePropagation\(\)/);
+  assert.match(js, /function stageBankFile\(/);
+  assert.match(js, /function renderBankImportReview\(/);
+  assert.match(js, /Revisar movimentações/);
+  assert.match(js, /Confirmar selecionadas/);
+  assert.match(js, /merchantRuleKey/);
+  assert.match(js, /windows-1252/);
+  assert.match(js, /'utf-8'/);
+  assert.match(css, /revamp-import-review/);
+  assert.match(css, /revamp-import-table/);
 });
 
-test('desktop forms use wider structured layouts', () => {
-  assert.match(css, /#transactionModal \.modal-dialog[\s\S]*max-width: 900px/);
+test('transaction form is compact and uses the desktop grid without normal scrolling', () => {
+  assert.match(css, /#transactionModal \.modal-dialog[\s\S]*max-width: 980px/);
   assert.match(css, /#tx-fields-wrapper:not\(\.hidden\)[\s\S]*repeat\(12/);
-  assert.match(css, /#accountForm/);
-  assert.match(css, /#cardForm/);
-  assert.match(css, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(js, /Registre uma entrada, gasto ou transferência/);
-  assert.match(js, /Configure limite, fechamento e vencimento/);
+  assert.match(css, /tx-type-group > \.btn-type[\s\S]*min-height: 46px/);
+  assert.match(css, /product-tx-extra,[\s\S]*display: contents/);
+  assert.match(css, /button\[type="submit"\][\s\S]*grid-column: 10 \/ -1/);
+  assert.match(js, /Registre a movimentação sem sair do contexto atual/);
 });
 
-test('statement and invoice modal are desktop review workspaces', () => {
-  assert.match(css, /#entityDetailModal \.modal-dialog[\s\S]*max-width: 1080px/);
+test('statement and invoice modal are serious desktop review workspaces', () => {
+  assert.match(css, /#entityDetailModal \.modal-dialog[\s\S]*max-width: 1180px/);
   assert.match(css, /#detail-tx-list \.tx-item/);
   assert.match(css, /#detail-footer-pay/);
   assert.match(css, /position: sticky/);
   assert.match(css, /#detail-pay-acc-select/);
-  assert.match(js, /revamp-detail-modal/);
+  assert.match(js, /Área de revisão/);
+  assert.match(js, /Fatura do cartão/);
+  assert.match(js, /Extrato da conta/);
+  assert.match(js, /Movimentações do período/);
+});
+
+test('planning has a navigation and visible-workspace repair path', () => {
+  assert.match(js, /function ensurePlanningNavigation\(/);
+  assert.match(js, /function repairPlanningWorkspace\(/);
+  assert.match(js, /desktop-planning-repair/);
+  assert.match(js, /planningObserver\.observe\(planning, \{ attributes: true, attributeFilter: \['class'\], childList: true \}\)/);
+  assert.match(js, /applyPlanningTab/);
+  assert.match(css, /#projecao-view:not\(\.hidden\) > #revamp-planning-overview/);
 });
 
 test('desktop finishing layer remains DOM-safe', () => {
