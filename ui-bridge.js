@@ -167,6 +167,24 @@
         }
     }
 
+    function loadDesktopAssets() {
+        if (typeof document === 'undefined') return;
+        if (!document.querySelector('link[data-plannke-desktop-style]')) {
+            const desktopStyle = document.createElement('link');
+            desktopStyle.rel = 'stylesheet';
+            desktopStyle.href = 'revamp-desktop.css';
+            desktopStyle.dataset.plannkeDesktopStyle = 'true';
+            document.head.appendChild(desktopStyle);
+        }
+        if (!document.querySelector('script[data-plannke-desktop]')) {
+            const desktopScript = document.createElement('script');
+            desktopScript.src = 'revamp-desktop.js';
+            desktopScript.defer = true;
+            desktopScript.dataset.plannkeDesktop = 'true';
+            document.body.appendChild(desktopScript);
+        }
+    }
+
     function loadRevampAssets() {
         if (typeof document === 'undefined') return;
         if (!document.querySelector('link[data-plannke-revamp]')) {
@@ -176,27 +194,20 @@
             stylesheet.dataset.plannkeRevamp = 'desktop';
             document.head.appendChild(stylesheet);
         }
-        if (!document.querySelector('link[data-plannke-desktop-style]')) {
-            const desktopStyle = document.createElement('link');
-            desktopStyle.rel = 'stylesheet';
-            desktopStyle.href = 'revamp-desktop.css';
-            desktopStyle.dataset.plannkeDesktopStyle = 'true';
-            document.head.appendChild(desktopStyle);
+
+        let script = document.querySelector('script[data-plannke-revamp]');
+        if (script) {
+            if (root.PlannkeRevamp) loadDesktopAssets();
+            else script.addEventListener('load', loadDesktopAssets, { once: true });
+            return;
         }
-        if (!document.querySelector('script[data-plannke-revamp]')) {
-            const script = document.createElement('script');
-            script.src = 'revamp.js';
-            script.defer = true;
-            script.dataset.plannkeRevamp = 'desktop';
-            document.body.appendChild(script);
-        }
-        if (!document.querySelector('script[data-plannke-desktop]')) {
-            const desktopScript = document.createElement('script');
-            desktopScript.src = 'revamp-desktop.js';
-            desktopScript.defer = true;
-            desktopScript.dataset.plannkeDesktop = 'true';
-            document.body.appendChild(desktopScript);
-        }
+
+        script = document.createElement('script');
+        script.src = 'revamp.js';
+        script.defer = true;
+        script.dataset.plannkeRevamp = 'desktop';
+        script.addEventListener('load', loadDesktopAssets, { once: true });
+        document.body.appendChild(script);
     }
 
     let initialized = false;
@@ -216,5 +227,5 @@
         loadRevampAssets();
     }
 
-    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, loadRevampAssets, init };
+    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, loadDesktopAssets, loadRevampAssets, init };
 });
