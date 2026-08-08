@@ -1,0 +1,156 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const vm = require('node:vm');
+
+const source = fs.readFileSync(path.resolve(__dirname, '..', 'storage-adapter.js'), 'utf8');
+
+function clone(value) {
+  return JSON.parse(JSON.stringify(value));
+}
+
+function createWebStorage(initial = {}) {
+  const map = new Map(Object.entries(initial));
+  return {
+    getItem(key) { return map.has(key) ? map.get(key) : null; },
+    setItem(key, value) { map.set(key, String(value)); },
+    removeItem(key) { map.delete(key); },
+    dump() { return Object.fromEntries(map); }
+  };
+}
+
+function createContext({ local = {}, session = {}, fallback = null } = {}) {
+  const localStorage = createWebStorage(local);
+  const sessionStorage = createWebStorage(session);
+  const events = [];
+  const listeners = new Map();
+  const base = fallback || {
+    schemaVersion: 2,
+    accounts: [],
+    cards: [],
+    transactions: [],
+    cardBillings: [],
+    settings: { schemaVersion: 2, theme: 'dark', budgets: {}, categoryColors: {} }
+  };
+
+  class CustomEvent {
+    constructor(type, init = {}) { this.type = type; this.detail = init.detail; }
+  }
+
+  const context = {
+    console,
+    Date,
+    Math,
+    Promise,
+    JSON,
+    structuredClone: global.structuredClone,
+    localStorage,
+    sessionStorage,
+    CustomEvent,
+    normalizeData: value => clone(value),
+    getData: () => clone(base),
+    saveData: () => undefined,
+    loadFromLocalStorage: () => undefined,
+    setupBeforeUnload: () => undefined,
+    dispatchEvent(event) { events.push(event); },
+    addEventListener(type, handler) {
+      if (!listeners.has(type)) listeners.set(type, []);
+      listeners.get(type).push(handler);
+    },
+    document: { visibilityState: 'visible' }
+  };
+  context.globalThis = context;
+  vm.createContext(context);
+  vm.runInContext(source, context);
+  return { context, localStorage, sessionStorage, events, listeners };
+}
+
+test('migrates the legacy autosave into the versioned adapter store', () => {
+  const legacy = {
+    schemaVersion: 2,
+    accounts: [{ id: 'acc1', name: 'Principal', balance: 1500 }],
+    cards: [],
+    transactions: [],
+    cardBillings: [],
+    settings: { schemaVersion: 2, theme: 'dark' }
+  };
+  const { context, localStorage } = createContext({
+    local: { planner_autosave: JSON.stringify(legacy) }
+  });
+
+  assert.deepEqual(context.getData(), legacy);
+  const envelope = JSON.parse(localStorage.getItem('plannke:data:v1'));
+  assert.equal(envelope.version, 1);
+  assert.deepEqual(envelope.data, legacy);
+  assert.equal(context.PlannkeStorage.getStatus().source, 'legacy-localStorage');
+});
+
+test('uses an in-memory clone and persists every save through the adapter', async () => {
+  const { context, localStorage, events } = createContext();
+  const data = context.getData();
+  data.accounts.push({ id: 'acc1', name: 'Conta', balance: 100 });
+  const saved = context.saveData(data);
+
+  assert.equal(saved.accounts.length, 1);
+  saved.accounts[0].balance = 999;
+  assert.equal(context.getData().accounts[0].balance, 100, 'callers must not mutate the runtime cache by reference');
+
+  const envelope = JSON.parse(localStorage.getItem('plannke:data:v1'));
+  assert.equal(envelope.data.accounts[0].balance, 100);
+  assert.equal(JSON.parse(localStorage.getItem('planner_autosave')).accounts[0].balance, 100);
+  await context.PlannkeStorage.flush();
+  assert.ok(events.some(event => event.type === 'plannke:storage-status' && event.detail.state === 'saving'));
+  assert.ok(events.some(event => event.type === 'plannke:storage-status' && event.detail.state === 'saved'));
+});
+
+test('creates a recovery point before bulk imports or destructive changes', () => {
+  const first = {
+    schemaVersion: 2,
+    accounts: [{ id: 'acc1', name: 'Conta', balance: 100 }],
+    cards: [],
+    transactions: [{ id: 't0', type: 'expense', description: 'Base', amount: 10, date: '2026-08-01', accountId: 'acc1' }],
+    cardBillings: [],
+    settings: { schemaVersion: 2, theme: 'dark' }
+  };
+  const { context } = createContext({ local: { planner_autosave: JSON.stringify(first) } });
+  const bulk = context.getData();
+  for (let i = 1; i <= 5; i += 1) {
+    bulk.transactions.push({ id: `t${i}`, type: 'expense', description: `Import ${i}`, amount: i, date: '2026-08-02', accountId: 'acc1' });
+  }
+  context.saveData(bulk);
+
+  const snapshots = context.PlannkeStorage.listSnapshots();
+  assert.equal(snapshots[0].reason, 'before-bulk-change');
+});
+
+test('restores a snapshot and keeps a safety snapshot of the state being replaced', () => {
+  const initial = {
+    schemaVersion: 2,
+    accounts: [{ id: 'acc1', name: 'Conta', balance: 100 }],
+    cards: [],
+    transactions: [],
+    cardBillings: [],
+    settings: { schemaVersion: 2, theme: 'dark' }
+  };
+  const { context } = createContext({ local: { planner_autosave: JSON.stringify(initial) } });
+  const snapshot = context.PlannkeStorage.createSnapshot('manual-test');
+  const changed = context.getData();
+  changed.accounts[0].balance = 450;
+  context.saveData(changed);
+  assert.equal(context.getData().accounts[0].balance, 450);
+
+  const result = context.PlannkeStorage.restoreSnapshot(snapshot.id);
+  assert.equal(result.data.accounts[0].balance, 100);
+  assert.ok(result.safetySnapshotId);
+  assert.equal(context.PlannkeStorage.listSnapshots()[0].reason, 'before-restore');
+});
+
+test('replaces legacy boot hooks so browser exit no longer depends on an Excel backup prompt', () => {
+  const { context, listeners } = createContext();
+  assert.equal(typeof context.loadFromLocalStorage, 'function');
+  assert.equal(typeof context.setupBeforeUnload, 'function');
+  context.setupBeforeUnload();
+  assert.equal(listeners.has('beforeunload'), false);
+  assert.equal(listeners.has('pagehide'), true);
+});
