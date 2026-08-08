@@ -40,11 +40,19 @@
             subtitle: 'Leve seus dados com você e importe extratos sem conectar seu banco.'
         }
     };
-    const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css'];
+    const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css'];
+    const PLANNING_TABS = [
+        { id: 'overview', label: 'Visão geral', icon: 'ph-squares-four' },
+        { id: 'recurring', label: 'Compromissos', icon: 'ph-repeat' },
+        { id: 'goals', label: 'Objetivos', icon: 'ph-target' },
+        { id: 'household', label: 'Casa e regras', icon: 'ph-users-three' }
+    ];
 
     let initialized = false;
     let pageObserver = null;
     let dashboardObserver = null;
+    let planningObserver = null;
+    let activePlanningTab = 'overview';
 
     function make(tag, className, text) {
         const node = document.createElement(tag);
@@ -197,6 +205,7 @@
             button.classList.toggle('active', active);
             button.setAttribute('aria-current', active ? 'page' : 'false');
         });
+        if (target === 'projecao') decoratePlanning();
     }
 
     function arrangeDashboardPrimary(dashboard) {
@@ -236,10 +245,195 @@
         if (balanceLabel) balanceLabel.textContent = 'Saldo nas contas';
     }
 
+    function money(value) {
+        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' })
+            .format(Number(value || 0));
+    }
+
+    function planningSnapshot() {
+        try {
+            const data = typeof root.getData === 'function' ? root.getData() : null;
+            if (!data) return null;
+            const planning = data.planning && typeof data.planning === 'object' ? data.planning : {};
+            const recurring = (Array.isArray(planning.recurringRules) ? planning.recurringRules : [])
+                .filter(rule => rule.active !== false);
+            const goals = Array.isArray(planning.goals) ? planning.goals : [];
+            const reserves = Array.isArray(planning.reserves) ? planning.reserves : [];
+            const rules = Array.isArray(planning.categoryRules) ? planning.categoryRules : [];
+            const members = Array.isArray(data.settings?.household?.members) ? data.settings.household.members : [];
+            const recurringExpense = recurring.filter(rule => rule.type === 'expense')
+                .reduce((sum, rule) => sum + Number(rule.amount || 0), 0);
+            const recurringIncome = recurring.filter(rule => rule.type === 'income')
+                .reduce((sum, rule) => sum + Number(rule.amount || 0), 0);
+            const totalReserved = reserves.reduce((sum, reserve) => sum + Number(reserve.amount || 0), 0)
+                + goals.reduce((sum, goal) => sum + Number(goal.currentAmount || 0), 0);
+
+            const core = root.PlannkeCore;
+            const now = new Date();
+            const fallbackToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const today = core?.localDateString ? core.localDateString() : fallbackToday;
+            const end = core?.addDays ? core.addDays(today, 45) : today;
+            const calendar = core?.buildFinancialCalendar ? core.buildFinancialCalendar(data, today, end) : [];
+            const upcomingExpenses = calendar.filter(item => item.type === 'expense');
+            const upcomingExpenseTotal = upcomingExpenses.reduce((sum, item) => sum + Number(item.amount || 0), 0);
+
+            return {
+                totalReserved,
+                recurringExpense,
+                recurringIncome,
+                upcomingExpenseTotal,
+                upcomingExpenseCount: upcomingExpenses.length,
+                recurringCount: recurring.length,
+                objectiveCount: goals.length + reserves.length,
+                householdCount: members.length + rules.length
+            };
+        } catch (error) {
+            console.warn('Resumo de planejamento indisponível:', error);
+            return null;
+        }
+    }
+
+    function planningMetric(label, value, note, iconName) {
+        const card = make('article', 'revamp-planning-metric');
+        const head = make('div', 'revamp-planning-metric-head');
+        const iconWrap = make('span', 'revamp-planning-metric-icon');
+        iconWrap.appendChild(makeIcon(iconName));
+        head.append(make('span', '', label), iconWrap);
+        const copy = make('div');
+        copy.append(make('strong', '', value), make('small', '', note));
+        card.append(head, copy);
+        return card;
+    }
+
+    function planningTabButton(tab, count) {
+        const button = make('button', 'revamp-planning-tab');
+        button.type = 'button';
+        button.role = 'tab';
+        button.dataset.planningTab = tab.id;
+        button.setAttribute('aria-selected', tab.id === activePlanningTab ? 'true' : 'false');
+        button.append(makeIcon(tab.icon), make('span', '', tab.label));
+        if (Number.isFinite(count)) button.appendChild(make('span', 'revamp-planning-tab-count', count));
+        button.addEventListener('click', () => applyPlanningTab(document.getElementById('projecao-view'), tab.id));
+        return button;
+    }
+
+    function ensurePlanningControls(view, hub) {
+        let controls = document.getElementById('revamp-planning-overview');
+        if (!controls) {
+            controls = make('section', 'revamp-planning-overview');
+            controls.id = 'revamp-planning-overview';
+            const summary = make('div', 'revamp-planning-summary');
+            summary.id = 'revamp-planning-summary';
+            const tabs = make('div', 'revamp-planning-tabs');
+            tabs.id = 'revamp-planning-tabs';
+            tabs.role = 'tablist';
+            tabs.setAttribute('aria-label', 'Áreas do planejamento');
+            controls.append(summary, tabs);
+            view.insertBefore(controls, hub);
+        }
+
+        const snapshot = planningSnapshot();
+        const summary = document.getElementById('revamp-planning-summary');
+        if (summary) {
+            summary.replaceChildren();
+            const state = snapshot || {
+                totalReserved: 0,
+                recurringExpense: 0,
+                recurringIncome: 0,
+                upcomingExpenseTotal: 0,
+                upcomingExpenseCount: 0
+            };
+            summary.append(
+                planningMetric('Reservado', money(state.totalReserved), 'metas + reservas separadas', 'ph-vault'),
+                planningMetric('Fixos por mês', money(state.recurringExpense), `${snapshot?.recurringCount || 0} recorrência${snapshot?.recurringCount === 1 ? '' : 's'} cadastrada${snapshot?.recurringCount === 1 ? '' : 's'}`, 'ph-repeat'),
+                planningMetric('Renda recorrente', money(state.recurringIncome), 'base mensal cadastrada', 'ph-trend-up'),
+                planningMetric('Próximos 45 dias', money(state.upcomingExpenseTotal), `${state.upcomingExpenseCount} saída${state.upcomingExpenseCount === 1 ? '' : 's'} prevista${state.upcomingExpenseCount === 1 ? '' : 's'}`, 'ph-calendar-dots')
+            );
+        }
+
+        const tabs = document.getElementById('revamp-planning-tabs');
+        if (tabs) {
+            tabs.replaceChildren();
+            const counts = {
+                overview: null,
+                recurring: snapshot?.recurringCount || 0,
+                goals: snapshot?.objectiveCount || 0,
+                household: snapshot?.householdCount || 0
+            };
+            PLANNING_TABS.forEach(tab => tabs.appendChild(planningTabButton(tab, counts[tab.id])));
+        }
+    }
+
+    function markPlanningPanel(hub, formSelector, section, className) {
+        const form = hub.querySelector(formSelector);
+        const card = form?.closest('.card');
+        const wrapper = card?.parentElement;
+        const panel = wrapper?.classList?.contains('col-12') ? wrapper : card;
+        if (!panel) return null;
+        panel.dataset.revampPlanningSection = section;
+        if (className) panel.classList.add(className);
+        return panel;
+    }
+
+    function classifyPlanningPanels(view, hub) {
+        const grid = hub.querySelector(':scope > .row');
+        if (grid) grid.classList.add('revamp-planning-grid');
+
+        markPlanningPanel(hub, '#product-recurring-form', 'recurring', 'revamp-planning-panel-recurring');
+        markPlanningPanel(hub, '#product-goal-form', 'goals', 'revamp-planning-panel-goals');
+        markPlanningPanel(hub, '#product-reserve-form', 'goals', 'revamp-planning-panel-goals');
+        markPlanningPanel(hub, '#product-category-rule-form', 'household', 'revamp-planning-panel-household');
+        markPlanningPanel(hub, '#product-member-form', 'household', 'revamp-planning-panel-household');
+
+        const calendarCard = hub.querySelector('.product-calendar')?.closest('.card');
+        if (calendarCard) {
+            calendarCard.dataset.revampPlanningSection = 'overview';
+            calendarCard.classList.add('revamp-planning-calendar');
+        }
+
+        const directChildren = [...view.children];
+        const projectionIntro = directChildren.find(node => node !== hub && node.classList?.contains('card') && node.classList.contains('bg-glass'));
+        if (projectionIntro) projectionIntro.classList.add('revamp-projection-intro');
+        const projectionRow = directChildren.find(node => node.classList?.contains('row') && node.querySelector?.('#projectionChart'));
+        if (projectionRow) {
+            projectionRow.dataset.revampPlanningSection = 'overview';
+            projectionRow.classList.add('revamp-projection-row');
+        }
+    }
+
+    function applyPlanningTab(view, tab) {
+        if (!view) return;
+        const valid = PLANNING_TABS.some(item => item.id === tab) ? tab : 'overview';
+        activePlanningTab = valid;
+        view.dataset.planningTab = valid;
+        const wideLayout = typeof root.matchMedia === 'function' ? root.matchMedia('(min-width: 768px)').matches : true;
+
+        view.querySelectorAll('.revamp-planning-tab').forEach(button => {
+            button.setAttribute('aria-selected', button.dataset.planningTab === valid ? 'true' : 'false');
+        });
+        view.querySelectorAll('[data-revamp-planning-section]').forEach(panel => {
+            panel.hidden = wideLayout ? panel.dataset.revampPlanningSection !== valid : false;
+        });
+
+        const grid = view.querySelector('#product-planning-hub > .revamp-planning-grid');
+        if (grid) grid.hidden = wideLayout ? valid === 'overview' : false;
+    }
+
+    function decoratePlanning() {
+        const view = document.getElementById('projecao-view');
+        const hub = document.getElementById('product-planning-hub');
+        if (!view) return;
+        view.classList.add('revamp-planning');
+        if (!hub) return;
+        ensurePlanningControls(view, hub);
+        classifyPlanningPanels(view, hub);
+        applyPlanningTab(view, activePlanningTab);
+    }
+
     function decorateViews() {
         decorateDashboard();
         document.getElementById('movimentacao-view')?.classList.add('revamp-movements');
-        document.getElementById('projecao-view')?.classList.add('revamp-planning');
+        decoratePlanning();
         document.getElementById('accounts-view')?.classList.add('revamp-accounts');
         document.getElementById('backup-view')?.classList.add('revamp-backup');
     }
@@ -257,6 +451,13 @@
             dashboardObserver = new MutationObserver(decorateDashboard);
             dashboardObserver.observe(dashboard, { childList: true });
         }
+
+        const planningHub = document.getElementById('product-planning-hub');
+        if (planningHub) {
+            if (planningObserver) planningObserver.disconnect();
+            planningObserver = new MutationObserver(() => window.setTimeout(decoratePlanning, 0));
+            planningObserver.observe(planningHub, { childList: true, subtree: true });
+        }
     }
 
     function init() {
@@ -268,9 +469,13 @@
         syncPage();
         observeViews();
         root.addEventListener?.('plannke:data-changed', () => window.setTimeout(decorateViews, 0));
+        root.addEventListener?.('resize', () => window.setTimeout(() => {
+            const planning = document.getElementById('projecao-view');
+            if (planning) applyPlanningTab(planning, activePlanningTab);
+        }, 0));
     }
 
-    root.PlannkeRevamp = { init, navigate, syncPage, pages: PAGES };
+    root.PlannkeRevamp = { init, navigate, syncPage, applyPlanningTab, pages: PAGES, planningTabs: PLANNING_TABS };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
 })(typeof globalThis !== 'undefined' ? globalThis : window);
