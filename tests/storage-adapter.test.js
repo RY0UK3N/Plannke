@@ -54,6 +54,7 @@ function createContext({ local = {}, session = {}, fallback = null } = {}) {
     saveData: () => undefined,
     loadFromLocalStorage: () => undefined,
     setupBeforeUnload: () => undefined,
+    checkImportPrompt: () => { throw new Error('legacy prompt should have been retired'); },
     dispatchEvent(event) { events.push(event); },
     addEventListener(type, handler) {
       if (!listeners.has(type)) listeners.set(type, []);
@@ -134,6 +135,33 @@ test('creates a recovery point before bulk imports or destructive changes', asyn
   assert.equal(snapshots[0].reason, 'before-bulk-change');
 });
 
+test('planning-only data can be snapshotted and destructive planning changes are protected', async () => {
+  const initial = {
+    schemaVersion: 2,
+    accounts: [],
+    cards: [],
+    transactions: [],
+    cardBillings: [],
+    planning: {
+      recurringRules: [{ id: 'r1', type: 'expense', amount: 90, active: true }],
+      goals: [{ id: 'g1', name: 'Reserva', currentAmount: 100 }],
+      reserves: [],
+      categoryRules: []
+    },
+    settings: { schemaVersion: 2, theme: 'dark', household: { members: [] }, sharedTransactionMeta: {} }
+  };
+  const { context } = createContext({ local: { planner_autosave: JSON.stringify(initial) } });
+  await context.PlannkeStorage.ready;
+
+  const manual = context.PlannkeStorage.createSnapshot('manual-test');
+  assert.ok(manual, 'planning-only state should qualify for recovery');
+
+  const changed = context.getData();
+  changed.planning.goals = [];
+  context.saveData(changed);
+  assert.equal(context.PlannkeStorage.listSnapshots()[0].reason, 'before-destructive-change');
+});
+
 test('restores a snapshot and keeps a safety snapshot of the state being replaced', async () => {
   const initial = {
     schemaVersion: 2,
@@ -162,6 +190,8 @@ test('replaces legacy boot hooks so browser exit no longer depends on an Excel b
   await context.PlannkeStorage.ready;
   assert.equal(typeof context.loadFromLocalStorage, 'function');
   assert.equal(typeof context.setupBeforeUnload, 'function');
+  assert.equal(typeof context.checkImportPrompt, 'function');
+  assert.doesNotThrow(() => context.checkImportPrompt());
   context.setupBeforeUnload();
   assert.equal(listeners.has('beforeunload'), false);
   assert.equal(listeners.has('pagehide'), true);
