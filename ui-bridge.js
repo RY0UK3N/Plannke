@@ -2,7 +2,45 @@
     if (typeof document !== 'undefined' && document.currentScript) {
         document.currentScript.dataset.plannkeProduct = 'static-shell';
     }
+
+    function loadStorageAdapter() {
+        if (!root || typeof document === 'undefined' || root.PlannkeStorage) return Promise.resolve(root?.PlannkeStorage || null);
+        const existing = document.querySelector('script[data-plannke-storage-adapter]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeStorage) { resolve(root.PlannkeStorage); return; }
+                existing.addEventListener('load', () => resolve(root.PlannkeStorage || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar StorageAdapter.')), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'storage-adapter.js';
+            script.async = false;
+            script.dataset.plannkeStorageAdapter = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeStorage || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar StorageAdapter.')), { once: true });
+            document.head.appendChild(script);
+        });
+    }
+
+    const legacyInitApp = root?.initApp;
+    const storageReady = loadStorageAdapter();
+    if (root && typeof legacyInitApp === 'function') {
+        root.initApp = function (...args) {
+            return storageReady
+                .then(() => legacyInitApp.apply(this, args))
+                .catch(error => {
+                    console.error('StorageAdapter indisponível; iniciando fallback legado.', error);
+                    return legacyInitApp.apply(this, args);
+                });
+        };
+    }
+
     const api = factory(root);
+    api.storageReady = storageReady;
+    api.loadStorageAdapter = loadStorageAdapter;
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeUIBridge = api;
     if (typeof document !== 'undefined') {
