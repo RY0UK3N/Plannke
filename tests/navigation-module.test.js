@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const dataActions = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
@@ -38,6 +39,18 @@ test('navigation module loads before the bridge starts the application', () => {
   assert.ok(appAt >= 0 && navigationAt > appAt && bridgeAt > navigationAt);
   assert.match(sw, /'\.\/app-navigation\.js'/);
   assert.match(pkg, /node --check app-navigation\.js/);
+});
+
+test('canonical data actions supersede legacy app actions before interaction', () => {
+  assert.match(navigation, /function loadDataActions\(/);
+  assert.match(navigation, /script\.src = 'app-data\.js'/);
+  assert.match(navigation, /root\.PlannkeDataReady = dataActionsReady/);
+  assert.match(navigation, /\['confirmClearData', 'exportToExcel'\]/);
+  assert.match(navigation, /dataActionsReady[\s\S]*api\?\.\[action\]/);
+  assert.match(dataActions, /root\.confirmClearData = confirmClearData/);
+  assert.match(dataActions, /root\.exportToExcel = exportToExcel/);
+  assert.match(sw, /'\.\/app-data\.js'/);
+  assert.match(pkg, /node --check app-data\.js/);
 });
 
 test('canonical navigation exposes every primary workspace target', () => {
