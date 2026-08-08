@@ -386,9 +386,6 @@
     // in-memory cache. ui-bridge waits for `ready` before running initApp().
     root.getData = function () { return coordinator.getData(); };
     root.saveData = function (data) { return coordinator.saveData(data); };
-    root.loadFromLocalStorage = function () { return coordinator.initialize(); };
-    root.setupBeforeUnload = function () { coordinator.installLifecycleHandlers(); };
-    root.checkImportPrompt = function () {};
 
     coordinator.installLifecycleHandlers();
     const ready = coordinator.initialize();

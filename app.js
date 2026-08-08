@@ -1,11 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => { initApp(); });
-
 let _currentMonth = null;
 let _summaryChart = null;
 let _fluxoChart = null;
 let _fluxoMode = 'sankey';
 let _movViewMode = 'list'; // 'list', 'sankey', 'sunburst'
-let _backupDone = false;
 
 /* ============================================================
    INIT
@@ -15,9 +12,6 @@ function initApp() {
     setupModalEvents();
     setupForms();
     setupCurrencyInput();
-    loadFromLocalStorage();
-    checkImportPrompt();
-    setupBeforeUnload();
     setupKeyboardShortcuts();
     applyTheme(getSettings().theme || 'dark');
     renderAll();
@@ -94,62 +88,6 @@ function setupKeyboardShortcuts() {
                 break;
         }
     });
-}
-
-/* ============================================================
-   PERSISTÊNCIA — localStorage (autosave) + prompts
-   ============================================================ */
-const LS_KEY = 'planner_autosave';
-
-function loadFromLocalStorage() {
-    try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw && !sessionStorage.getItem('planner_session_cache')) {
-            sessionStorage.setItem('planner_session_cache', raw);
-        }
-    } catch(e) { console.warn('Erro ao carregar autosave:', e); }
-}
-
-// Espelha no localStorage sempre que saveData é chamado
-(function patchSaveData() {
-    const orig = window.saveData;
-    if (!orig) { setTimeout(patchSaveData, 50); return; }
-    window.saveData = function(data) {
-        orig(data);
-        try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e) {}
-    };
-})();
-
-function checkImportPrompt() {
-    // Sempre exibe o welcome modal no início da sessão (cada recarregamento)
-    // conforme solicitado pelo usuário.
-    setTimeout(() => {
-        const modalEl = document.getElementById('welcomeModal');
-        if (modalEl) {
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-        }
-    }, 1000);
-}
-
-function setupBeforeUnload() {
-    window.addEventListener('beforeunload', e => {
-        const data = getData();
-        // Se não houver dados, não precisa de aviso
-        if (!data.transactions.length && !data.accounts.length && !data.cards.length) return;
-        
-        // Se já fez backup nesta sessão, pode sair tranquilo
-        if (_backupDone) return;
-
-        // Salva no localStorage como garantia extra
-        try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(ex) {}
-        
-        e.preventDefault();
-        e.returnValue = 'Você ainda não salvou seu Memory Card (.xlsx). Deseja sair mesmo assim?';
-    });
-}
-
-function handleExitClick() {
-    // Função removida a pedido do usuário
 }
 
 /* ============================================================
