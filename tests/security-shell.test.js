@@ -49,6 +49,8 @@ test('StorageAdapter is ready before the legacy initApp body is allowed to run',
   assert.match(storageAdapter, /const ready = coordinator\.initialize\(\)/);
   assert.match(storageAdapter, /root\.getData = function/);
   assert.match(storageAdapter, /root\.saveData = function/);
+  assert.match(storageAdapter, /root\.checkImportPrompt = function \(\) \{\}/);
+  assert.match(storageAdapter, /function recoveryFootprint\(/);
   assert.match(storageAdapter, /plannke:storage-status/);
 });
 
@@ -69,10 +71,13 @@ test('canonical desktop styles are part of the first paint and legacy chrome is 
   assert.match(storageUi, /body > \$\{selector\}/);
   assert.match(storageUi, /node => node\.remove\(\)/);
   assert.match(storageUi, /plannkeCanonicalReady/);
+  assert.match(bridge, /function canonicalStylesPresent\(/);
+  assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-storage-ui\]'\)/);
+  assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-revamp\]'\)/);
+  assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-desktop-style\]'\)/);
 });
 
 test('storage status and recovery UI are local, safe and retire Memory Card as startup storage', () => {
-  assert.match(bridge, /stylesheet\.href = 'storage-ui\.css'/);
   assert.match(bridge, /script\.src = 'storage-ui\.js'/);
   assert.match(storageUi, /Salvando…/);
   assert.match(storageUi, /Salvo localmente/);
@@ -101,8 +106,6 @@ test('storage UI observer cannot recursively rewrite its own status DOM', () => 
 });
 
 test('revamp and final desktop assets are loaded from trusted local scripts', () => {
-  assert.match(bridge, /stylesheet\.href = 'revamp\.css'/);
-  assert.match(bridge, /desktopStyle\.href = 'revamp-desktop\.css'/);
   assert.match(bridge, /script\.src = 'revamp\.js'/);
   assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
   assert.match(bridge, /loadRevampAssets\(\)/);
@@ -177,7 +180,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v23'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v24'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
