@@ -9,6 +9,7 @@ const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
 const revamp = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
 const desktop = fs.readFileSync(path.join(root, 'revamp-desktop.js'), 'utf8');
 const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
@@ -31,6 +32,18 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
+});
+
+test('StorageAdapter is loaded before the legacy initApp body is allowed to run', () => {
+  assert.match(bridge, /script\.src = 'storage-adapter\.js'/);
+  assert.match(bridge, /const legacyInitApp = root\?\.initApp/);
+  assert.match(bridge, /const storageReady = loadStorageAdapter\(\)/);
+  assert.match(bridge, /storageReady[\s\S]*legacyInitApp\.apply/);
+  assert.match(storageAdapter, /class LocalStorageAdapter/);
+  assert.match(storageAdapter, /class StorageCoordinator/);
+  assert.match(storageAdapter, /root\.getData = function/);
+  assert.match(storageAdapter, /root\.saveData = function/);
+  assert.match(storageAdapter, /plannke:storage-status/);
 });
 
 test('revamp and final desktop assets are loaded from trusted local scripts', () => {
@@ -78,8 +91,9 @@ test('third-party runtime dependencies are vendored and pinned', () => {
   assert.doesNotMatch(index, /fonts\.googleapis\.com/);
 });
 
-test('one-time vendoring automation is not shipped with the application branch', () => {
+test('one-time repository automations are not shipped with the application branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/vendor-runtime-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github/workflows/apply-storage-adapter-once.yml')), false);
 });
 
 test('application shell uses local scripts and scopes inline style compatibility', () => {
@@ -109,12 +123,12 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v18'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v19'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
   [
-    'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'safe-renderers.js',
+    'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
     'revamp-accounts.css', 'revamp-forms.css', 'revamp-states.css',
