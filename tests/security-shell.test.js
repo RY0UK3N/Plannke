@@ -101,7 +101,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v16'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v17'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
