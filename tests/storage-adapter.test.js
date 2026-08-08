@@ -52,9 +52,6 @@ function createContext({ local = {}, session = {}, fallback = null } = {}) {
     normalizeData: value => clone(value),
     getData: () => clone(base),
     saveData: () => undefined,
-    loadFromLocalStorage: () => undefined,
-    setupBeforeUnload: () => undefined,
-    checkImportPrompt: () => { throw new Error('legacy prompt should have been retired'); },
     dispatchEvent(event) { events.push(event); },
     addEventListener(type, handler) {
       if (!listeners.has(type)) listeners.set(type, []);
@@ -185,14 +182,13 @@ test('restores a snapshot and keeps a safety snapshot of the state being replace
   assert.equal(context.PlannkeStorage.listSnapshots()[0].reason, 'before-restore');
 });
 
-test('replaces legacy boot hooks so browser exit no longer depends on an Excel backup prompt', async () => {
+test('retired browser boot hooks are not recreated by StorageAdapter', async () => {
   const { context, listeners, documentListeners } = createContext();
   await context.PlannkeStorage.ready;
-  assert.equal(typeof context.loadFromLocalStorage, 'function');
-  assert.equal(typeof context.setupBeforeUnload, 'function');
-  assert.equal(typeof context.checkImportPrompt, 'function');
-  assert.doesNotThrow(() => context.checkImportPrompt());
-  context.setupBeforeUnload();
+
+  assert.equal(context.loadFromLocalStorage, undefined);
+  assert.equal(context.setupBeforeUnload, undefined);
+  assert.equal(context.checkImportPrompt, undefined);
   assert.equal(listeners.has('beforeunload'), false);
   assert.equal(listeners.has('pagehide'), true);
   assert.equal(documentListeners.has('visibilitychange'), true);
