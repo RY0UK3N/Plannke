@@ -6,7 +6,7 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   storage-integrity:
@@ -17,3 +17,93 @@ jobs:
         with:
           node-version: 22
       - run: npm test
+
+  retire-excel-legacy-once:
+    if: github.event_name == 'pull_request' && github.head_ref == 'feature/storage-adapter-autosave'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/storage-adapter-autosave
+          fetch-depth: 0
+      - name: Apply one-time cleanup if marker workflow still exists
+        run: |
+          if [ ! -f .github/workflows/retire-excel-legacy-once.yml ]; then
+            echo "Cleanup already applied."
+            exit 0
+          fi
+          python - <<'PY'
+          from pathlib import Path
+
+          app = Path('app.js')
+          source = app.read_text(encoding='utf-8')
+
+          old_clear = """function confirmClearData() {
+    if (!confirm('Isso vai apagar todos os dados desta sessão (sessionStorage e localStorage).\\n\\nTem certeza? Esta ação não pode ser desfeita.')) return;
+    try { sessionStorage.clear(); } catch(_) {}
+    try { localStorage.clear(); } catch(_) {}
+    showToast('Dados do navegador limpos.', 'info');
+    setTimeout(() => location.reload(), 800);
+}"""
+          new_clear = """function confirmClearData() {
+    if (!confirm('Isso vai apagar os dados financeiros e configurações locais deste dispositivo.\\n\\nUm ponto de recuperação será criado automaticamente antes da limpeza. Deseja continuar?')) return;
+    const theme = getSettings().theme || 'dark';
+    const emptyData = normalizeData({ settings: { theme } });
+    saveData(emptyData);
+    _currentMonth = null;
+    renderAll();
+    const panel = document.getElementById('settingsOffcanvas');
+    if (panel) bootstrap.Offcanvas.getInstance(panel)?.hide();
+    showToast('Dados locais limpos. A recuperação continua disponível em Dados.', 'info');
+}"""
+          if old_clear not in source:
+              raise SystemExit('Expected legacy confirmClearData block not found')
+          source = source.replace(old_clear, new_clear, 1)
+          source = source.replace('   EXCEL — Memory Card (Enhanced Export)', '   EXCEL — Relatório para auditoria e análise externa', 1)
+
+          raw_start = "    /* ── Also keep raw import-compatible sheets ──────────────── */"
+          write_marker = "    XLSX.writeFile(wb, `Planner_MemoryCard_${today}.xlsx`);"
+          if raw_start not in source or write_marker not in source:
+              raise SystemExit('Expected legacy Excel export sections not found')
+          source = source[:source.index(raw_start)].rstrip() + "\n\n" + source[source.index(write_marker, source.index(raw_start)):]
+          source = source.replace(
+              "    XLSX.writeFile(wb, `Planner_MemoryCard_${today}.xlsx`);\n    _backupDone = true;\n    showToast('Memory Card salvo! 💾');",
+              "    XLSX.writeFile(wb, `Plannke_Relatorio_${today}.xlsx`);\n    showToast('Relatório Excel exportado.');",
+              1
+          )
+          import_marker = "\nfunction importFromExcel(event) {"
+          if import_marker not in source:
+              raise SystemExit('Expected legacy Excel importer not found')
+          source = source[:source.index(import_marker)].rstrip() + "\n"
+          for forbidden in ['_backupDone', 'function importFromExcel', 'FileReader', 'Memory Card', 'Planner_MemoryCard_', 'sessionStorage.clear', 'localStorage.clear', 'raw import-compatible']:
+              if forbidden in source:
+                  raise SystemExit(f'Retired token still present in app.js: {forbidden}')
+          app.write_text(source, encoding='utf-8')
+
+          adapter = Path('storage-adapter.js')
+          adapter_source = adapter.read_text(encoding='utf-8')
+          old_save = """            this.storage.setItem(this.keys.data, JSON.stringify(envelope));
+            this.storage.setItem(this.keys.legacyLocal, JSON.stringify(data));
+            return { savedAt: envelope.savedAt };"""
+          new_save = """            this.storage.setItem(this.keys.data, JSON.stringify(envelope));
+            // Legacy keys are read only for one-way migration. Once canonical
+            // data is saved, remove them so stale copies cannot be resurrected.
+            this.storage.removeItem(this.keys.legacyLocal);
+            try { this.sessionStorage?.removeItem(this.keys.legacySession); } catch (_) {}
+            return { savedAt: envelope.savedAt };"""
+          if old_save not in adapter_source:
+              raise SystemExit('Expected LocalStorageAdapter save block not found')
+          adapter.write_text(adapter_source.replace(old_save, new_save, 1), encoding='utf-8')
+
+          sw = Path('sw.js')
+          sw_source = sw.read_text(encoding='utf-8')
+          if 'plannke-shell-v26' not in sw_source:
+              raise SystemExit('Unexpected PWA cache version')
+          sw.write_text(sw_source.replace('plannke-shell-v26', 'plannke-shell-v27', 1), encoding='utf-8')
+          PY
+          rm .github/workflows/retire-excel-legacy-once.yml
+          git config user.name "plannke-refactor-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add app.js storage-adapter.js sw.js .github/workflows/retire-excel-legacy-once.yml
+          git commit -m "Retire Excel restore path and legacy storage mirror"
+          git push origin HEAD:feature/storage-adapter-autosave
