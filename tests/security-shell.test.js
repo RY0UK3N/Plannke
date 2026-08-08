@@ -10,6 +10,8 @@ const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 const revamp = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
+const desktop = fs.readFileSync(path.join(root, 'revamp-desktop.js'), 'utf8');
+const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
 const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
 const formsCss = fs.readFileSync(path.join(root, 'revamp-forms.css'), 'utf8');
 
@@ -31,9 +33,11 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
 });
 
-test('revamp assets are loaded from trusted local scripts', () => {
+test('revamp and final desktop assets are loaded from trusted local scripts', () => {
   assert.match(bridge, /stylesheet\.href = 'revamp\.css'/);
+  assert.match(bridge, /desktopStyle\.href = 'revamp-desktop\.css'/);
   assert.match(bridge, /script\.src = 'revamp\.js'/);
+  assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
   assert.match(bridge, /loadRevampAssets\(\)/);
   assert.match(revamp, /revamp-dashboard\.css/);
   assert.match(revamp, /revamp-movements\.css/);
@@ -41,6 +45,9 @@ test('revamp assets are loaded from trusted local scripts', () => {
   assert.match(revamp, /revamp-accounts\.css/);
   assert.match(accountsCss, /@import url\('\.\/revamp-forms\.css'\)/);
   assert.match(formsCss, /@import url\('\.\/revamp-states\.css'\)/);
+  assert.doesNotMatch(desktop, /\.innerHTML\s*=/);
+  assert.doesNotMatch(desktop, /\beval\s*\(/);
+  assert.match(desktopCss, /min-width: 1080px/);
 });
 
 test('third-party runtime dependencies are vendored and pinned', () => {
@@ -94,14 +101,15 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v15'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v16'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
   [
     'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'safe-renderers.js',
-    'revamp.js', 'revamp.css', 'revamp-dashboard.css', 'revamp-movements.css',
-    'revamp-planning.css', 'revamp-accounts.css', 'revamp-forms.css', 'revamp-states.css',
+    'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
+    'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
+    'revamp-accounts.css', 'revamp-forms.css', 'revamp-states.css',
     'vendor/bootstrap.min.css', 'vendor/bootstrap.bundle.min.js', 'vendor/phosphor-icons.css',
     'vendor/xlsx.full.min.js', 'vendor/chart.umd.min.js', 'vendor/echarts.min.js'
   ].forEach(asset => assert.ok(sw.includes(asset), `missing PWA asset: ${asset}`));
