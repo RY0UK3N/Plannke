@@ -40,8 +40,8 @@ body.plannke-revamp > .fab-btn {
 
 .plannke-revamp .revamp-topbar {
     display: flex !important;
-    min-height: 108px;
-    padding: 25px 38px 20px !important;
+    min-height: 104px;
+    padding: 24px 38px 18px !important;
 }
 
 .plannke-revamp .revamp-content > main.container-xl {
@@ -55,7 +55,7 @@ body.plannke-revamp > .fab-btn {
     max-width: 760px;
 }
 
-/* Keep text and monetary values in their own layout tracks. */
+/* -------------------- Dashboard: collision-proof content -------------------- */
 .plannke-revamp .revamp-smart-insights .product-insight-row,
 .plannke-revamp .revamp-smart-insights .product-insight-row > *,
 .plannke-revamp .qa-item > *,
@@ -76,6 +76,16 @@ body.plannke-revamp > .fab-btn {
     max-height: none !important;
     overflow: visible !important;
 }
+
+.plannke-revamp .revamp-dashboard-primary {
+    grid-template-columns: minmax(0, 1.65fr) minmax(360px, 0.95fr) !important;
+    gap: 16px !important;
+}
+
+.plannke-revamp .revamp-dashboard-analysis > .col-lg-5 { width: 46% !important; }
+.plannke-revamp .revamp-dashboard-analysis > .col-lg-3 { width: 24% !important; }
+.plannke-revamp .revamp-dashboard-analysis > .col-lg-4 { width: 30% !important; }
+.plannke-revamp .revamp-dashboard-activity > .col-12 { width: 50% !important; }
 
 .plannke-revamp .revamp-dashboard-accounts .qa-item {
     display: grid !important;
@@ -127,7 +137,6 @@ body.plannke-revamp > .fab-btn {
 }
 
 .plannke-revamp .revamp-dashboard-activity .tx-item-desc {
-    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -169,11 +178,9 @@ body.plannke-revamp > .fab-btn {
     padding: 12px 0 !important;
 }
 
-.plannke-revamp .revamp-dashboard-activity .upcoming-item > div:first-child {
-    overflow: hidden;
-}
-
+.plannke-revamp .revamp-dashboard-activity .upcoming-item > div:first-child,
 .plannke-revamp .revamp-dashboard-activity .upcoming-item > div:first-child > .small {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -184,154 +191,277 @@ body.plannke-revamp > .fab-btn {
     text-align: right;
 }
 
-/* Desktop workspace proportions. */
-.plannke-revamp .revamp-dashboard-primary {
-    grid-template-columns: minmax(0, 1.65fr) minmax(360px, 0.95fr) !important;
-    gap: 16px !important;
-}
-
-.plannke-revamp .revamp-dashboard-analysis > .col-lg-5 { width: 46% !important; }
-.plannke-revamp .revamp-dashboard-analysis > .col-lg-3 { width: 24% !important; }
-.plannke-revamp .revamp-dashboard-analysis > .col-lg-4 { width: 30% !important; }
-
-.plannke-revamp .revamp-dashboard-activity > .col-12 {
-    width: 50% !important;
-}
-
-/* Backup becomes a desktop security/export workspace, not the primary database. */
-.plannke-revamp .revamp-backup-status {
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
-    gap: 14px;
+/* Real empty states replace the legacy tx-item placeholder that occupied the icon column. */
+.plannke-revamp .revamp-dashboard-empty {
+    min-height: 118px;
+    width: 100%;
+    display: flex !important;
     align-items: center;
-    margin-bottom: 18px;
-    padding: 15px 17px;
-    border: 1px solid rgba(80, 199, 167, 0.2);
-    border-radius: var(--rv-radius-lg);
-    background: rgba(80, 199, 167, 0.065);
+    justify-content: center;
+    gap: 12px;
+    padding: 20px !important;
+    border: 1px dashed var(--rv-border-strong) !important;
+    border-radius: 14px;
+    color: var(--rv-muted);
+    background: var(--rv-bg-soft);
+    text-align: left;
 }
 
-.plannke-revamp .revamp-backup-status-icon {
-    width: 44px;
-    height: 44px;
+.plannke-revamp .revamp-dashboard-empty-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
     display: grid;
     place-items: center;
-    border-radius: 13px;
-    color: var(--rv-success);
-    background: rgba(80, 199, 167, 0.11);
-    font-size: 1.2rem;
+    border-radius: 11px;
+    color: var(--rv-accent);
+    background: var(--rv-accent-soft);
+    font-size: 1.05rem;
 }
 
-.plannke-revamp .revamp-backup-status strong {
+.plannke-revamp .revamp-dashboard-empty-copy {
+    min-width: 0;
+    max-width: 360px;
+}
+
+.plannke-revamp .revamp-dashboard-empty-copy strong,
+.plannke-revamp .revamp-dashboard-empty-copy span {
     display: block;
+}
+
+.plannke-revamp .revamp-dashboard-empty-copy strong {
     color: var(--rv-text);
-    font-size: 0.9rem;
+    font-size: 0.82rem;
+    line-height: 1.3;
 }
 
-.plannke-revamp .revamp-backup-status small {
-    display: block;
-    margin-top: 3px;
+.plannke-revamp .revamp-dashboard-empty-copy span {
+    margin-top: 4px;
     color: var(--rv-muted);
-    line-height: 1.4;
+    font-size: 0.72rem;
+    line-height: 1.45;
 }
 
-.plannke-revamp .revamp-backup-status-badge {
-    white-space: nowrap;
-    color: var(--rv-success);
-    font-size: 0.7rem;
-    font-weight: 750;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
+/* -------------------- Accounts and cards: one visual system -------------------- */
+.plannke-revamp .revamp-accounts-summary {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
-.plannke-revamp .revamp-backup > .row,
-.plannke-revamp .revamp-backup-grid {
+.plannke-revamp .revamp-accounts-overview {
     display: grid !important;
-    grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-    gap: 16px !important;
-    align-items: stretch;
-    margin: 0 !important;
 }
 
-.plannke-revamp .revamp-backup > .row > [class*="col-"],
-.plannke-revamp .revamp-backup-grid > [class*="col-"] {
-    width: 100% !important;
+.plannke-revamp .revamp-accounts #accounts-grid,
+.plannke-revamp .revamp-accounts #cards-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px !important;
+    margin-bottom: 30px !important;
+}
+
+.plannke-revamp .revamp-accounts #accounts-grid > [class*="col-"],
+.plannke-revamp .revamp-accounts #cards-grid > [class*="col-"] {
+    width: auto !important;
     max-width: none !important;
-    margin: 0 !important;
     padding: 0 !important;
 }
 
-.plannke-revamp .revamp-backup-primary,
-.plannke-revamp .revamp-bank-import-panel .card {
+.plannke-revamp .revamp-entity-unified {
+    position: relative;
+    overflow: hidden;
+    min-height: 360px !important;
     height: 100%;
-    min-height: 320px;
+    border-radius: 18px !important;
+    border-color: var(--rv-border) !important;
+    background:
+        radial-gradient(circle at 100% 0%, rgba(139, 124, 246, 0.08), transparent 38%),
+        var(--rv-panel) !important;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.07) !important;
 }
 
-.plannke-revamp .revamp-backup-primary .card-body,
-.plannke-revamp .revamp-bank-import-panel .card-body {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start !important;
-    justify-content: flex-start;
-    text-align: left !important;
-    padding: 28px !important;
+[data-bs-theme="light"] .plannke-revamp .revamp-entity-unified {
+    box-shadow: 0 12px 30px rgba(31, 38, 55, 0.06) !important;
 }
 
-.plannke-revamp .revamp-backup-primary .backup-icon-wrap {
-    margin-inline: 0 !important;
+.plannke-revamp .revamp-entity-unified::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 3px;
+    background: linear-gradient(90deg, var(--rv-accent), rgba(139, 124, 246, 0.18));
 }
 
-.plannke-revamp .revamp-backup-primary h4 {
-    font-size: 1.25rem;
+.plannke-revamp .revamp-credit-card::before {
+    background: linear-gradient(90deg, #70b7ff, #8b7cf6 62%, rgba(139, 124, 246, 0.12));
 }
 
-.plannke-revamp .revamp-backup-primary p {
-    max-width: 620px;
+.plannke-revamp .revamp-entity-unified .card-body {
+    min-height: 360px;
+    padding: 22px 22px 20px !important;
 }
 
-.plannke-revamp .revamp-backup-primary .d-flex.gap-3 {
-    justify-content: flex-start !important;
+.plannke-revamp .revamp-entity-header {
+    padding-right: 80px;
 }
 
-.plannke-revamp .revamp-backup-primary .mt-4.pt-3.border-top {
-    width: 100%;
+.plannke-revamp .revamp-credit-card .revamp-entity-header {
+    padding-right: 0;
+}
+
+.plannke-revamp .revamp-entity-actions {
+    position: absolute;
+    top: 22px;
+    right: 20px;
+    z-index: 2;
+    margin: 0 !important;
+}
+
+.plannke-revamp .revamp-account-card .fs-4 {
+    margin-top: 6px !important;
+    font-size: clamp(1.8rem, 2vw, 2.15rem) !important;
+    letter-spacing: -0.045em;
+}
+
+.plannke-revamp .revamp-account-meta {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 28px;
+    padding: 12px;
+    border: 1px solid var(--rv-border);
+    border-radius: 12px;
+    background: var(--rv-bg-soft);
+}
+
+.plannke-revamp .revamp-account-meta-item span,
+.plannke-revamp .revamp-account-meta-item strong {
+    display: block;
+    min-width: 0;
+}
+
+.plannke-revamp .revamp-account-meta-item span {
+    color: var(--rv-muted);
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.plannke-revamp .revamp-account-meta-item strong {
+    margin-top: 4px;
+    overflow: hidden;
+    color: var(--rv-text);
+    font-size: 0.78rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.plannke-revamp .revamp-entity-footer {
     margin-top: auto !important;
+    padding-top: 15px !important;
     border-color: var(--rv-border) !important;
 }
 
-.plannke-revamp .revamp-bank-import-panel .product-card-title {
-    width: 100%;
+.plannke-revamp .revamp-entity-footer .btn,
+.plannke-revamp .revamp-account-card .btn-outline-primary.rounded-pill {
+    min-height: 36px;
+    border-radius: 10px !important;
+    padding-inline: 14px !important;
 }
 
-.plannke-revamp .revamp-bank-import-panel #product-bank-result {
-    min-height: 20px;
+.plannke-revamp .revamp-credit-card .card-body > .d-flex.justify-content-between.mb-1 {
+    margin-top: 6px;
+    align-items: end;
 }
 
-/* Transaction editor: a desktop form, not a stacked mobile form in a larger window. */
+.plannke-revamp .revamp-credit-card .card-body > .d-flex.justify-content-between.mb-1 > span:first-child {
+    color: var(--rv-muted) !important;
+    font-size: 0.68rem !important;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.plannke-revamp .revamp-credit-card .card-body > .d-flex.justify-content-between.mb-1 > span:last-child {
+    font-size: 1.35rem !important;
+    letter-spacing: -0.035em;
+}
+
+.plannke-revamp .revamp-credit-card .progress {
+    height: 7px !important;
+    margin-top: 6px;
+}
+
+.plannke-revamp .revamp-card-history {
+    margin: 12px 0 0 !important;
+    padding: 10px 12px !important;
+    border: 0 !important;
+    border-radius: 12px;
+    background: var(--rv-bg-soft) !important;
+}
+
+.plannke-revamp .revamp-card-history .billing-row {
+    min-height: 30px;
+}
+
+.plannke-revamp .revamp-card-payment {
+    margin-top: 10px !important;
+    padding: 10px 12px !important;
+}
+
+/* -------------------- Transaction editor: compact desktop workflow -------------------- */
 .plannke-revamp #transactionModal .modal-dialog {
-    max-width: 900px !important;
+    max-width: 980px !important;
+}
+
+.plannke-revamp #transactionModal .modal-content {
+    max-height: calc(100vh - 32px);
+}
+
+.plannke-revamp #transactionModal .modal-header {
+    min-height: 58px !important;
+    padding: 13px 20px !important;
 }
 
 .plannke-revamp #transactionModal .modal-body {
-    padding: 24px 26px 26px !important;
+    padding: 17px 20px 19px !important;
+}
+
+.plannke-revamp #transactionModal #transactionForm > .mb-4:first-of-type {
+    display: grid;
+    grid-template-columns: 70px minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 12px !important;
+}
+
+.plannke-revamp #transactionModal #transactionForm > .mb-4:first-of-type > .form-label {
+    margin: 0 !important;
+}
+
+.plannke-revamp #transactionModal .tx-type-group {
+    gap: 7px !important;
 }
 
 .plannke-revamp #transactionModal .tx-type-group > .btn-type {
-    min-height: 64px !important;
+    min-height: 46px !important;
     flex-direction: row !important;
-    gap: 8px !important;
+    gap: 7px !important;
+    border-radius: 10px !important;
 }
 
 .plannke-revamp #transactionModal .tx-type-group > .btn-type i {
     margin: 0 !important;
+    font-size: 1rem !important;
 }
 
 .plannke-revamp #transactionModal #tx-fields-wrapper:not(.hidden) {
     display: grid !important;
     grid-template-columns: repeat(12, minmax(0, 1fr));
-    gap: 15px 16px;
-    align-items: start;
-    padding-top: 18px !important;
+    grid-auto-flow: row dense;
+    gap: 10px 12px;
+    align-items: end;
+    padding-top: 0 !important;
 }
 
 .plannke-revamp #transactionModal #tx-fields-wrapper > * {
@@ -343,39 +473,75 @@ body.plannke-revamp > .fab-btn {
     margin-bottom: 0 !important;
 }
 
-.plannke-revamp #transactionModal #tx-form-error,
-.plannke-revamp #transactionModal .product-tx-extra,
-.plannke-revamp #transactionModal #tx-fields-wrapper > button[type="submit"] {
+.plannke-revamp #transactionModal .form-label {
+    margin-bottom: 5px !important;
+    font-size: 0.64rem !important;
+}
+
+.plannke-revamp #transactionModal .form-control,
+.plannke-revamp #transactionModal .form-select,
+.plannke-revamp #transactionModal .input-group-text {
+    min-height: 40px !important;
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+}
+
+.plannke-revamp #transactionModal #tx-form-error {
     grid-column: 1 / -1;
 }
 
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-desc) { grid-column: span 7; }
-.plannke-revamp #transactionModal #tx-category-group { grid-column: span 5; }
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-amount) { grid-column: span 4; }
-.plannke-revamp #transactionModal #tx-is-installment-group { grid-column: span 8; }
-.plannke-revamp #transactionModal #tx-installments-group { grid-column: span 4; }
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-date) { grid-column: span 4; }
-.plannke-revamp #transactionModal #tx-account-group { grid-column: span 8; }
-.plannke-revamp #transactionModal #tx-destination-group { grid-column: 5 / -1; }
+.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-desc) { grid-column: span 6; }
+.plannke-revamp #transactionModal #tx-category-group { grid-column: span 6; }
+.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-amount) { grid-column: span 3; }
+.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-date) { grid-column: span 3; }
+.plannke-revamp #transactionModal #tx-account-group { grid-column: span 6; }
+.plannke-revamp #transactionModal #tx-destination-group { grid-column: span 6; }
+.plannke-revamp #transactionModal #tx-is-installment-group { grid-column: span 6; }
+.plannke-revamp #transactionModal #tx-installments-group { grid-column: span 3; }
 
-.plannke-revamp #transactionModal .product-tx-extra > .row {
-    --bs-gutter-x: 16px;
-    --bs-gutter-y: 12px;
+.plannke-revamp #transactionModal #tx-is-installment-group .form-switch {
+    min-height: 40px;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
 }
 
-.plannke-revamp #transactionModal .product-sharing-details {
-    margin-bottom: 0 !important;
+.plannke-revamp #transactionModal .product-tx-extra,
+.plannke-revamp #transactionModal .product-tx-extra > .row {
+    display: contents;
+}
+
+.plannke-revamp #transactionModal .product-tx-extra > .row > [class*="col-"] {
+    width: auto !important;
+    max-width: none !important;
+    padding: 0 !important;
+}
+
+.plannke-revamp #transactionModal .product-tx-extra > .row > .col-sm-5 { grid-column: span 3; }
+.plannke-revamp #transactionModal .product-tx-extra > .row > .col-sm-7 { grid-column: span 5; }
+.plannke-revamp #transactionModal .product-sharing-details { grid-column: span 4; margin: 0 !important; align-self: end; }
+
+.plannke-revamp #transactionModal .product-sharing-details > summary {
+    min-height: 40px;
+    border-radius: 10px;
+}
+
+.plannke-revamp #transactionModal #tx-installment-helper {
+    margin-top: 4px !important;
+    font-size: 0.66rem;
 }
 
 .plannke-revamp #transactionModal #tx-fields-wrapper > button[type="submit"] {
-    width: auto !important;
-    min-width: 220px;
-    justify-self: end;
-    margin-top: 2px !important;
-    padding-inline: 24px;
+    grid-column: 10 / -1;
+    width: 100% !important;
+    min-width: 0;
+    min-height: 40px;
+    justify-self: stretch;
+    margin-top: 0 !important;
+    padding-inline: 18px;
+    border-radius: 10px !important;
 }
 
-/* Account and card registration use the available desktop width. */
+/* -------------------- Account/card registration -------------------- */
 .plannke-revamp #accountModal .modal-dialog { max-width: 640px !important; }
 .plannke-revamp #cardModal .modal-dialog { max-width: 720px !important; }
 
@@ -383,7 +549,7 @@ body.plannke-revamp > .fab-btn {
 .plannke-revamp #cardForm {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    gap: 14px 16px;
 }
 
 .plannke-revamp #accountForm > input[type="hidden"],
@@ -410,6 +576,7 @@ body.plannke-revamp > .fab-btn {
     min-width: 180px;
     justify-self: end;
     padding-inline: 24px;
+    border-radius: 10px !important;
 }
 
 .plannke-revamp .revamp-modal-heading {
@@ -417,33 +584,51 @@ body.plannke-revamp > .fab-btn {
 }
 
 .plannke-revamp .revamp-modal-subtitle {
-    margin: 4px 0 0;
+    margin: 3px 0 0;
     color: var(--rv-muted);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     line-height: 1.35;
 }
 
-/* Statement / invoice becomes a desktop review workspace. */
+/* -------------------- Statement/invoice as a review workspace -------------------- */
 .plannke-revamp #entityDetailModal .modal-dialog {
-    max-width: 1080px !important;
+    max-width: 1180px !important;
 }
 
 .plannke-revamp #entityDetailModal .modal-content {
     max-height: min(88vh, 860px);
+    border-radius: 16px !important;
+    box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28) !important;
 }
 
 .plannke-revamp #entityDetailModal .modal-header {
-    padding: 18px 24px !important;
+    min-height: 74px;
+    padding: 16px 24px !important;
+    background: var(--rv-panel-strong);
+}
+
+.plannke-revamp #entityDetailModal .revamp-detail-kicker {
+    display: block;
+    margin-bottom: 3px;
+    color: var(--rv-accent);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
 }
 
 .plannke-revamp #entityDetailModal .detail-summary-header {
-    padding: 22px 26px !important;
+    margin: 0 !important;
+    padding: 20px 26px !important;
+    border-bottom: 1px solid var(--rv-border);
+    background: var(--rv-bg-soft);
 }
 
 .plannke-revamp #entityDetailModal .detail-summary-header > .row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 24px;
+    align-items: end;
 }
 
 .plannke-revamp #entityDetailModal .detail-summary-header > .row > [class*="col-"] {
@@ -453,12 +638,13 @@ body.plannke-revamp > .fab-btn {
 }
 
 .plannke-revamp #entityDetailModal #summary-amount {
-    font-size: clamp(2rem, 3vw, 2.65rem) !important;
+    font-size: clamp(2rem, 3vw, 2.6rem) !important;
     letter-spacing: -0.05em;
 }
 
 .plannke-revamp #entityDetailModal #detail-period-select {
-    min-width: 190px;
+    min-width: 210px;
+    min-height: 40px;
 }
 
 .plannke-revamp #entityDetailModal .modal-body > .px-4.pb-4 {
@@ -466,10 +652,10 @@ body.plannke-revamp > .fab-btn {
 }
 
 .plannke-revamp #entityDetailModal #detail-tx-list {
-    max-height: min(50vh, 480px) !important;
+    max-height: min(48vh, 470px) !important;
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 5px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -479,9 +665,15 @@ body.plannke-revamp > .fab-btn {
     grid-template-columns: 40px minmax(0, 1fr);
     gap: 12px;
     align-items: center;
-    padding: 10px 12px !important;
-    border: 1px solid var(--rv-border) !important;
-    border-radius: 12px;
+    padding: 11px 12px !important;
+    border: 1px solid transparent !important;
+    border-bottom-color: var(--rv-border) !important;
+    border-radius: 8px;
+    background: transparent;
+}
+
+.plannke-revamp #entityDetailModal #detail-tx-list .tx-item:hover {
+    border-color: var(--rv-border) !important;
     background: var(--rv-bg-soft);
 }
 
@@ -533,28 +725,348 @@ body.plannke-revamp > .fab-btn {
 }
 
 .plannke-revamp #entityDetailModal #detail-pay-acc-select {
-    min-width: 260px;
+    min-width: 270px;
 }
 
 .plannke-revamp #entityDetailModal #detail-pay-btn {
-    min-width: 170px;
+    min-width: 180px;
 }
 
-/* Accounts/cards are desktop grids at all supported app widths. */
-.plannke-revamp .revamp-accounts-summary {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+/* -------------------- Data and assisted import -------------------- */
+.plannke-revamp .revamp-backup-status {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 15px 17px;
+    border: 1px solid rgba(80, 199, 167, 0.2);
+    border-radius: var(--rv-radius-lg);
+    background: rgba(80, 199, 167, 0.065);
 }
 
-.plannke-revamp .revamp-accounts #cards-grid > [class*="col-"] {
-    width: 50% !important;
+.plannke-revamp .revamp-backup-status-icon {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border-radius: 13px;
+    color: var(--rv-success);
+    background: rgba(80, 199, 167, 0.11);
+    font-size: 1.2rem;
 }
 
-.plannke-revamp .revamp-accounts #accounts-grid > [class*="col-"] {
-    width: 33.333333% !important;
+.plannke-revamp .revamp-backup-status strong,
+.plannke-revamp .revamp-backup-status small {
+    display: block;
 }
 
-.plannke-revamp .revamp-accounts-overview {
+.plannke-revamp .revamp-backup-status strong {
+    color: var(--rv-text);
+    font-size: 0.9rem;
+}
+
+.plannke-revamp .revamp-backup-status small {
+    margin-top: 3px;
+    color: var(--rv-muted);
+    line-height: 1.4;
+}
+
+.plannke-revamp .revamp-backup-status-badge {
+    white-space: nowrap;
+    color: var(--rv-success);
+    font-size: 0.7rem;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.plannke-revamp .revamp-backup > .row,
+.plannke-revamp .revamp-backup-grid {
     display: grid !important;
+    grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+    gap: 16px !important;
+    align-items: stretch;
+    margin: 0 !important;
+}
+
+.plannke-revamp .revamp-backup > .row > [class*="col-"],
+.plannke-revamp .revamp-backup-grid > [class*="col-"] {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.plannke-revamp .revamp-backup-primary,
+.plannke-revamp .revamp-bank-import-panel .card {
+    height: 100%;
+    min-height: 318px;
+}
+
+.plannke-revamp .revamp-backup-primary .card-body,
+.plannke-revamp .revamp-bank-import-panel .card-body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start !important;
+    justify-content: flex-start;
+    text-align: left !important;
+    padding: 26px !important;
+}
+
+.plannke-revamp .revamp-backup-primary .backup-icon-wrap {
+    margin-inline: 0 !important;
+}
+
+.plannke-revamp .revamp-backup-primary h4 {
+    font-size: 1.2rem;
+}
+
+.plannke-revamp .revamp-data-summary {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+    margin: 4px 0 18px;
+}
+
+.plannke-revamp .revamp-data-summary-item {
+    padding: 10px 11px;
+    border: 1px solid var(--rv-border);
+    border-radius: 11px;
+    background: var(--rv-bg-soft);
+}
+
+.plannke-revamp .revamp-data-summary-item span,
+.plannke-revamp .revamp-data-summary-item strong {
+    display: block;
+}
+
+.plannke-revamp .revamp-data-summary-item span {
+    color: var(--rv-muted);
+    font-size: 0.64rem;
+    text-transform: uppercase;
+}
+
+.plannke-revamp .revamp-data-summary-item strong {
+    margin-top: 3px;
+    color: var(--rv-text);
+    font-size: 1rem;
+}
+
+.plannke-revamp .revamp-backup-primary .d-flex.gap-3 {
+    justify-content: flex-start !important;
+    margin-top: auto;
+}
+
+.plannke-revamp .revamp-report-export {
+    border-color: var(--rv-border-strong) !important;
+    color: var(--rv-text) !important;
+}
+
+.plannke-revamp .revamp-backup-primary .mt-4.pt-3.border-top {
+    width: 100%;
+    margin-top: 14px !important;
+    border-color: var(--rv-border) !important;
+}
+
+.plannke-revamp .revamp-bank-import-panel .product-card-title {
+    width: 100%;
+}
+
+.plannke-revamp .revamp-bank-import-panel #product-bank-result {
+    min-height: 20px;
+}
+
+.plannke-revamp .revamp-import-review {
+    margin-top: 18px;
+    overflow: hidden;
+    border: 1px solid var(--rv-border);
+    border-radius: 18px;
+    background: var(--rv-panel);
+}
+
+.plannke-revamp .revamp-import-review-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 22px 24px 18px;
+    border-bottom: 1px solid var(--rv-border);
+}
+
+.plannke-revamp .revamp-import-eyebrow {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--rv-accent);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+}
+
+.plannke-revamp .revamp-import-review-header h3 {
+    margin: 0;
+    color: var(--rv-text);
+    font-size: 1.12rem;
+}
+
+.plannke-revamp .revamp-import-review-header p {
+    max-width: 760px;
+    margin: 6px 0 0;
+    color: var(--rv-muted);
+    font-size: 0.76rem;
+    line-height: 1.5;
+}
+
+.plannke-revamp .revamp-import-count {
+    flex: 0 0 auto;
+    padding: 5px 9px;
+    border-radius: 999px;
+    color: var(--rv-accent);
+    background: var(--rv-accent-soft);
+    font-size: 0.68rem;
+    font-weight: 750;
+}
+
+.plannke-revamp .revamp-import-table-wrap {
+    overflow-x: auto;
+}
+
+.plannke-revamp .revamp-import-table {
+    min-width: 900px;
+}
+
+.plannke-revamp .revamp-import-row {
+    display: grid;
+    grid-template-columns: 72px 92px minmax(250px, 1fr) 120px minmax(180px, 0.65fr) 96px;
+    gap: 12px;
+    align-items: center;
+    min-height: 58px;
+    padding: 8px 20px;
+    border-bottom: 1px solid var(--rv-border);
+    transition: opacity 120ms ease, background 120ms ease;
+}
+
+.plannke-revamp .revamp-import-row:not(.revamp-import-row-head):hover {
+    background: var(--rv-bg-soft);
+}
+
+.plannke-revamp .revamp-import-row.excluded {
+    opacity: 0.48;
+}
+
+.plannke-revamp .revamp-import-row-head {
+    min-height: 38px;
+    color: var(--rv-muted);
+    background: var(--rv-bg-soft);
+    font-size: 0.62rem;
+    font-weight: 780;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.plannke-revamp .revamp-import-check,
+.plannke-revamp .revamp-import-remember {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--rv-muted);
+    font-size: 0.7rem;
+}
+
+.plannke-revamp .revamp-import-check input,
+.plannke-revamp .revamp-import-remember input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--rv-accent);
+}
+
+.plannke-revamp .revamp-import-date {
+    color: var(--rv-muted);
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.plannke-revamp .revamp-import-description {
+    min-width: 0;
+}
+
+.plannke-revamp .revamp-import-description strong,
+.plannke-revamp .revamp-import-description small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.plannke-revamp .revamp-import-description strong {
+    color: var(--rv-text);
+    font-size: 0.78rem;
+}
+
+.plannke-revamp .revamp-import-description small {
+    margin-top: 3px;
+    color: var(--rv-muted);
+    font-size: 0.65rem;
+}
+
+.plannke-revamp .revamp-import-value {
+    font-size: 0.78rem;
+    font-weight: 760;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.plannke-revamp .revamp-import-value.expense { color: var(--rv-danger); }
+.plannke-revamp .revamp-import-value.income { color: var(--rv-success); }
+
+.plannke-revamp .revamp-import-category {
+    min-height: 36px;
+    border-color: var(--rv-border-strong);
+    background-color: var(--rv-bg-soft);
+    font-size: 0.72rem;
+}
+
+.plannke-revamp .revamp-import-review-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 20px;
+}
+
+.plannke-revamp .revamp-import-review-hint {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--rv-muted);
+    font-size: 0.7rem;
+    line-height: 1.4;
+}
+
+.plannke-revamp .revamp-import-review-hint i {
+    flex: 0 0 auto;
+    color: var(--rv-accent);
+}
+
+.plannke-revamp .revamp-import-actions {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 8px;
+}
+
+.plannke-revamp .revamp-import-actions .btn {
+    min-height: 38px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+}
+
+/* Planning must always have a stable controls mount while visible. */
+.plannke-revamp #projecao-view:not(.hidden) > #revamp-planning-overview:not([hidden]) {
+    display: block !important;
 }
 
 @media (max-width: 1179.98px) {
