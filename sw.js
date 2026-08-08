@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plannke-shell-v18';
+const CACHE_NAME = 'plannke-shell-v19';
 const LOCAL_ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const LOCAL_ASSETS = [
   './vendor/echarts.min.js',
   './storage.js',
   './app.js',
+  './storage-adapter.js',
   './ui-bridge.js',
   './safe-renderers.js',
   './revamp.js',
