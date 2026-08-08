@@ -18,7 +18,7 @@ function extractHandlers(content) {
   return handlers;
 }
 
-test('UI bridge recognizes every legacy inline handler in the shell and renderers', () => {
+test('UI bridge recognizes every legacy inline handler still awaiting migration', () => {
   const unknown = [];
   let count = 0;
   sources.forEach(source => {
@@ -27,7 +27,7 @@ test('UI bridge recognizes every legacy inline handler in the shell and renderer
       if (!bridge.canHandle(handler.code)) unknown.push(`${source.file}: ${handler.attr}="${handler.code}"`);
     });
   });
-  assert.ok(count > 20, 'expected to inventory the existing legacy handlers');
+  assert.ok(count > 20, 'expected to inventory the remaining compatibility handlers');
   assert.deepEqual(unknown, []);
 });
 
@@ -47,9 +47,11 @@ test('inline argument parser only accepts the migration vocabulary', () => {
   assert.equal(bridge.parseCall('unknownFunction()'), null);
 });
 
-test('static shell marks product layer as present before legacy loader runs', () => {
+test('static shell owns product loading and finance core has no duplicate dynamic loader', () => {
   const bridgeSource = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
   const storageSource = fs.readFileSync(path.join(root, 'storage.js'), 'utf8');
   assert.match(bridgeSource, /currentScript\.dataset\.plannkeProduct\s*=\s*['"]static-shell['"]/);
-  assert.match(storageSource, /querySelector\(['"]script\[data-plannke-product\]['"]\)/);
+  assert.doesNotMatch(storageSource, /script\[data-plannke-product\]/);
+  assert.doesNotMatch(storageSource, /load\(['"]product-core\.js['"]\)/);
+  assert.doesNotMatch(storageSource, /document\.addEventListener\(['"]DOMContentLoaded['"]/);
 });
