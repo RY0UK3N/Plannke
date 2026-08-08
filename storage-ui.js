@@ -176,7 +176,6 @@
         try {
             root.PlannkeStorage?.createSnapshot('before-bank-import');
         } catch (error) {
-            // Recovery is best-effort; it must never block a reviewed import.
             console.warn('Ponto de recuperação da importação indisponível:', error);
         }
     }
