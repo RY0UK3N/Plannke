@@ -108,18 +108,18 @@ test('accounts overview uses the existing outstanding-card calculation', () => {
   assert.match(js, /Após cartões/);
 });
 
-test('accounts and cards keep their dedicated workspace and are forced into desktop grids', () => {
+test('accounts and cards keep their dedicated workspace and share the final two-column desktop grid', () => {
   assert.match(accountsCss, /\.revamp-accounts-summary/);
   assert.match(accountsCss, /#accounts-grid/);
   assert.match(accountsCss, /#cards-grid/);
   assert.match(accountsCss, /\.billing-history/);
   assert.match(accountsCss, /\.pay-fatura-section/);
-  assert.match(desktopCss, /revamp-accounts #cards-grid/);
-  assert.match(desktopCss, /width: 50% !important/);
-  assert.match(desktopCss, /revamp-accounts #accounts-grid/);
+  assert.match(desktopCss, /revamp-accounts #accounts-grid,[\s\S]*revamp-accounts #cards-grid/);
+  assert.match(desktopCss, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(desktopCss, /revamp-entity-unified/);
 });
 
-test('forms use the consistent base language plus desktop-specific workspace sizing', () => {
+test('forms use the consistent base language plus final compact desktop workspace sizing', () => {
   assert.match(formsCss, /#transactionModal \.modal-dialog/);
   assert.match(formsCss, /#accountModal \.modal-dialog/);
   assert.match(formsCss, /#cardModal \.modal-dialog/);
@@ -127,7 +127,9 @@ test('forms use the consistent base language plus desktop-specific workspace siz
   assert.match(formsCss, /\.form-select:focus/);
   assert.match(formsCss, /\.tx-type-group/);
   assert.match(desktopCss, /#transactionModal \.modal-dialog/);
-  assert.match(desktopCss, /max-width: 900px/);
+  assert.match(desktopCss, /max-width: 980px/);
+  assert.match(desktopCss, /#tx-fields-wrapper:not\(\.hidden\)/);
+  assert.match(desktopCss, /grid-auto-flow: row dense/);
   assert.match(desktopCss, /#accountForm/);
   assert.match(desktopCss, /#cardForm/);
 });
