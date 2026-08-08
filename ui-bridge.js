@@ -173,15 +173,29 @@
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
             stylesheet.href = 'revamp.css';
-            stylesheet.dataset.plannkeRevamp = 'desktop-tablet';
+            stylesheet.dataset.plannkeRevamp = 'desktop';
             document.head.appendChild(stylesheet);
+        }
+        if (!document.querySelector('link[data-plannke-desktop-style]')) {
+            const desktopStyle = document.createElement('link');
+            desktopStyle.rel = 'stylesheet';
+            desktopStyle.href = 'revamp-desktop.css';
+            desktopStyle.dataset.plannkeDesktopStyle = 'true';
+            document.head.appendChild(desktopStyle);
         }
         if (!document.querySelector('script[data-plannke-revamp]')) {
             const script = document.createElement('script');
             script.src = 'revamp.js';
             script.defer = true;
-            script.dataset.plannkeRevamp = 'desktop-tablet';
+            script.dataset.plannkeRevamp = 'desktop';
             document.body.appendChild(script);
+        }
+        if (!document.querySelector('script[data-plannke-desktop]')) {
+            const desktopScript = document.createElement('script');
+            desktopScript.src = 'revamp-desktop.js';
+            desktopScript.defer = true;
+            desktopScript.dataset.plannkeDesktop = 'true';
+            document.body.appendChild(desktopScript);
         }
     }
 
