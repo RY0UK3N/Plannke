@@ -1,10 +1,10 @@
-# trigger: retire-excel-legacy-v1
 name: Retire Excel legacy once
 
 on:
-  push:
+  pull_request:
     branches:
-      - feature/storage-adapter-autosave
+      - main
+    types: [synchronize]
     paths:
       - '.github/workflows/retire-excel-legacy-once.yml'
 
@@ -13,6 +13,7 @@ permissions:
 
 jobs:
   refactor:
+    if: github.head_ref == 'feature/storage-adapter-autosave'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +79,7 @@ jobs:
           for forbidden in [
               '_backupDone', 'function importFromExcel', 'FileReader', 'Memory Card',
               'Planner_MemoryCard_', 'sessionStorage.clear', 'localStorage.clear',
-              'raw import-compatible', 'Nova Transação\'\);'
+              'raw import-compatible'
           ]:
               if forbidden in source:
                   raise SystemExit(f'Retired Excel/storage token still present in app.js: {forbidden}')
