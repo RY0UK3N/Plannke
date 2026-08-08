@@ -5,6 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const manifest = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
@@ -38,19 +39,23 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
 });
 
-test('StorageAdapter is ready before the legacy initApp body is allowed to run', () => {
+test('canonical bridge owns application boot and waits for StorageAdapter', () => {
   assert.match(bridge, /script\.src = 'storage-adapter\.js'/);
   assert.match(bridge, /function waitForStorageReady\(/);
   assert.match(bridge, /Promise\.resolve\(api\.ready\)/);
-  assert.match(bridge, /const legacyInitApp = root\?\.initApp/);
+  assert.match(bridge, /const applicationInit = root\?\.initApp/);
   assert.match(bridge, /const storageReady = loadStorageAdapter\(\)/);
-  assert.match(bridge, /storageReady[\s\S]*legacyInitApp\.apply/);
+  assert.match(bridge, /function startApplication\(\)/);
+  assert.match(bridge, /storageReady[\s\S]*applicationInit\.call\(root\)/);
+  assert.match(bridge, /api\.init\(\);\s*startApplication\(\);/);
+  assert.doesNotMatch(app, /document\.addEventListener\(['"]DOMContentLoaded['"][\s\S]*initApp/);
+  assert.doesNotMatch(app, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload|_backupDone/);
   assert.match(storageAdapter, /class LocalStorageAdapter/);
   assert.match(storageAdapter, /class StorageCoordinator/);
   assert.match(storageAdapter, /const ready = coordinator\.initialize\(\)/);
   assert.match(storageAdapter, /root\.getData = function/);
   assert.match(storageAdapter, /root\.saveData = function/);
-  assert.match(storageAdapter, /root\.checkImportPrompt = function \(\) \{\}/);
+  assert.doesNotMatch(storageAdapter, /root\.(?:loadFromLocalStorage|setupBeforeUnload|checkImportPrompt)\s*=/);
   assert.match(storageAdapter, /function recoveryFootprint\(/);
   assert.match(storageAdapter, /plannke:storage-status/);
 });
@@ -172,6 +177,7 @@ test('one-time repository automations are not shipped with the application branc
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/apply-storage-adapter-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/canonical-desktop-shell-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/retire-legacy-bootstrap-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github/workflows/retire-app-bootstrap-once.yml')), false);
 });
 
 test('application shell uses local scripts and scopes inline style compatibility', () => {
