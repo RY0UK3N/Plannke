@@ -1,0 +1,137 @@
+/* Storage status + recovery workspace for the desktop app preview. */
+@media (min-width: 1080px) {
+    .revamp-local-status[data-storage-state="saving"] i {
+        color: var(--rv-accent);
+        animation: plannke-storage-spin 850ms linear infinite;
+    }
+
+    .revamp-local-status[data-storage-state="error"] {
+        color: var(--rv-danger);
+    }
+
+    .revamp-local-status[data-storage-state="error"] i {
+        color: var(--rv-danger);
+    }
+
+    .plannke-recovery-panel {
+        margin-top: 18px;
+        border: 1px solid var(--rv-border);
+        border-radius: var(--rv-radius-lg);
+        padding: 22px 24px;
+        background: var(--rv-panel);
+    }
+
+    .plannke-recovery-heading {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 32px;
+        padding-bottom: 18px;
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .plannke-recovery-heading > div {
+        min-width: 0;
+        max-width: 760px;
+    }
+
+    .plannke-recovery-eyebrow {
+        display: block;
+        margin-bottom: 5px;
+        color: var(--rv-accent);
+        font-size: .68rem;
+        font-weight: 800;
+        letter-spacing: .1em;
+        text-transform: uppercase;
+    }
+
+    .plannke-recovery-heading h3 {
+        margin: 0;
+        color: var(--rv-text);
+        font-size: 1.05rem;
+        font-weight: 760;
+        letter-spacing: -.02em;
+    }
+
+    .plannke-recovery-heading p {
+        margin: 6px 0 0;
+        color: var(--rv-muted);
+        font-size: .78rem;
+        line-height: 1.55;
+    }
+
+    .plannke-recovery-heading .btn {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .plannke-recovery-list {
+        display: grid;
+        gap: 0;
+    }
+
+    .plannke-recovery-item {
+        min-height: 66px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .plannke-recovery-item:last-child {
+        border-bottom: 0;
+    }
+
+    .plannke-recovery-item-copy {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .plannke-recovery-item-copy strong {
+        overflow: hidden;
+        color: var(--rv-text);
+        font-size: .8rem;
+        font-weight: 680;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plannke-recovery-item-copy span {
+        color: var(--rv-muted);
+        font-size: .7rem;
+    }
+
+    .plannke-recovery-restore {
+        min-width: 88px;
+        flex: 0 0 auto;
+    }
+
+    .plannke-recovery-empty {
+        min-height: 84px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--rv-muted);
+        font-size: .76rem;
+    }
+
+    .plannke-recovery-empty i {
+        font-size: 1rem;
+    }
+}
+
+@keyframes plannke-storage-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .revamp-local-status[data-storage-state="saving"] i {
+        animation: none;
+    }
+}
