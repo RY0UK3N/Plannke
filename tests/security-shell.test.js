@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
+const manifest = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
@@ -54,7 +55,21 @@ test('StorageAdapter is ready before the legacy initApp body is allowed to run',
   assert.match(storageAdapter, /plannke:storage-status/);
 });
 
-test('canonical desktop styles are part of the first paint and legacy chrome is removed', () => {
+test('canonical desktop shell is primed synchronously before DOMContentLoaded', () => {
+  assert.match(bridge, /function primeCanonicalShell\(/);
+  assert.match(bridge, /api\.primeCanonicalShell\(\);\s*api\.loadRevampAssets\(\);/);
+  assert.match(bridge, /document\.body\.classList\.add\('plannke-revamp'\)/);
+  assert.match(bridge, /document\.body\.dataset\.plannkeCanonical = 'desktop'/);
+  assert.match(bridge, /Central financeira/);
+  assert.match(bridge, /CANONICAL_PAGES/);
+  assert.match(bridge, /\['backup', 'ph-database', 'Dados'\]/);
+  assert.match(bridge, /body > \.planner-nav, body > \.fab-btn, body > \.mobile-tab-bar/);
+  assert.match(bridge, /document\.getElementById\('welcomeModal'\)\?\.remove\(\)/);
+  assert.match(bridge, /document\.getElementById\('backupReminderModal'\)\?\.remove\(\)/);
+  assert.doesNotMatch(bridge, /function canonicalStylesPresent\([^)]*\)[\s\S]*?\}\);\n\}\)\(/);
+});
+
+test('canonical desktop styles are part of the first paint', () => {
   [
     'revamp.css',
     'revamp-dashboard.css',
@@ -67,25 +82,18 @@ test('canonical desktop styles are part of the first paint and legacy chrome is 
   assert.match(productCss, /body:not\(\.plannke-revamp\) > \.planner-nav/);
   assert.match(productCss, /body:not\(\.plannke-revamp\) > main/);
   assert.match(productCss, /visibility: hidden !important/);
-  assert.match(storageUi, /function finalizeCanonicalShell\(/);
-  assert.match(storageUi, /body > \$\{selector\}/);
-  assert.match(storageUi, /node => node\.remove\(\)/);
-  assert.match(storageUi, /plannkeCanonicalReady/);
   assert.match(bridge, /function canonicalStylesPresent\(/);
-  assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-storage-ui\]'\)/);
   assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-revamp\]'\)/);
   assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-desktop-style\]'\)/);
 });
 
-test('storage status and recovery UI are local, safe and retire Memory Card as startup storage', () => {
+test('storage status and recovery UI are local and DOM-safe', () => {
   assert.match(bridge, /script\.src = 'storage-ui\.js'/);
   assert.match(storageUi, /Salvando…/);
   assert.match(storageUi, /Salvo localmente/);
   assert.match(storageUi, /Recuperação local/);
   assert.match(storageUi, /createSnapshot\('manual'\)/);
   assert.match(storageUi, /restoreSnapshot\(snapshot\.id\)/);
-  assert.match(storageUi, /show\.bs\.modal/);
-  assert.match(storageUi, /event => event\.preventDefault\(\)/);
   assert.match(storageUi, /before-bank-import/);
   assert.match(storageUi, /selectedCount <= 0 \|\| selectedCount >= 5/);
   assert.match(storageUiCss, /\.plannke-recovery-panel/);
@@ -105,10 +113,12 @@ test('storage UI observer cannot recursively rewrite its own status DOM', () => 
   assert.doesNotMatch(storageUi, /const observer = new MutationObserver\(\(\) => \{\s*updateStatus\(\)/);
 });
 
-test('revamp and final desktop assets are loaded from trusted local scripts', () => {
+test('revamp and final desktop assets are loaded locally and in deterministic order', () => {
   assert.match(bridge, /script\.src = 'revamp\.js'/);
+  assert.match(bridge, /script\.async = false/);
   assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
-  assert.match(bridge, /loadRevampAssets\(\)/);
+  assert.match(bridge, /desktopScript\.async = false/);
+  assert.match(bridge, /script\.addEventListener\('load', loadDesktopAssets/);
   assert.match(revamp, /revamp-dashboard\.css/);
   assert.match(revamp, /revamp-movements\.css/);
   assert.match(revamp, /revamp-planning\.css/);
@@ -151,6 +161,7 @@ test('third-party runtime dependencies are vendored and pinned', () => {
 test('one-time repository automations are not shipped with the application branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/vendor-runtime-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, '.github/workflows/apply-storage-adapter-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github/workflows/canonical-desktop-shell-once.yml')), false);
 });
 
 test('application shell uses local scripts and scopes inline style compatibility', () => {
@@ -179,11 +190,22 @@ test('index has no external scripts or stylesheets after vendoring', () => {
   assert.match(phosphor, /cdn\.jsdelivr\.net\/npm\/@phosphor-icons\/web@2\.1\.2\/src\/regular\/Phosphor\.woff2/);
 });
 
-test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v24'/);
+test('installed PWA prefers current local assets and falls back to cache offline', () => {
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v25'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
+
+  const localStart = sw.indexOf('if (url.origin === self.location.origin)');
+  const localEnd = sw.indexOf("event.respondWith(\n    caches.match(event.request)", localStart);
+  const localBlock = sw.slice(localStart, localEnd === -1 ? undefined : localEnd);
+  assert.ok(localBlock.indexOf('fetch(event.request)') < localBlock.indexOf('caches.match(event.request)'));
+
+  const parsedManifest = JSON.parse(manifest);
+  assert.equal(parsedManifest.id, './');
+  assert.equal(parsedManifest.background_color, '#0b0d12');
+  assert.equal(parsedManifest.theme_color, '#0b0d12');
+
   [
     'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
