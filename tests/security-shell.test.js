@@ -63,6 +63,10 @@ test('third-party runtime dependencies are vendored and pinned', () => {
   assert.doesNotMatch(index, /fonts\.googleapis\.com/);
 });
 
+test('one-time vendoring automation is not shipped with the application branch', () => {
+  assert.equal(fs.existsSync(path.join(root, '.github/workflows/vendor-runtime-once.yml')), false);
+});
+
 test('application shell uses local scripts and scopes inline style compatibility', () => {
   const match = index.match(/<meta http-equiv="Content-Security-Policy"\s+content="([^"]+)"/);
   assert.ok(match, 'CSP meta tag should exist');
@@ -102,4 +106,3 @@ test('PWA navigation is network-first and local runtime assets are cached', () =
     'vendor/xlsx.full.min.js', 'vendor/chart.umd.min.js', 'vendor/echarts.min.js'
   ].forEach(asset => assert.ok(sw.includes(asset), `missing PWA asset: ${asset}`));
 });
-
