@@ -73,7 +73,7 @@
             return storageReady
                 .then(() => legacyInitApp.apply(this, args))
                 .catch(error => {
-                    console.error('StorageAdapter indisponível; iniciando fallback legado.', error);
+                    console.error('StorageAdapter indisponível; iniciando com o cache em memória.', error);
                     return legacyInitApp.apply(this, args);
                 });
         };
@@ -88,10 +88,6 @@
     if (root) root.PlannkeUIBridge = api;
 
     if (typeof document !== 'undefined') {
-        // ui-bridge is a static script at the end of <body>. Build the canonical
-        // desktop chrome immediately, before DOMContentLoaded and before the
-        // async revamp decorators are needed. This prevents both legacy flash
-        // and a blank screen if a later decorator is slow to arrive.
         api.primeCanonicalShell();
         api.loadRevampAssets();
 
@@ -117,15 +113,18 @@
         ['backup', 'ph-database', 'Dados']
     ];
 
+    // Temporary vocabulary for inline handlers that still live inside the
+    // remaining workspace markup/renderers. This set shrinks as UI modules
+    // move to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
         'openSettingsPanel', 'openBudgetManager', 'openCategoryManager',
         'filterDashboardToTransactions', 'changeMonth', 'setMovViewMode',
         'renderMovimentacao', 'clearTxSearch', 'openModal', 'openTxModal',
         'exportToExcel', 'switchCatTabModal', 'addCustomCategoryModal',
         'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
-        'mobileNav', 'toggleInstallmentField', 'updateInstallmentHelper',
-        'importFromExcel', 'deleteCategoryModal', 'openColorPicker',
-        'deleteCategory', 'selectCatColor', 'handleBudgetInput', 'saveBudgetEntry',
+        'toggleInstallmentField', 'updateInstallmentHelper',
+        'deleteCategoryModal', 'openColorPicker', 'deleteCategory',
+        'selectCatColor', 'handleBudgetInput', 'saveBudgetEntry',
         'dupTx', 'edTx', 'delTx', 'edAcc', 'delAcc', 'viewAccountStatement',
         'edCard', 'delCard', 'handlePayFatura', 'viewCardInvoice'
     ]);
@@ -222,13 +221,6 @@
         shell.append(sidebar, content);
         content.append(topbar, main);
 
-        // Legacy chrome is retired, not merely hidden. Financial views and
-        // forms remain as the transitional domain/UI substrate until Tauri.
-        document.querySelectorAll('body > .planner-nav, body > .fab-btn, body > .mobile-tab-bar')
-            .forEach(node => node.remove());
-        document.getElementById('welcomeModal')?.remove();
-        document.getElementById('backupReminderModal')?.remove();
-
         document.body.classList.add('plannke-revamp');
         document.body.dataset.revampVersion = '2';
         document.body.dataset.plannkeCanonical = 'desktop';
@@ -290,12 +282,10 @@
     }
 
     function specialKind(code) {
-        const c = normalizeCode(code);
-        if (/^document\.getElementById\(['"]excelUpload['"]\)\.click\(\);?$/.test(c)) return 'open-excel';
-        if (/^this\.showPicker\(\);?$/.test(c)) return 'show-picker';
-        if (/^window\._detailContext\?\.onPeriodChange\(this\.value\);?$/.test(c)) return 'detail-period';
-        if (/^bootstrap\.Modal\.getOrCreateInstance\(document\.getElementById\(['"]shortcutsModal['"]\)\)\.show\(\);?$/.test(c)) return 'shortcuts';
-        if (/^exportToExcel\(\);\s*bootstrap\.Modal\.getInstance\(document\.getElementById\(['"]backupReminderModal['"]\)\)\.hide\(\);?$/.test(c)) return 'backup-and-hide';
+        const value = normalizeCode(code);
+        if (/^this\.showPicker\(\);?$/.test(value)) return 'show-picker';
+        if (/^window\._detailContext\?\.onPeriodChange\(this\.value\);?$/.test(value)) return 'detail-period';
+        if (/^bootstrap\.Modal\.getOrCreateInstance\(document\.getElementById\(['"]shortcutsModal['"]\)\)\.show\(\);?$/.test(value)) return 'shortcuts';
         return null;
     }
 
@@ -307,24 +297,22 @@
     }
 
     function canHandle(code) {
-        if (specialKind(code)) return true;
-        return !!parseCall(code);
+        return !!specialKind(code) || !!parseCall(code);
     }
 
     function dispatch(code, element, event) {
         const kind = specialKind(code);
-        if (kind === 'open-excel') { document.getElementById('excelUpload')?.click(); return true; }
-        if (kind === 'show-picker') { if (typeof element?.showPicker === 'function') element.showPicker(); return true; }
-        if (kind === 'detail-period') { root._detailContext?.onPeriodChange?.(element?.value); return true; }
+        if (kind === 'show-picker') {
+            if (typeof element?.showPicker === 'function') element.showPicker();
+            return true;
+        }
+        if (kind === 'detail-period') {
+            root._detailContext?.onPeriodChange?.(element?.value);
+            return true;
+        }
         if (kind === 'shortcuts') {
             const modal = document.getElementById('shortcutsModal');
             if (modal && root.bootstrap?.Modal) root.bootstrap.Modal.getOrCreateInstance(modal).show();
-            return true;
-        }
-        if (kind === 'backup-and-hide') {
-            root.exportToExcel?.();
-            const modal = document.getElementById('backupReminderModal');
-            if (modal && root.bootstrap?.Modal) root.bootstrap.Modal.getInstance(modal)?.hide();
             return true;
         }
 
@@ -358,7 +346,7 @@
                     if (dispatch(code, element, event)) {
                         if (event.type === 'click' && element.matches('a[href="#"]')) event.preventDefault();
                     } else {
-                        console.warn('Handler legado não reconhecido pelo Plannke UI bridge:', code);
+                        console.warn('Handler de compatibilidade não reconhecido pelo Plannke:', code);
                     }
                 } catch (error) {
                     console.error('Falha ao executar ação da interface:', error);
