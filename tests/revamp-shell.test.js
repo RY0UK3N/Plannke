@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
+const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');
 
 test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
@@ -37,5 +38,42 @@ test('desktop and tablet are first-class while mobile keeps the legacy shell', (
 test('new shell preserves accessibility hooks for navigation and actions', () => {
   assert.match(js, /aria-label/);
   assert.match(js, /aria-current/);
+  assert.match(js, /aria-selected/);
   assert.match(css, /:focus-visible/);
+  assert.match(planningCss, /\.revamp-planning-tab:focus-visible/);
+});
+
+test('planning is organized into decision-oriented desktop tabs without replacing finance handlers', () => {
+  ['overview', 'recurring', 'goals', 'household'].forEach(tab => {
+    assert.match(js, new RegExp(`id: '${tab}'`));
+  });
+  assert.match(js, /Visão geral/);
+  assert.match(js, /Compromissos/);
+  assert.match(js, /Objetivos/);
+  assert.match(js, /Casa e regras/);
+  assert.match(js, /#product-recurring-form/);
+  assert.match(js, /#product-goal-form/);
+  assert.match(js, /#product-reserve-form/);
+  assert.match(js, /#product-category-rule-form/);
+  assert.match(js, /#product-member-form/);
+  assert.match(js, /applyPlanningTab/);
+});
+
+test('planning summary exposes reserved, recurring income, recurring expenses and 45-day commitments', () => {
+  assert.match(js, /totalReserved/);
+  assert.match(js, /recurringExpense/);
+  assert.match(js, /recurringIncome/);
+  assert.match(js, /upcomingExpenseTotal/);
+  assert.match(js, /buildFinancialCalendar/);
+  assert.match(js, /Próximos 45 dias/);
+});
+
+test('planning desktop and tablet layouts remain separate from mobile', () => {
+  assert.match(planningCss, /@media \(min-width: 768px\)/);
+  assert.match(planningCss, /@media \(min-width: 1180px\)/);
+  assert.match(planningCss, /@media \(min-width: 768px\) and \(max-width: 1179\.98px\)/);
+  assert.match(planningCss, /@media \(max-width: 767\.98px\)/);
+  assert.match(planningCss, /\.revamp-planning-summary/);
+  assert.match(planningCss, /\.revamp-planning-tabs/);
+  assert.match(planningCss, /\.product-calendar/);
 });
