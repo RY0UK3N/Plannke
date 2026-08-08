@@ -247,8 +247,8 @@
             const beforeRestore = this.createSnapshot('before-restore');
             const restored = normalize(snapshot.data) || {};
             this.data = restored;
-            this.lastSavedAt = this._saveNowIfSupported(this.data) || this.lastSavedAt;
-            if (!this.lastSavedAt) this.saveData(this.data);
+            const savedNow = this._saveNowIfSupported(this.data);
+            if (!savedNow) this.saveData(this.data);
             this._emit('saved');
             try {
                 if (typeof root._markDataDirty === 'function') root._markDataDirty();
@@ -365,6 +365,8 @@
     root.loadFromLocalStorage = function () { return coordinator.initialize(); };
     root.setupBeforeUnload = function () { coordinator.installLifecycleHandlers(); };
 
+    coordinator.installLifecycleHandlers();
+    const ready = coordinator.initialize();
     const api = {
         version: STORAGE_VERSION,
         backend: adapter.kind,
@@ -376,10 +378,8 @@
         restoreSnapshot: id => coordinator.restoreSnapshot(id),
         LocalStorageAdapter,
         StorageCoordinator,
-        ready: null
+        ready
     };
 
     root.PlannkeStorage = Object.freeze(api);
-    coordinator.installLifecycleHandlers();
-    api.ready = coordinator.initialize();
 })(globalThis);
