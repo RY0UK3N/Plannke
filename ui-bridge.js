@@ -8,7 +8,7 @@
         return Promise.resolve(api.ready).then(() => api);
     }
 
-    function canonicalStylesPresent() {
+    function hasCanonicalStyles() {
         if (typeof document === 'undefined') return false;
         return !!document.querySelector('link[href="product.css"], link[href$="/product.css"]');
     }
@@ -46,7 +46,7 @@
 
     function loadStorageUiAssets() {
         if (typeof document === 'undefined') return;
-        if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-storage-ui]')) {
+        if (!hasCanonicalStyles() && !document.querySelector('link[data-plannke-storage-ui]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
             stylesheet.href = 'storage-ui.css';
@@ -56,7 +56,7 @@
         if (!document.querySelector('script[data-plannke-storage-ui]')) {
             const script = document.createElement('script');
             script.src = 'storage-ui.js';
-            script.defer = true;
+            script.async = false;
             script.dataset.plannkeStorageUi = 'true';
             document.body.appendChild(script);
         }
@@ -84,10 +84,17 @@
     api.waitForStorageReady = waitForStorageReady;
     api.loadStorageAdapter = loadStorageAdapter;
     api.loadStorageUiAssets = loadStorageUiAssets;
-    api.canonicalStylesPresent = canonicalStylesPresent;
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeUIBridge = api;
+
     if (typeof document !== 'undefined') {
+        // ui-bridge is a static script at the end of <body>. Build the canonical
+        // desktop chrome immediately, before DOMContentLoaded and before the
+        // async revamp decorators are needed. This prevents both legacy flash
+        // and a blank screen if a later decorator is slow to arrive.
+        api.primeCanonicalShell();
+        api.loadRevampAssets();
+
         const start = () => api.init();
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
         else start();
@@ -102,6 +109,14 @@
         oninput: 'data-plannke-oninput'
     };
 
+    const CANONICAL_PAGES = [
+        ['dashboard', 'ph-house', 'Início'],
+        ['movimentacao', 'ph-arrows-left-right', 'Movimentações'],
+        ['projecao', 'ph-target', 'Planejamento'],
+        ['accounts', 'ph-wallet', 'Contas e cartões'],
+        ['backup', 'ph-database', 'Dados']
+    ];
+
     const ALLOWED_CALLS = new Set([
         'openSettingsPanel', 'openBudgetManager', 'openCategoryManager',
         'filterDashboardToTransactions', 'changeMonth', 'setMovViewMode',
@@ -114,6 +129,111 @@
         'dupTx', 'edTx', 'delTx', 'edAcc', 'delAcc', 'viewAccountStatement',
         'edCard', 'delCard', 'handlePayFatura', 'viewCardInvoice'
     ]);
+
+    function make(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = String(text);
+        return node;
+    }
+
+    function icon(name) {
+        return make('i', `ph ${name}`);
+    }
+
+    function canonicalStylesPresent() {
+        if (typeof document === 'undefined') return false;
+        return !!document.querySelector('link[href="product.css"], link[href$="/product.css"]');
+    }
+
+    function primeCanonicalShell() {
+        if (typeof document === 'undefined' || !document.body) return null;
+
+        const existing = document.getElementById('revamp-shell');
+        if (existing) {
+            document.body.classList.add('plannke-revamp');
+            document.body.dataset.revampVersion = '2';
+            document.body.dataset.plannkeCanonical = 'desktop';
+            return existing;
+        }
+
+        const main = document.querySelector('body > main');
+        if (!main || !main.parentNode) return null;
+
+        const shell = make('div', 'revamp-shell');
+        shell.id = 'revamp-shell';
+
+        const sidebar = make('aside', 'revamp-sidebar');
+        sidebar.id = 'revamp-sidebar';
+
+        const brand = make('div', 'revamp-brand');
+        const brandCopy = make('div', 'revamp-brand-copy');
+        brandCopy.append(make('strong', '', 'Plannke'), make('span', '', 'Central financeira'));
+        brand.append(make('div', 'revamp-brand-mark', 'P'), brandCopy);
+
+        const nav = make('nav', 'revamp-nav');
+        nav.setAttribute('aria-label', 'Navegação principal');
+        CANONICAL_PAGES.forEach(([target, iconName, label], index) => {
+            const button = make('button', `revamp-nav-item${index === 0 ? ' active' : ''}`);
+            button.type = 'button';
+            button.dataset.target = target;
+            button.setAttribute('aria-label', label);
+            button.setAttribute('aria-current', index === 0 ? 'page' : 'false');
+            button.append(icon(iconName), make('span', 'revamp-nav-label', label));
+            nav.appendChild(button);
+        });
+
+        const spacer = make('div', 'revamp-sidebar-spacer');
+        const localStatus = make('div', 'revamp-local-status');
+        localStatus.title = 'As alterações são salvas automaticamente neste dispositivo.';
+        localStatus.append(icon('ph-shield-check'), make('span', '', 'Salvo localmente'));
+
+        const settings = make('button', 'revamp-settings');
+        settings.type = 'button';
+        settings.dataset.plannkeOnclick = 'openSettingsPanel()';
+        settings.setAttribute('aria-label', 'Configurações');
+        settings.append(icon('ph-gear'), make('span', '', 'Configurações'));
+        sidebar.append(brand, nav, spacer, localStatus, settings);
+
+        const content = make('div', 'revamp-content');
+        content.id = 'revamp-content';
+        const topbar = make('header', 'revamp-topbar');
+        topbar.id = 'revamp-topbar';
+
+        const topbarCopy = make('div', 'revamp-topbar-copy');
+        const eyebrow = make('span', 'revamp-page-eyebrow', 'Visão financeira');
+        eyebrow.id = 'revamp-page-eyebrow';
+        const title = make('h1', 'revamp-page-title', 'Seu dinheiro, com contexto');
+        title.id = 'revamp-page-title';
+        const subtitle = make('p', 'revamp-page-subtitle', 'Saldo, compromissos e próximos passos em uma única visão.');
+        subtitle.id = 'revamp-page-subtitle';
+        topbarCopy.append(eyebrow, title, subtitle);
+
+        const actions = make('div', 'revamp-topbar-actions');
+        const add = make('button', 'revamp-primary-action');
+        add.type = 'button';
+        add.dataset.plannkeOnclick = 'openTxModal(null)';
+        add.append(icon('ph-plus'), make('span', '', 'Nova movimentação'));
+        actions.appendChild(add);
+        topbar.append(topbarCopy, actions);
+
+        const parent = main.parentNode;
+        parent.insertBefore(shell, main);
+        shell.append(sidebar, content);
+        content.append(topbar, main);
+
+        // Legacy chrome is retired, not merely hidden. Financial views and
+        // forms remain as the transitional domain/UI substrate until Tauri.
+        document.querySelectorAll('body > .planner-nav, body > .fab-btn, body > .mobile-tab-bar')
+            .forEach(node => node.remove());
+        document.getElementById('welcomeModal')?.remove();
+        document.getElementById('backupReminderModal')?.remove();
+
+        document.body.classList.add('plannke-revamp');
+        document.body.dataset.revampVersion = '2';
+        document.body.dataset.plannkeCanonical = 'desktop';
+        return shell;
+    }
 
     function splitArgs(source) {
         const out = [];
@@ -261,7 +381,7 @@
         if (!document.querySelector('script[data-plannke-desktop]')) {
             const desktopScript = document.createElement('script');
             desktopScript.src = 'revamp-desktop.js';
-            desktopScript.defer = true;
+            desktopScript.async = false;
             desktopScript.dataset.plannkeDesktop = 'true';
             document.body.appendChild(desktopScript);
         }
@@ -286,7 +406,7 @@
 
         script = document.createElement('script');
         script.src = 'revamp.js';
-        script.defer = true;
+        script.async = false;
         script.dataset.plannkeRevamp = 'desktop';
         script.addEventListener('load', loadDesktopAssets, { once: true });
         document.body.appendChild(script);
@@ -296,6 +416,7 @@
     function init() {
         if (initialized || typeof document === 'undefined') return;
         initialized = true;
+        primeCanonicalShell();
         migrateElement(document.documentElement);
 
         document.addEventListener('click', event => handleDelegated(event, DATA_ATTRS.onclick));
@@ -306,8 +427,18 @@
             records.forEach(record => record.addedNodes.forEach(node => migrateElement(node)));
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
-        loadRevampAssets();
     }
 
-    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, loadDesktopAssets, loadRevampAssets, init };
+    return {
+        ALLOWED_CALLS,
+        splitArgs,
+        parseCall,
+        canHandle,
+        dispatch,
+        migrateElement,
+        primeCanonicalShell,
+        loadDesktopAssets,
+        loadRevampAssets,
+        init
+    };
 });
