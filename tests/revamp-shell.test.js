@@ -6,6 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
+const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
 const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');
 const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
 const formsCss = fs.readFileSync(path.join(root, 'revamp-forms.css'), 'utf8');
@@ -27,15 +28,16 @@ test('revamp navigation covers the existing product views', () => {
   assert.match(js, /link\.click\(\)/);
 });
 
-test('desktop and tablet are first-class while mobile keeps the legacy shell', () => {
-  assert.match(css, /@media \(min-width: 768px\)/);
-  assert.match(css, /@media \(min-width: 1180px\)/);
-  assert.match(css, /@media \(min-width: 768px\) and \(max-width: 1179\.98px\)/);
-  assert.match(css, /@media \(max-width: 767\.98px\)/);
-  assert.match(css, /--rv-sidebar-tablet: 82px/);
+test('final product direction is desktop-only while retaining the responsive base as fallback code', () => {
   assert.match(css, /\.revamp-sidebar/);
   assert.match(css, /\.revamp-topbar/);
-  assert.match(css, /\.plannke-revamp > \.planner-nav/);
+  assert.match(desktopCss, /body\.plannke-revamp/);
+  assert.match(desktopCss, /min-width: 1080px/);
+  assert.match(desktopCss, /grid-template-columns: 236px minmax\(0, 1fr\)/);
+  assert.match(desktopCss, /mobile-tab-bar/);
+  assert.match(desktopCss, /display: none !important/);
+  assert.match(desktopCss, /revamp-brand-copy/);
+  assert.match(desktopCss, /revamp-nav-label/);
 });
 
 test('new shell preserves accessibility hooks for navigation and actions', () => {
@@ -74,14 +76,11 @@ test('planning summary exposes reserved, recurring income, recurring expenses an
   assert.match(js, /Próximos 45 dias/);
 });
 
-test('planning desktop and tablet layouts remain separate from mobile', () => {
-  assert.match(planningCss, /@media \(min-width: 768px\)/);
-  assert.match(planningCss, /@media \(min-width: 1180px\)/);
-  assert.match(planningCss, /@media \(min-width: 768px\) and \(max-width: 1179\.98px\)/);
-  assert.match(planningCss, /@media \(max-width: 767\.98px\)/);
+test('planning retains the dedicated large-screen composition used by the desktop shell', () => {
   assert.match(planningCss, /\.revamp-planning-summary/);
   assert.match(planningCss, /\.revamp-planning-tabs/);
   assert.match(planningCss, /\.product-calendar/);
+  assert.match(desktopCss, /#revamp-shell/);
 });
 
 test('page observer cannot recursively redecorate planning or accounts', () => {
@@ -109,29 +108,28 @@ test('accounts overview uses the existing outstanding-card calculation', () => {
   assert.match(js, /Após cartões/);
 });
 
-test('accounts and cards have dedicated desktop/tablet presentation while mobile stays unchanged', () => {
-  assert.match(accountsCss, /@media \(min-width: 768px\)/);
-  assert.match(accountsCss, /@media \(min-width: 1180px\)/);
-  assert.match(accountsCss, /@media \(min-width: 768px\) and \(max-width: 1179\.98px\)/);
-  assert.match(accountsCss, /@media \(max-width: 767\.98px\)/);
+test('accounts and cards keep their dedicated workspace and are forced into desktop grids', () => {
   assert.match(accountsCss, /\.revamp-accounts-summary/);
   assert.match(accountsCss, /#accounts-grid/);
   assert.match(accountsCss, /#cards-grid/);
   assert.match(accountsCss, /\.billing-history/);
   assert.match(accountsCss, /\.pay-fatura-section/);
+  assert.match(desktopCss, /revamp-accounts #cards-grid/);
+  assert.match(desktopCss, /width: 50% !important/);
+  assert.match(desktopCss, /revamp-accounts #accounts-grid/);
 });
 
-test('desktop and tablet forms share a consistent modal language without changing mobile', () => {
-  assert.match(formsCss, /@media \(min-width: 768px\)/);
+test('forms use the consistent base language plus desktop-specific workspace sizing', () => {
   assert.match(formsCss, /#transactionModal \.modal-dialog/);
   assert.match(formsCss, /#accountModal \.modal-dialog/);
   assert.match(formsCss, /#cardModal \.modal-dialog/);
-  assert.match(formsCss, /#productOnboardingModal \.modal-dialog/);
   assert.match(formsCss, /\.form-control:focus/);
   assert.match(formsCss, /\.form-select:focus/);
   assert.match(formsCss, /\.tx-type-group/);
-  assert.match(formsCss, /\.btn-check:checked \+ \.btn-type/);
-  assert.match(formsCss, /@media \(max-width: 767\.98px\)/);
+  assert.match(desktopCss, /#transactionModal \.modal-dialog/);
+  assert.match(desktopCss, /max-width: 900px/);
+  assert.match(desktopCss, /#accountForm/);
+  assert.match(desktopCss, /#cardForm/);
 });
 
 test('empty states and microinteractions stay restrained and honor reduced motion', () => {
@@ -141,5 +139,4 @@ test('empty states and microinteractions stay restrained and honor reduced motio
   assert.match(statesCss, /#toast-container/);
   assert.match(statesCss, /@media \(prefers-reduced-motion: reduce\)/);
   assert.match(statesCss, /transition-duration: 0\.01ms/);
-  assert.match(statesCss, /@media \(max-width: 767\.98px\)/);
 });
