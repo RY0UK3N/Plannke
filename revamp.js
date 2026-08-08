@@ -53,6 +53,8 @@
     let dashboardObserver = null;
     let planningObserver = null;
     let accountsObserver = null;
+    let planningDecorateScheduled = false;
+    let accountsDecorateScheduled = false;
     let activePlanningTab = 'overview';
 
     function make(tag, className, text) {
@@ -64,6 +66,10 @@
 
     function makeIcon(name) {
         return make('i', `ph ${name}`);
+    }
+
+    function addClassOnce(element, className) {
+        if (element && !element.classList.contains(className)) element.classList.add(className);
     }
 
     function ensureViewStyles() {
@@ -206,8 +212,6 @@
             button.classList.toggle('active', active);
             button.setAttribute('aria-current', active ? 'page' : 'false');
         });
-        if (target === 'projecao') decoratePlanning();
-        if (target === 'accounts') decorateAccounts();
     }
 
     function arrangeDashboardPrimary(dashboard) {
@@ -222,14 +226,14 @@
         const insights = document.getElementById('product-smart-insights');
         if (pulse && pulse.parentElement !== primary) primary.appendChild(pulse);
         if (insights && insights.parentElement !== primary) primary.appendChild(insights);
-        if (pulse) pulse.classList.add('revamp-financial-pulse');
-        if (insights) insights.classList.add('revamp-smart-insights');
+        addClassOnce(pulse, 'revamp-financial-pulse');
+        addClassOnce(insights, 'revamp-smart-insights');
     }
 
     function decorateDashboard() {
         const dashboard = document.getElementById('dashboard-view');
         if (!dashboard) return;
-        dashboard.classList.add('revamp-dashboard');
+        addClassOnce(dashboard, 'revamp-dashboard');
         arrangeDashboardPrimary(dashboard);
 
         const rows = [...dashboard.children].filter(node => node.classList?.contains('row'));
@@ -240,11 +244,11 @@
             'revamp-dashboard-comparison'
         ];
         rows.forEach((row, index) => {
-            if (names[index]) row.classList.add(names[index]);
+            if (names[index]) addClassOnce(row, names[index]);
         });
 
         const balanceLabel = dashboard.querySelector('.balance-label');
-        if (balanceLabel) balanceLabel.textContent = 'Saldo nas contas';
+        if (balanceLabel && balanceLabel.textContent !== 'Saldo nas contas') balanceLabel.textContent = 'Saldo nas contas';
     }
 
     function money(value) {
@@ -372,14 +376,14 @@
         const wrapper = card?.parentElement;
         const panel = wrapper?.classList?.contains('col-12') ? wrapper : card;
         if (!panel) return null;
-        panel.dataset.revampPlanningSection = section;
-        if (className) panel.classList.add(className);
+        if (panel.dataset.revampPlanningSection !== section) panel.dataset.revampPlanningSection = section;
+        if (className) addClassOnce(panel, className);
         return panel;
     }
 
     function classifyPlanningPanels(view, hub) {
         const grid = hub.querySelector(':scope > .row');
-        if (grid) grid.classList.add('revamp-planning-grid');
+        addClassOnce(grid, 'revamp-planning-grid');
 
         markPlanningPanel(hub, '#product-recurring-form', 'recurring', 'revamp-planning-panel-recurring');
         markPlanningPanel(hub, '#product-goal-form', 'goals', 'revamp-planning-panel-goals');
@@ -389,17 +393,17 @@
 
         const calendarCard = hub.querySelector('.product-calendar')?.closest('.card');
         if (calendarCard) {
-            calendarCard.dataset.revampPlanningSection = 'overview';
-            calendarCard.classList.add('revamp-planning-calendar');
+            if (calendarCard.dataset.revampPlanningSection !== 'overview') calendarCard.dataset.revampPlanningSection = 'overview';
+            addClassOnce(calendarCard, 'revamp-planning-calendar');
         }
 
         const directChildren = [...view.children];
         const projectionIntro = directChildren.find(node => node !== hub && node.classList?.contains('card') && node.classList.contains('bg-glass'));
-        if (projectionIntro) projectionIntro.classList.add('revamp-projection-intro');
+        addClassOnce(projectionIntro, 'revamp-projection-intro');
         const projectionRow = directChildren.find(node => node.classList?.contains('row') && node.querySelector?.('#projectionChart'));
         if (projectionRow) {
-            projectionRow.dataset.revampPlanningSection = 'overview';
-            projectionRow.classList.add('revamp-projection-row');
+            if (projectionRow.dataset.revampPlanningSection !== 'overview') projectionRow.dataset.revampPlanningSection = 'overview';
+            addClassOnce(projectionRow, 'revamp-projection-row');
         }
     }
 
@@ -407,29 +411,43 @@
         if (!view) return;
         const valid = PLANNING_TABS.some(item => item.id === tab) ? tab : 'overview';
         activePlanningTab = valid;
-        view.dataset.planningTab = valid;
+        if (view.dataset.planningTab !== valid) view.dataset.planningTab = valid;
         const wideLayout = typeof root.matchMedia === 'function' ? root.matchMedia('(min-width: 768px)').matches : true;
 
         view.querySelectorAll('.revamp-planning-tab').forEach(button => {
-            button.setAttribute('aria-selected', button.dataset.planningTab === valid ? 'true' : 'false');
+            const selected = button.dataset.planningTab === valid ? 'true' : 'false';
+            if (button.getAttribute('aria-selected') !== selected) button.setAttribute('aria-selected', selected);
         });
         view.querySelectorAll('[data-revamp-planning-section]').forEach(panel => {
-            panel.hidden = wideLayout ? panel.dataset.revampPlanningSection !== valid : false;
+            const shouldHide = wideLayout ? panel.dataset.revampPlanningSection !== valid : false;
+            if (panel.hidden !== shouldHide) panel.hidden = shouldHide;
         });
 
         const grid = view.querySelector('#product-planning-hub > .revamp-planning-grid');
-        if (grid) grid.hidden = wideLayout ? valid === 'overview' : false;
+        if (grid) {
+            const shouldHideGrid = wideLayout ? valid === 'overview' : false;
+            if (grid.hidden !== shouldHideGrid) grid.hidden = shouldHideGrid;
+        }
     }
 
     function decoratePlanning() {
         const view = document.getElementById('projecao-view');
         const hub = document.getElementById('product-planning-hub');
         if (!view) return;
-        view.classList.add('revamp-planning');
+        addClassOnce(view, 'revamp-planning');
         if (!hub) return;
         ensurePlanningControls(view, hub);
         classifyPlanningPanels(view, hub);
         applyPlanningTab(view, activePlanningTab);
+    }
+
+    function schedulePlanningDecoration() {
+        if (planningDecorateScheduled) return;
+        planningDecorateScheduled = true;
+        window.setTimeout(() => {
+            planningDecorateScheduled = false;
+            decoratePlanning();
+        }, 0);
     }
 
     function accountSnapshot() {
@@ -531,7 +549,7 @@
     function decorateAccounts() {
         const view = document.getElementById('accounts-view');
         if (!view) return;
-        view.classList.add('revamp-accounts');
+        addClassOnce(view, 'revamp-accounts');
         ensureAccountsOverview(view);
 
         const accountsGrid = document.getElementById('accounts-grid');
@@ -540,20 +558,29 @@
         const cardHead = cardsGrid?.previousElementSibling;
         [accountHead, cardHead].forEach(head => {
             if (!head) return;
-            head.classList.add('revamp-entity-section-head');
+            addClassOnce(head, 'revamp-entity-section-head');
             const button = head.querySelector('button');
-            if (button) button.classList.add('revamp-add-entity');
+            addClassOnce(button, 'revamp-add-entity');
         });
-        accountsGrid?.classList.add('revamp-account-grid');
-        cardsGrid?.classList.add('revamp-card-grid');
+        addClassOnce(accountsGrid, 'revamp-account-grid');
+        addClassOnce(cardsGrid, 'revamp-card-grid');
+    }
+
+    function scheduleAccountsDecoration() {
+        if (accountsDecorateScheduled) return;
+        accountsDecorateScheduled = true;
+        window.setTimeout(() => {
+            accountsDecorateScheduled = false;
+            decorateAccounts();
+        }, 0);
     }
 
     function decorateViews() {
         decorateDashboard();
-        document.getElementById('movimentacao-view')?.classList.add('revamp-movements');
+        addClassOnce(document.getElementById('movimentacao-view'), 'revamp-movements');
         decoratePlanning();
         decorateAccounts();
-        document.getElementById('backup-view')?.classList.add('revamp-backup');
+        addClassOnce(document.getElementById('backup-view'), 'revamp-backup');
     }
 
     function observeViews() {
@@ -573,15 +600,15 @@
         const planningHub = document.getElementById('product-planning-hub');
         if (planningHub) {
             if (planningObserver) planningObserver.disconnect();
-            planningObserver = new MutationObserver(() => window.setTimeout(decoratePlanning, 0));
-            planningObserver.observe(planningHub, { childList: true, subtree: true });
+            planningObserver = new MutationObserver(schedulePlanningDecoration);
+            planningObserver.observe(planningHub, { childList: true });
         }
 
         const accountsGrid = document.getElementById('accounts-grid');
         const cardsGrid = document.getElementById('cards-grid');
         if (accountsGrid || cardsGrid) {
             if (accountsObserver) accountsObserver.disconnect();
-            accountsObserver = new MutationObserver(() => window.setTimeout(decorateAccounts, 0));
+            accountsObserver = new MutationObserver(scheduleAccountsDecoration);
             if (accountsGrid) accountsObserver.observe(accountsGrid, { childList: true });
             if (cardsGrid) accountsObserver.observe(cardsGrid, { childList: true });
         }
