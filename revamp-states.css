@@ -1,5 +1,37 @@
 /* Plannke desktop/tablet empty states and restrained microinteractions */
 @media (min-width: 768px) {
+    /* Final desktop chrome normalization. The legacy mobile shell keeps 5rem of
+       body padding for its bottom navigation/FAB; the desktop shell hides those
+       controls, so carrying that spacing forward creates a false end-of-page scroll. */
+    html body.plannke-revamp {
+        padding-bottom: 0 !important;
+    }
+
+    html body.plannke-revamp .revamp-content > main.container-xl {
+        padding-bottom: 28px !important;
+    }
+
+    /* Keep the brand copy as a deliberate two-line lockup even when the desktop
+       finishing layer changes visibility rules for sidebar labels. */
+    html body.plannke-revamp .revamp-brand-copy {
+        min-width: 0;
+        display: flex !important;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    html body.plannke-revamp .revamp-brand-copy strong,
+    html body.plannke-revamp .revamp-brand-copy span {
+        display: block !important;
+        max-width: 100%;
+    }
+
+    html body.plannke-revamp .revamp-brand-copy span {
+        margin-top: 4px;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+
     .plannke-revamp .card,
     .plannke-revamp .entity-card,
     .plannke-revamp .revamp-planning-metric,
