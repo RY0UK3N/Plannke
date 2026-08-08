@@ -3,6 +3,8 @@ name: Apply storage adapter once
 on:
   push:
     branches: [feature/storage-adapter-autosave]
+  pull_request:
+    branches: [main]
 
 permissions:
   contents: write
