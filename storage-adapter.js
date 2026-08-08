@@ -33,9 +33,33 @@
         return value && typeof value === 'object' ? clone(value) : null;
     }
 
+    function collectionSize(value) {
+        if (Array.isArray(value)) return value.length;
+        if (value && typeof value === 'object') return Object.keys(value).length;
+        return 0;
+    }
+
+    function recoveryFootprint(data) {
+        const source = data && typeof data === 'object' ? data : {};
+        const planning = source.planning && typeof source.planning === 'object' ? source.planning : {};
+        const settings = source.settings && typeof source.settings === 'object' ? source.settings : {};
+        const household = settings.household && typeof settings.household === 'object' ? settings.household : {};
+        return {
+            accounts: collectionSize(source.accounts),
+            cards: collectionSize(source.cards),
+            transactions: collectionSize(source.transactions),
+            cardBillings: collectionSize(source.cardBillings),
+            recurringRules: collectionSize(planning.recurringRules),
+            goals: collectionSize(planning.goals),
+            reserves: collectionSize(planning.reserves),
+            categoryRules: collectionSize(planning.categoryRules),
+            householdMembers: collectionSize(household.members),
+            sharedTransactionMeta: collectionSize(settings.sharedTransactionMeta)
+        };
+    }
+
     function hasMeaningfulData(data) {
-        if (!data || typeof data !== 'object') return false;
-        return !!((data.accounts?.length || 0) + (data.cards?.length || 0) + (data.transactions?.length || 0));
+        return Object.values(recoveryFootprint(data)).some(size => size > 0);
     }
 
     function nowIso() {
@@ -300,11 +324,11 @@
 
         _snapshotBeforeRiskyChange(previous, next) {
             if (!hasMeaningfulData(previous)) return;
-            const accountDrop = (next.accounts?.length || 0) < (previous.accounts?.length || 0);
-            const cardDrop = (next.cards?.length || 0) < (previous.cards?.length || 0);
-            const txDrop = (next.transactions?.length || 0) < (previous.transactions?.length || 0);
-            const txGrowth = (next.transactions?.length || 0) - (previous.transactions?.length || 0);
-            if (accountDrop || cardDrop || txDrop) this._createSnapshotThrottled(previous, 'before-destructive-change');
+            const before = recoveryFootprint(previous);
+            const after = recoveryFootprint(next);
+            const destructive = Object.keys(before).some(key => after[key] < before[key]);
+            const txGrowth = after.transactions - before.transactions;
+            if (destructive) this._createSnapshotThrottled(previous, 'before-destructive-change');
             else if (txGrowth >= 5) this._createSnapshotThrottled(previous, 'before-bulk-change');
         }
 
@@ -364,6 +388,7 @@
     root.saveData = function (data) { return coordinator.saveData(data); };
     root.loadFromLocalStorage = function () { return coordinator.initialize(); };
     root.setupBeforeUnload = function () { coordinator.installLifecycleHandlers(); };
+    root.checkImportPrompt = function () {};
 
     coordinator.installLifecycleHandlers();
     const ready = coordinator.initialize();
