@@ -30,67 +30,6 @@ function clearTxSearch() {
 }
 
 /* ============================================================
-   ATALHOS DE TECLADO
-   ============================================================ */
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', e => {
-        // Ignora quando está em campos de input
-        const tag = document.activeElement?.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-        // Ignora quando modal/offcanvas está aberto (exceto Esc)
-        const modalOpen = document.querySelector('.modal.show');
-        const offcanvasOpen = document.querySelector('.offcanvas.show');
-
-        switch (e.key) {
-            case 'Escape':
-                // Fecha modal ou offcanvas mais recente
-                if (modalOpen) bootstrap.Modal.getInstance(modalOpen)?.hide();
-                else if (offcanvasOpen) bootstrap.Offcanvas.getInstance(offcanvasOpen)?.hide();
-                break;
-            case '?':
-                if (!modalOpen && !offcanvasOpen)
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('shortcutsModal')).show();
-                break;
-        }
-
-        // Os atalhos abaixo requerem que nenhum modal/offcanvas esteja aberto
-        if (modalOpen || offcanvasOpen) return;
-
-        switch (e.key) {
-            case 'n': case 'N':
-                e.preventDefault();
-                openTxModal(null);
-                break;
-            case 'd': case 'D':
-                e.preventDefault();
-                _navigateTo('dashboard');
-                break;
-            case 'l': case 'L':
-                e.preventDefault();
-                _navigateTo('movimentacao');
-                break;
-            case 'c': case 'C':
-                e.preventDefault();
-                _navigateTo('accounts');
-                break;
-            case 'b': case 'B':
-                e.preventDefault();
-                _navigateTo('backup');
-                break;
-            case ',':
-                e.preventDefault();
-                openSettingsPanel();
-                break;
-            case '/':
-                e.preventDefault();
-                _navigateTo('movimentacao');
-                setTimeout(() => document.getElementById('tx-search')?.focus(), 150);
-                break;
-        }
-    });
-}
-
-/* ============================================================
    CAMPO DE VALOR FORMATADO (R$ 0,00)
    ============================================================ */
 const AMOUNT_FIELDS = ['tx-amount', 'acc-balance', 'card-limit'];
@@ -126,50 +65,6 @@ function setCurrencyValue(id, val) {
     const num = parseFloat(val) || 0;
     input.value = num > 0 ? num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     input.dataset.rawValue = String(num);
-}
-
-/* ============================================================
-   NAVIGATION
-   ============================================================ */
-function setupNavigation() {
-    document.querySelectorAll('[data-target]').forEach(item => {
-        item.addEventListener('click', e => {
-            e.preventDefault();
-            const target = item.getAttribute('data-target');
-            _navigateTo(target);
-        });
-    });
-}
-
-function _navigateTo(target) {
-    // Se sair da view de movimentação, descarta instância ECharts para evitar container órfão
-    const leaving = document.querySelector('.content-view:not(.hidden)')?.id?.replace('-view', '');
-    if (leaving === 'movimentacao' && target !== 'movimentacao' && _fluxoChart) {
-        _fluxoChart.dispose();
-        _fluxoChart = null;
-    }
-
-    // Desktop nav
-    document.querySelectorAll('.planner-pill-nav [data-target]').forEach(n => n.classList.remove('active'));
-    const desktopLink = document.querySelector(`.planner-pill-nav [data-target="${target}"]`);
-    if (desktopLink) desktopLink.classList.add('active');
-
-    // Mobile tab bar
-    document.querySelectorAll('.mobile-tab-btn[data-target]').forEach(n => n.classList.remove('active'));
-    const mobileBtn = document.querySelector(`.mobile-tab-btn[data-target="${target}"]`);
-    if (mobileBtn) mobileBtn.classList.add('active');
-
-    document.querySelectorAll('.content-view').forEach(v => {
-        v.id === `${target}-view` ? v.classList.remove('hidden') : v.classList.add('hidden');
-    });
-    renderAll();
-    // Projeção verifica se a view está visível — renderiza após mostrar
-    if (target === 'projecao') renderProjection(getData());
-}
-
-// Called by mobile tab bar buttons (avoids duplicate event listeners)
-function mobileNav(btn, target) {
-    _navigateTo(target);
 }
 
 /* ============================================================

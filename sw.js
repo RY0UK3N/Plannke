@@ -11,6 +11,7 @@ const LOCAL_ASSETS = [
   './vendor/echarts.min.js',
   './storage.js',
   './app.js',
+  './app-navigation.js',
   './storage-adapter.js',
   './storage-ui.js',
   './storage-ui.css',
