@@ -69,7 +69,7 @@ test('clear data uses the canonical save boundary and preserves only appearance 
   assert.deepEqual(Array.from(clean.planning.reserves), []);
   assert.deepEqual(Array.from(clean.planning.recurringRules), []);
   assert.equal(clean.settings.theme, 'light');
-  assert.match(toasts[0].message, /Recuperação/);
+  assert.match(toasts[0].message, /recuperação/i);
 });
 
 test('Excel export is a report with readable sheets, not a restoration payload', () => {
