@@ -5,6 +5,42 @@
     let navigationBound = false;
     let shortcutsBound = false;
 
+    function loadDataActions() {
+        if (root.PlannkeDataActions) return Promise.resolve(root.PlannkeDataActions);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+
+        const existing = document.querySelector('script[data-plannke-data-actions]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeDataActions) return resolve(root.PlannkeDataActions);
+                existing.addEventListener('load', () => resolve(root.PlannkeDataActions || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar ações de dados.')), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-data.js';
+            script.async = false;
+            script.dataset.plannkeDataActions = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeDataActions || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar ações de dados.')), { once: true });
+            document.body.appendChild(script);
+        });
+    }
+
+    const dataActionsReady = loadDataActions();
+    root.PlannkeDataReady = dataActionsReady;
+
+    // Retire the old app.js actions immediately. Even if the canonical module is
+    // still downloading, a very early click waits for it instead of reaching the
+    // old Memory Card/localStorage implementation.
+    ['confirmClearData', 'exportToExcel'].forEach(action => {
+        root[action] = (...args) => dataActionsReady
+            .then(api => api?.[action]?.(...args))
+            .catch(error => console.error(`Falha ao executar ${action}:`, error));
+    });
+
     function setActiveNavigation(target) {
         document.querySelectorAll('.revamp-nav-item[data-target]').forEach(button => {
             const active = button.dataset.target === target;
@@ -101,6 +137,7 @@
         setupNavigation,
         setupKeyboardShortcuts,
         navigateTo,
-        setActiveNavigation
+        setActiveNavigation,
+        loadDataActions
     };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
