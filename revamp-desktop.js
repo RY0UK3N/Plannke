@@ -72,10 +72,11 @@
     }
 
     function replaceActionContent(element, iconName, label) {
-        if (!element) return;
+        if (!element || element.dataset.revampDesktopLabel === label) return;
         const fileInput = element.querySelector('input[type="file"]');
         element.replaceChildren(icon(iconName), document.createTextNode(` ${label}`));
         if (fileInput) element.appendChild(fileInput);
+        element.dataset.revampDesktopLabel = label;
     }
 
     function decorateBackup() {
@@ -106,13 +107,15 @@
         if (primary) {
             primary.classList.add('revamp-backup-primary');
             const iconWrap = primary.querySelector('.backup-icon-wrap');
-            if (iconWrap) {
+            if (iconWrap && !iconWrap.dataset.revampDesktopIcon) {
                 iconWrap.replaceChildren(icon('ph-archive'));
+                iconWrap.dataset.revampDesktopIcon = 'archive';
             }
             const title = primary.querySelector('h4');
             if (title && title.textContent !== 'Backup e portabilidade') title.textContent = 'Backup e portabilidade';
             const description = primary.querySelector('.card-body > p.text-muted');
-            if (description) {
+            const descriptionText = 'O Plannke já salva automaticamente neste dispositivo. O Excel funciona como uma cópia externa e portátil para abrir, guardar ou levar seus dados.';
+            if (description && description.textContent.trim() !== descriptionText) {
                 description.replaceChildren(
                     document.createTextNode('O Plannke já salva automaticamente neste dispositivo. O Excel funciona como uma '),
                     make('strong', '', 'cópia externa e portátil'),
@@ -124,8 +127,9 @@
             replaceActionContent(exportButton, 'ph-file-xls', 'Exportar Excel');
             replaceActionContent(importLabel, 'ph-upload-simple', 'Importar Excel');
             const info = primary.querySelector('.tiny.text-muted');
-            if (info && info.textContent !== 'Excel não é mais o armazenamento principal; ele é uma cópia de segurança e interoperabilidade.') {
-                info.replaceChildren(icon('ph-info'), document.createTextNode(' Excel não é mais o armazenamento principal; ele é uma cópia de segurança e interoperabilidade.'));
+            const infoText = 'Excel não é mais o armazenamento principal; ele é uma cópia de segurança e interoperabilidade.';
+            if (info && info.textContent.trim() !== infoText) {
+                info.replaceChildren(icon('ph-info'), document.createTextNode(` ${infoText}`));
             }
         }
 
@@ -133,9 +137,8 @@
         if (bank) {
             bank.classList.add('revamp-bank-import-panel');
             const copy = bank.querySelector('.small.text-muted');
-            if (copy && copy.textContent !== 'Importe movimentações de OFX ou CSV para a conta selecionada. O arquivo é processado localmente e duplicatas são ignoradas.') {
-                copy.textContent = 'Importe movimentações de OFX ou CSV para a conta selecionada. O arquivo é processado localmente e duplicatas são ignoradas.';
-            }
+            const bankText = 'Importe movimentações de OFX ou CSV para a conta selecionada. O arquivo é processado localmente e duplicatas são ignoradas.';
+            if (copy && copy.textContent.trim() !== bankText) copy.textContent = bankText;
         }
     }
 
