@@ -3,13 +3,25 @@
         document.currentScript.dataset.plannkeProduct = 'static-shell';
     }
 
+    function waitForStorageReady(api) {
+        if (!api) return Promise.resolve(null);
+        return Promise.resolve(api.ready).then(() => api);
+    }
+
     function loadStorageAdapter() {
-        if (!root || typeof document === 'undefined' || root.PlannkeStorage) return Promise.resolve(root?.PlannkeStorage || null);
+        if (!root || typeof document === 'undefined') return Promise.resolve(root?.PlannkeStorage || null);
+        if (root.PlannkeStorage) return waitForStorageReady(root.PlannkeStorage);
+
         const existing = document.querySelector('script[data-plannke-storage-adapter]');
         if (existing) {
             return new Promise((resolve, reject) => {
-                if (root.PlannkeStorage) { resolve(root.PlannkeStorage); return; }
-                existing.addEventListener('load', () => resolve(root.PlannkeStorage || null), { once: true });
+                if (root.PlannkeStorage) {
+                    waitForStorageReady(root.PlannkeStorage).then(resolve, reject);
+                    return;
+                }
+                existing.addEventListener('load', () => {
+                    waitForStorageReady(root.PlannkeStorage).then(resolve, reject);
+                }, { once: true });
                 existing.addEventListener('error', () => reject(new Error('Falha ao carregar StorageAdapter.')), { once: true });
             });
         }
@@ -19,14 +31,38 @@
             script.src = 'storage-adapter.js';
             script.async = false;
             script.dataset.plannkeStorageAdapter = 'true';
-            script.addEventListener('load', () => resolve(root.PlannkeStorage || null), { once: true });
+            script.addEventListener('load', () => {
+                waitForStorageReady(root.PlannkeStorage).then(resolve, reject);
+            }, { once: true });
             script.addEventListener('error', () => reject(new Error('Falha ao carregar StorageAdapter.')), { once: true });
             document.head.appendChild(script);
         });
     }
 
+    function loadStorageUiAssets() {
+        if (typeof document === 'undefined') return;
+        if (!document.querySelector('link[data-plannke-storage-ui]')) {
+            const stylesheet = document.createElement('link');
+            stylesheet.rel = 'stylesheet';
+            stylesheet.href = 'storage-ui.css';
+            stylesheet.dataset.plannkeStorageUi = 'true';
+            document.head.appendChild(stylesheet);
+        }
+        if (!document.querySelector('script[data-plannke-storage-ui]')) {
+            const script = document.createElement('script');
+            script.src = 'storage-ui.js';
+            script.defer = true;
+            script.dataset.plannkeStorageUi = 'true';
+            document.body.appendChild(script);
+        }
+    }
+
     const legacyInitApp = root?.initApp;
     const storageReady = loadStorageAdapter();
+    storageReady.then(loadStorageUiAssets).catch(error => {
+        console.error('Interface de persistência indisponível.', error);
+    });
+
     if (root && typeof legacyInitApp === 'function') {
         root.initApp = function (...args) {
             return storageReady
@@ -40,7 +76,9 @@
 
     const api = factory(root);
     api.storageReady = storageReady;
+    api.waitForStorageReady = waitForStorageReady;
     api.loadStorageAdapter = loadStorageAdapter;
+    api.loadStorageUiAssets = loadStorageUiAssets;
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeUIBridge = api;
     if (typeof document !== 'undefined') {
