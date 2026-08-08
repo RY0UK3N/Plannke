@@ -1,0 +1,314 @@
+/* Plannke desktop/tablet accounts and cards workspace */
+@media (min-width: 768px) {
+    .revamp-accounts-overview {
+        display: grid;
+        gap: 14px;
+        margin-bottom: 24px;
+    }
+
+    .revamp-accounts-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .revamp-accounts-metric {
+        min-width: 0;
+        min-height: 126px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 17px 18px;
+        border: 1px solid var(--rv-border);
+        border-radius: var(--rv-radius-lg);
+        background: var(--rv-panel);
+    }
+
+    .revamp-accounts-metric.primary {
+        border-color: rgba(139, 124, 246, 0.24);
+        background:
+            radial-gradient(circle at 100% 0%, rgba(139, 124, 246, 0.15), transparent 52%),
+            var(--rv-panel);
+    }
+
+    .revamp-accounts-metric.warning {
+        border-color: rgba(255, 180, 90, 0.18);
+    }
+
+    .revamp-accounts-metric-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        color: var(--rv-muted);
+        font-size: 0.71rem;
+        font-weight: 750;
+        letter-spacing: 0.055em;
+        text-transform: uppercase;
+    }
+
+    .revamp-accounts-metric-icon {
+        width: 30px;
+        height: 30px;
+        display: grid;
+        place-items: center;
+        flex: 0 0 30px;
+        border-radius: 10px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+        font-size: 1rem;
+    }
+
+    .revamp-accounts-metric.warning .revamp-accounts-metric-icon {
+        color: #f4ad58;
+        background: rgba(244, 173, 88, 0.1);
+    }
+
+    .revamp-accounts-metric-value {
+        display: block;
+        overflow: hidden;
+        color: var(--rv-text);
+        font-size: clamp(1.18rem, 1.65vw, 1.55rem);
+        font-weight: 760;
+        letter-spacing: -0.04em;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .revamp-accounts-metric small {
+        display: block;
+        margin-top: 5px;
+        color: var(--rv-muted);
+        font-size: 0.7rem;
+        line-height: 1.35;
+    }
+
+    .revamp-accounts-context {
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        padding: 11px 14px;
+        border: 1px solid var(--rv-border);
+        border-radius: var(--rv-radius-md);
+        color: var(--rv-muted);
+        background: var(--rv-bg-soft);
+        font-size: 0.76rem;
+        line-height: 1.4;
+    }
+
+    .revamp-accounts-context i {
+        flex: 0 0 auto;
+        color: var(--rv-accent);
+        font-size: 1rem;
+    }
+
+    .revamp-accounts-context.warning {
+        border-color: rgba(244, 173, 88, 0.22);
+        color: #e0b67f;
+        background: rgba(244, 173, 88, 0.065);
+    }
+
+    .revamp-accounts-context.warning i {
+        color: #f4ad58;
+    }
+
+    .revamp-entity-section-head {
+        margin: 0 0 12px !important;
+        padding-top: 4px;
+    }
+
+    .revamp-entity-section-head h5 {
+        color: var(--rv-text);
+        font-size: 0.94rem;
+        letter-spacing: -0.015em;
+    }
+
+    .revamp-add-entity {
+        min-height: 35px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        border-color: var(--rv-border-strong) !important;
+        border-radius: 10px !important;
+        padding-inline: 12px !important;
+        color: var(--rv-text) !important;
+        background: var(--rv-panel) !important;
+        font-size: 0.74rem !important;
+    }
+
+    .revamp-add-entity:hover,
+    .revamp-add-entity:focus-visible {
+        border-color: rgba(139, 124, 246, 0.42) !important;
+        color: var(--rv-accent) !important;
+        background: var(--rv-accent-soft) !important;
+    }
+
+    .revamp-accounts #accounts-grid,
+    .revamp-accounts #cards-grid {
+        margin-bottom: 26px !important;
+        --bs-gutter-x: 12px;
+        --bs-gutter-y: 12px;
+    }
+
+    .revamp-accounts .entity-card {
+        overflow: hidden;
+        min-height: 210px;
+        border-color: var(--rv-border) !important;
+        border-radius: var(--rv-radius-lg) !important;
+        background: var(--rv-panel) !important;
+        box-shadow: none !important;
+        transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+
+    .revamp-accounts .entity-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--rv-border-strong) !important;
+        background: var(--rv-panel-strong) !important;
+    }
+
+    .revamp-accounts .entity-card .card-body {
+        display: flex;
+        flex-direction: column;
+        padding: 19px !important;
+    }
+
+    .revamp-accounts .entity-card .entity-icon {
+        width: 38px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        border-radius: 12px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+    }
+
+    .revamp-accounts .entity-card .btn-icon {
+        width: 30px;
+        height: 30px;
+        opacity: 0.42;
+        border-radius: 9px;
+        transition: opacity 140ms ease, background 140ms ease, color 140ms ease;
+    }
+
+    .revamp-accounts .entity-card:hover .btn-icon,
+    .revamp-accounts .entity-card .btn-icon:focus-visible {
+        opacity: 1;
+    }
+
+    .revamp-accounts .entity-card:not(.card-type) .fs-4 {
+        margin-top: 4px !important;
+        color: var(--rv-text) !important;
+        font-size: 1.55rem !important;
+        letter-spacing: -0.04em;
+    }
+
+    .revamp-accounts .entity-card:not(.card-type) .card-body > .d-flex:last-child {
+        margin-top: auto;
+    }
+
+    .revamp-accounts .entity-card .btn-outline-primary.rounded-pill {
+        border-color: var(--rv-border-strong) !important;
+        border-radius: 10px !important;
+        color: var(--rv-muted) !important;
+        background: transparent !important;
+    }
+
+    .revamp-accounts .entity-card .btn-outline-primary.rounded-pill:hover {
+        color: var(--rv-accent) !important;
+        border-color: rgba(139, 124, 246, 0.32) !important;
+        background: var(--rv-accent-soft) !important;
+    }
+
+    .revamp-accounts .entity-card.card-type {
+        min-height: 390px;
+    }
+
+    .revamp-accounts .entity-card.card-type .entity-icon {
+        color: #70b7ff;
+        background: rgba(112, 183, 255, 0.1);
+    }
+
+    .revamp-accounts .entity-card.card-type .progress {
+        height: 6px !important;
+        border-radius: 99px !important;
+        background: var(--rv-bg-soft) !important;
+    }
+
+    .revamp-accounts .billing-history {
+        margin-top: 3px;
+        padding: 11px 12px;
+        border: 1px solid var(--rv-border);
+        border-radius: 12px;
+        background: var(--rv-bg-soft);
+    }
+
+    .revamp-accounts .billing-row {
+        min-height: 28px;
+        display: grid;
+        grid-template-columns: 1fr auto 18px;
+        align-items: center;
+        gap: 10px;
+        padding: 3px 0;
+    }
+
+    .revamp-accounts .billing-row + .billing-row {
+        border-top: 1px solid var(--rv-border);
+    }
+
+    .revamp-accounts .pay-fatura-section {
+        margin-top: auto;
+        padding: 11px 12px;
+        border: 1px solid rgba(139, 124, 246, 0.18);
+        border-radius: 12px;
+        background: var(--rv-accent-soft);
+    }
+
+    .revamp-accounts .pay-fatura-section .form-select {
+        min-width: 0;
+        border-color: var(--rv-border-strong);
+        border-radius: 9px;
+        background-color: var(--rv-panel-strong);
+    }
+
+    .revamp-accounts .btn-pay {
+        border-radius: 9px;
+        white-space: nowrap;
+    }
+
+    .revamp-accounts .paid-badge {
+        margin-top: auto;
+        border-radius: 11px;
+    }
+
+    .revamp-accounts .entity-card.card-type .border-top {
+        border-color: var(--rv-border) !important;
+    }
+}
+
+@media (min-width: 1180px) {
+    .revamp-accounts #cards-grid > [class*="col-"] {
+        width: 50%;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1179.98px) {
+    .revamp-accounts-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .revamp-accounts #cards-grid > [class*="col-"] {
+        width: 100%;
+    }
+
+    .revamp-accounts .entity-card.card-type {
+        min-height: 360px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .revamp-accounts-overview {
+        display: none !important;
+    }
+}
