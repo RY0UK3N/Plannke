@@ -52,5 +52,5 @@ test('all five primary views are owned by canonical desktop navigation', () => {
     assert.match(bridge, new RegExp(`\\['${target}',`));
   });
   assert.match(bridge, /CANONICAL_PAGES/);
-  assert.match(bridge, /dataset\.target = page/);
+  assert.match(bridge, /button\.dataset\.target = target/);
 });
