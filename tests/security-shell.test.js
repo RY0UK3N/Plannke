@@ -70,6 +70,16 @@ test('storage status and recovery UI are local, safe and retire Memory Card as s
   assert.doesNotMatch(storageUi, /\beval\s*\(/);
 });
 
+test('storage UI observer cannot recursively rewrite its own status DOM', () => {
+  assert.match(storageUi, /function setTextOnce\(/);
+  assert.match(storageUi, /node\.textContent !== text/);
+  assert.match(storageUi, /function setClassOnce\(/);
+  assert.match(storageUi, /function setAttributeOnce\(/);
+  assert.match(storageUi, /function scheduleObserverRefresh\(/);
+  assert.match(storageUi, /new MutationObserver\(scheduleObserverRefresh\)/);
+  assert.doesNotMatch(storageUi, /const observer = new MutationObserver\(\(\) => \{\s*updateStatus\(\)/);
+});
+
 test('revamp and final desktop assets are loaded from trusted local scripts', () => {
   assert.match(bridge, /stylesheet\.href = 'revamp\.css'/);
   assert.match(bridge, /desktopStyle\.href = 'revamp-desktop\.css'/);
@@ -147,7 +157,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v21'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v22'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
