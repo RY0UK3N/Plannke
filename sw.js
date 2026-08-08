@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plannke-shell-v21';
+const CACHE_NAME = 'plannke-shell-v22';
 const LOCAL_ASSETS = [
   './',
   './index.html',
