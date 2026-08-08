@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
+const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
@@ -49,6 +50,25 @@ test('StorageAdapter is ready before the legacy initApp body is allowed to run',
   assert.match(storageAdapter, /root\.getData = function/);
   assert.match(storageAdapter, /root\.saveData = function/);
   assert.match(storageAdapter, /plannke:storage-status/);
+});
+
+test('canonical desktop styles are part of the first paint and legacy chrome is removed', () => {
+  [
+    'revamp.css',
+    'revamp-dashboard.css',
+    'revamp-movements.css',
+    'revamp-planning.css',
+    'revamp-accounts.css',
+    'revamp-desktop.css',
+    'storage-ui.css'
+  ].forEach(asset => assert.ok(productCss.includes(`@import url('./${asset}')`), `missing canonical CSS import: ${asset}`));
+  assert.match(productCss, /body:not\(\.plannke-revamp\) > \.planner-nav/);
+  assert.match(productCss, /body:not\(\.plannke-revamp\) > main/);
+  assert.match(productCss, /visibility: hidden !important/);
+  assert.match(storageUi, /function finalizeCanonicalShell\(/);
+  assert.match(storageUi, /body > \$\{selector\}/);
+  assert.match(storageUi, /node => node\.remove\(\)/);
+  assert.match(storageUi, /plannkeCanonicalReady/);
 });
 
 test('storage status and recovery UI are local, safe and retire Memory Card as startup storage', () => {
@@ -157,7 +177,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('PWA navigation is network-first and local runtime assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v22'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v23'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
