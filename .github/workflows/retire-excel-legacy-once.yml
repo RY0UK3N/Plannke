@@ -1,3 +1,4 @@
+# trigger: retire-excel-legacy-v1
 name: Retire Excel legacy once
 
 on:
