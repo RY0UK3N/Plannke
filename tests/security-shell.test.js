@@ -50,6 +50,14 @@ test('revamp and final desktop assets are loaded from trusted local scripts', ()
   assert.match(desktopCss, /min-width: 1080px/);
 });
 
+test('bank files are intercepted for review before the legacy direct-import listener can run', () => {
+  assert.match(desktop, /document\.addEventListener\('change', captureBankImport, true\)/);
+  assert.match(desktop, /event\.stopImmediatePropagation\(\)/);
+  assert.match(desktop, /pendingBankImport/);
+  assert.match(desktop, /function confirmBankImport\(/);
+  assert.match(desktop, /data\.transactions\.push\(transaction\)/);
+});
+
 test('third-party runtime dependencies are vendored and pinned', () => {
   const assets = [
     'vendor/bootstrap.min.css',
