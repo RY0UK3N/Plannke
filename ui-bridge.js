@@ -167,6 +167,49 @@
         }
     }
 
+    function loadDesktopAssets() {
+        if (typeof document === 'undefined') return;
+        if (!document.querySelector('link[data-plannke-desktop-style]')) {
+            const desktopStyle = document.createElement('link');
+            desktopStyle.rel = 'stylesheet';
+            desktopStyle.href = 'revamp-desktop.css';
+            desktopStyle.dataset.plannkeDesktopStyle = 'true';
+            document.head.appendChild(desktopStyle);
+        }
+        if (!document.querySelector('script[data-plannke-desktop]')) {
+            const desktopScript = document.createElement('script');
+            desktopScript.src = 'revamp-desktop.js';
+            desktopScript.defer = true;
+            desktopScript.dataset.plannkeDesktop = 'true';
+            document.body.appendChild(desktopScript);
+        }
+    }
+
+    function loadRevampAssets() {
+        if (typeof document === 'undefined') return;
+        if (!document.querySelector('link[data-plannke-revamp]')) {
+            const stylesheet = document.createElement('link');
+            stylesheet.rel = 'stylesheet';
+            stylesheet.href = 'revamp.css';
+            stylesheet.dataset.plannkeRevamp = 'desktop';
+            document.head.appendChild(stylesheet);
+        }
+
+        let script = document.querySelector('script[data-plannke-revamp]');
+        if (script) {
+            if (root.PlannkeRevamp) loadDesktopAssets();
+            else script.addEventListener('load', loadDesktopAssets, { once: true });
+            return;
+        }
+
+        script = document.createElement('script');
+        script.src = 'revamp.js';
+        script.defer = true;
+        script.dataset.plannkeRevamp = 'desktop';
+        script.addEventListener('load', loadDesktopAssets, { once: true });
+        document.body.appendChild(script);
+    }
+
     let initialized = false;
     function init() {
         if (initialized || typeof document === 'undefined') return;
@@ -181,7 +224,8 @@
             records.forEach(record => record.addedNodes.forEach(node => migrateElement(node)));
         });
         observer.observe(document.documentElement, { childList: true, subtree: true });
+        loadRevampAssets();
     }
 
-    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, init };
+    return { ALLOWED_CALLS, splitArgs, parseCall, canHandle, dispatch, migrateElement, loadDesktopAssets, loadRevampAssets, init };
 });

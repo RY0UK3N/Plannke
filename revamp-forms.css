@@ -1,0 +1,322 @@
+@import url('./revamp-states.css');
+
+/* Plannke desktop/tablet modal and form language */
+@media (min-width: 768px) {
+    .plannke-revamp .modal {
+        --bs-modal-bg: var(--rv-panel-strong);
+        --bs-modal-border-color: var(--rv-border);
+        --bs-modal-header-border-color: var(--rv-border);
+        --bs-modal-footer-border-color: var(--rv-border);
+    }
+
+    .plannke-revamp .modal-backdrop.show {
+        opacity: 0.72;
+    }
+
+    .plannke-revamp .modal-dialog {
+        padding: 18px;
+    }
+
+    .plannke-revamp #transactionModal .modal-dialog {
+        max-width: 720px;
+    }
+
+    .plannke-revamp #accountModal .modal-dialog,
+    .plannke-revamp #cardModal .modal-dialog {
+        max-width: 520px;
+    }
+
+    .plannke-revamp #entityDetailModal .modal-dialog {
+        max-width: 900px;
+    }
+
+    .plannke-revamp #productOnboardingModal .modal-dialog {
+        max-width: 620px;
+    }
+
+    .plannke-revamp .modal-content {
+        overflow: hidden;
+        border: 1px solid var(--rv-border) !important;
+        border-radius: 22px !important;
+        background: var(--rv-panel-strong) !important;
+        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.32) !important;
+    }
+
+    .plannke-revamp .modal-header {
+        min-height: 68px;
+        padding: 17px 20px;
+        border-color: var(--rv-border) !important;
+        background: rgba(255, 255, 255, 0.012);
+    }
+
+    .plannke-revamp .modal-title {
+        color: var(--rv-text);
+        font-size: 1rem;
+        font-weight: 760 !important;
+        letter-spacing: -0.02em;
+    }
+
+    .plannke-revamp .modal-body {
+        padding: 22px;
+    }
+
+    .plannke-revamp .modal-footer {
+        padding: 15px 20px;
+        border-color: var(--rv-border) !important;
+    }
+
+    .plannke-revamp .btn-close {
+        width: 30px;
+        height: 30px;
+        margin: 0;
+        padding: 0;
+        border-radius: 9px;
+        background-size: 0.72rem;
+        opacity: 0.58;
+        transition: opacity 140ms ease, background-color 140ms ease;
+    }
+
+    .plannke-revamp .btn-close:hover,
+    .plannke-revamp .btn-close:focus-visible {
+        opacity: 1;
+        background-color: var(--rv-panel-hover);
+    }
+
+    .plannke-revamp .modal .form-label,
+    .plannke-revamp .offcanvas .form-label {
+        margin-bottom: 7px;
+        color: var(--rv-muted) !important;
+        font-size: 0.68rem !important;
+        font-weight: 750 !important;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    .plannke-revamp .modal .form-control,
+    .plannke-revamp .modal .form-select,
+    .plannke-revamp .offcanvas .form-control,
+    .plannke-revamp .offcanvas .form-select {
+        min-height: 44px;
+        border: 1px solid var(--rv-border-strong);
+        border-radius: 11px;
+        padding: 9px 12px;
+        color: var(--rv-text);
+        background-color: var(--rv-bg-soft);
+        box-shadow: none;
+        font-size: 0.86rem;
+        transition: border-color 140ms ease, box-shadow 140ms ease, background 140ms ease;
+    }
+
+    .plannke-revamp .modal .form-control::placeholder,
+    .plannke-revamp .offcanvas .form-control::placeholder {
+        color: color-mix(in srgb, var(--rv-muted) 68%, transparent);
+    }
+
+    .plannke-revamp .modal .form-control:focus,
+    .plannke-revamp .modal .form-select:focus,
+    .plannke-revamp .offcanvas .form-control:focus,
+    .plannke-revamp .offcanvas .form-select:focus {
+        border-color: rgba(139, 124, 246, 0.62);
+        background-color: var(--rv-panel);
+        box-shadow: 0 0 0 3px rgba(139, 124, 246, 0.11);
+    }
+
+    .plannke-revamp .modal .input-group,
+    .plannke-revamp .offcanvas .input-group {
+        border-radius: 11px;
+    }
+
+    .plannke-revamp .modal .input-group-text,
+    .plannke-revamp .offcanvas .input-group-text {
+        min-width: 45px;
+        justify-content: center;
+        border-color: var(--rv-border-strong);
+        border-radius: 11px 0 0 11px;
+        color: var(--rv-muted);
+        background: var(--rv-panel);
+        font-size: 0.78rem;
+        font-weight: 700;
+    }
+
+    .plannke-revamp .modal .input-group > .form-control,
+    .plannke-revamp .offcanvas .input-group > .form-control {
+        border-radius: 0 11px 11px 0;
+    }
+
+    .plannke-revamp .modal .tiny.text-muted,
+    .plannke-revamp .modal .small.text-muted {
+        color: var(--rv-muted) !important;
+    }
+
+    .plannke-revamp .modal .btn-primary,
+    .plannke-revamp .modal .btn-outline-primary,
+    .plannke-revamp .offcanvas .btn-primary,
+    .plannke-revamp .offcanvas .btn-outline-primary {
+        min-height: 40px;
+        border-radius: 11px !important;
+        font-size: 0.8rem;
+        font-weight: 720 !important;
+    }
+
+    .plannke-revamp .modal .btn-primary,
+    .plannke-revamp .offcanvas .btn-primary {
+        border-color: rgba(139, 124, 246, 0.36);
+        background: linear-gradient(135deg, #8b7cf6, #6e61e5);
+        box-shadow: 0 9px 24px rgba(105, 89, 225, 0.18);
+    }
+
+    .plannke-revamp .modal .btn-outline-primary,
+    .plannke-revamp .offcanvas .btn-outline-primary {
+        border-color: var(--rv-border-strong);
+        color: var(--rv-text);
+        background: transparent;
+    }
+
+    .plannke-revamp .modal .btn-outline-primary:hover,
+    .plannke-revamp .offcanvas .btn-outline-primary:hover {
+        border-color: rgba(139, 124, 246, 0.42);
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+    }
+
+    .plannke-revamp #transactionModal .tx-type-group {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .plannke-revamp #transactionModal .tx-type-group > .btn-type {
+        min-height: 76px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        margin: 0 !important;
+        border: 1px solid var(--rv-border-strong) !important;
+        border-radius: 12px !important;
+        color: var(--rv-muted);
+        background: var(--rv-bg-soft);
+        box-shadow: none !important;
+    }
+
+    .plannke-revamp #transactionModal .tx-type-group > .btn-type:hover {
+        color: var(--rv-text);
+        border-color: rgba(139, 124, 246, 0.3) !important;
+        background: var(--rv-panel-hover);
+    }
+
+    .plannke-revamp #transactionModal .btn-check:checked + .btn-type {
+        color: var(--rv-text);
+        border-color: rgba(139, 124, 246, 0.48) !important;
+        background: var(--rv-accent-soft) !important;
+    }
+
+    .plannke-revamp #transactionModal .btn-check:checked + .btn-type i {
+        color: var(--rv-accent);
+    }
+
+    .plannke-revamp #transactionModal #tx-fields-wrapper:not(.hidden) {
+        padding-top: 4px;
+    }
+
+    .plannke-revamp #transactionModal .form-switch {
+        min-height: 38px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 10px 7px 44px !important;
+        border: 1px solid var(--rv-border);
+        border-radius: 10px;
+        background: var(--rv-bg-soft);
+    }
+
+    .plannke-revamp #transactionModal .form-check-input {
+        box-shadow: none;
+    }
+
+    .plannke-revamp #transactionModal .form-check-input:checked {
+        border-color: var(--rv-accent);
+        background-color: var(--rv-accent);
+    }
+
+    .plannke-revamp #transactionModal .btn-manage-cats {
+        min-height: 26px;
+        border: 0;
+        border-radius: 8px;
+        padding: 3px 7px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+        font-size: 0.66rem;
+        font-weight: 700;
+    }
+
+    .plannke-revamp .product-details {
+        border: 1px solid var(--rv-border);
+        border-radius: 12px;
+        background: var(--rv-bg-soft);
+    }
+
+    .plannke-revamp .product-details > summary {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        padding: 9px 12px;
+        color: var(--rv-text);
+        font-size: 0.78rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .plannke-revamp .product-details[open] > summary {
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .plannke-revamp #productOnboardingModal .product-onboarding {
+        border-radius: 24px !important;
+    }
+
+    .plannke-revamp #productOnboardingModal .modal-body {
+        padding: 34px !important;
+    }
+
+    .plannke-revamp #productOnboardingModal .product-onboarding-icon {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 15px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+        font-size: 1.35rem;
+    }
+
+    .plannke-revamp #entityDetailModal .detail-summary-header {
+        border-bottom: 1px solid var(--rv-border);
+        background: var(--rv-bg-soft);
+    }
+
+    .plannke-revamp #entityDetailModal #detail-tx-list {
+        max-height: min(52vh, 520px);
+        overflow-y: auto;
+    }
+
+    .plannke-revamp .alert {
+        border-radius: 11px;
+        border-color: rgba(255, 117, 143, 0.24);
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1179.98px) {
+    .plannke-revamp #transactionModal .modal-dialog {
+        max-width: 680px;
+    }
+
+    .plannke-revamp .modal-body {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    /* Mobile intentionally keeps the existing modal/form experience this cycle. */
+}

@@ -2,7 +2,7 @@
   "name": "plannke",
   "private": true,
   "scripts": {
-    "test": "node --check product.js && node --check product-core.js && node --check insights.js && node --check ui-bridge.js && node --check safe-renderers.js && node --test tests/*.test.js"
+    "test": "node --check product.js && node --check product-core.js && node --check insights.js && node --check ui-bridge.js && node --check safe-renderers.js && node --check revamp.js && node --check revamp-desktop.js && node --test tests/*.test.js"
   },
   "engines": {
     "node": ">=18"

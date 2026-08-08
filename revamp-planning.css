@@ -1,0 +1,416 @@
+/* Plannke planning workspace — desktop/tablet only */
+@media (min-width: 768px) {
+    .revamp-planning {
+        --rv-planning-gap: 14px;
+    }
+
+    .revamp-planning .revamp-planning-overview {
+        margin-bottom: 18px;
+    }
+
+    .revamp-planning-summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: var(--rv-planning-gap);
+        margin-bottom: 14px;
+    }
+
+    .revamp-planning-metric {
+        min-width: 0;
+        min-height: 118px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 17px 18px;
+        border: 1px solid var(--rv-border);
+        border-radius: var(--rv-radius-lg);
+        background: var(--rv-panel);
+    }
+
+    .revamp-planning-metric-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .revamp-planning-metric-head span {
+        color: var(--rv-muted);
+        font-size: 0.7rem;
+        font-weight: 750;
+        letter-spacing: 0.055em;
+        text-transform: uppercase;
+    }
+
+    .revamp-planning-metric-icon {
+        width: 30px;
+        height: 30px;
+        flex: 0 0 30px;
+        display: grid;
+        place-items: center;
+        border-radius: 9px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+        font-size: 1rem;
+    }
+
+    .revamp-planning-metric strong {
+        display: block;
+        overflow: hidden;
+        color: var(--rv-text);
+        font-size: clamp(1.22rem, 2vw, 1.6rem);
+        font-weight: 760;
+        letter-spacing: -0.035em;
+        line-height: 1.05;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .revamp-planning-metric small {
+        display: block;
+        margin-top: 5px;
+        color: var(--rv-muted);
+        font-size: 0.72rem;
+        line-height: 1.35;
+    }
+
+    .revamp-planning-tabs {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px;
+        overflow-x: auto;
+        border: 1px solid var(--rv-border);
+        border-radius: 14px;
+        background: var(--rv-panel);
+        scrollbar-width: none;
+    }
+
+    .revamp-planning-tabs::-webkit-scrollbar {
+        display: none;
+    }
+
+    .revamp-planning-tab {
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        flex: 1 0 auto;
+        border: 0;
+        border-radius: 10px;
+        padding: 0 13px;
+        color: var(--rv-muted);
+        background: transparent;
+        font-size: 0.78rem;
+        font-weight: 680;
+        white-space: nowrap;
+        transition: color 150ms ease, background 150ms ease;
+    }
+
+    .revamp-planning-tab i {
+        font-size: 1rem;
+    }
+
+    .revamp-planning-tab:hover {
+        color: var(--rv-text);
+        background: var(--rv-panel-hover);
+    }
+
+    .revamp-planning-tab[aria-selected="true"] {
+        color: var(--rv-text);
+        background: var(--rv-accent-soft);
+    }
+
+    .revamp-planning-tab[aria-selected="true"] i {
+        color: var(--rv-accent);
+    }
+
+    .revamp-planning-tab:focus-visible {
+        outline: 2px solid var(--rv-accent);
+        outline-offset: 2px;
+    }
+
+    .revamp-planning-tab-count {
+        min-width: 22px;
+        height: 22px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 999px;
+        padding: 0 6px;
+        color: var(--rv-muted);
+        background: var(--rv-bg-soft);
+        font-size: 0.65rem;
+        font-weight: 800;
+    }
+
+    .revamp-planning-tab[aria-selected="true"] .revamp-planning-tab-count {
+        color: var(--rv-accent);
+        background: rgba(139, 124, 246, 0.12);
+    }
+
+    .revamp-planning #product-planning-hub > .product-section-heading {
+        display: none !important;
+    }
+
+    .revamp-planning [data-revamp-planning-section][hidden],
+    .revamp-planning .revamp-projection-row[hidden] {
+        display: none !important;
+    }
+
+    .revamp-planning .revamp-projection-intro {
+        display: none !important;
+    }
+
+    .revamp-planning #product-planning-hub > .row {
+        --bs-gutter-x: var(--rv-planning-gap);
+        --bs-gutter-y: var(--rv-planning-gap);
+        margin-bottom: 18px !important;
+    }
+
+    .revamp-planning .revamp-planning-panel-recurring {
+        width: 100%;
+    }
+
+    .revamp-planning .revamp-planning-panel-goals,
+    .revamp-planning .revamp-planning-panel-household {
+        width: 50%;
+    }
+
+    .revamp-planning #product-planning-hub .card,
+    .revamp-planning .revamp-projection-row .card {
+        border-color: var(--rv-border) !important;
+    }
+
+    .revamp-planning #product-planning-hub .card-body {
+        padding: 22px;
+    }
+
+    .revamp-planning .product-card-title {
+        align-items: flex-start;
+        padding-bottom: 14px;
+        margin-bottom: 14px;
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .revamp-planning .product-card-title > div {
+        gap: 9px;
+    }
+
+    .revamp-planning .product-card-title > div > i {
+        width: 30px;
+        height: 30px;
+        display: inline-grid;
+        place-items: center;
+        border-radius: 9px;
+        color: var(--rv-accent);
+        background: var(--rv-accent-soft);
+    }
+
+    .revamp-planning .product-card-title strong {
+        color: var(--rv-text);
+        font-size: 0.9rem;
+    }
+
+    .revamp-planning .product-card-title small {
+        max-width: 260px;
+        color: var(--rv-muted);
+        text-align: right;
+        line-height: 1.35;
+    }
+
+    .revamp-planning .product-list-row,
+    .revamp-planning .product-calendar-row {
+        border-color: var(--rv-border) !important;
+    }
+
+    .revamp-planning .product-list-row {
+        min-height: 58px;
+        padding: 11px 2px;
+    }
+
+    .revamp-planning .product-list-row strong,
+    .revamp-planning .product-calendar-row strong,
+    .revamp-planning .product-goal strong {
+        color: var(--rv-text);
+        font-size: 0.82rem;
+    }
+
+    .revamp-planning .product-list-row small,
+    .revamp-planning .product-calendar-row small,
+    .revamp-planning .product-goal small {
+        color: var(--rv-muted);
+    }
+
+    .revamp-planning .product-row-value {
+        flex: 0 0 auto;
+        margin-left: 14px;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .revamp-planning .product-row-value button,
+    .revamp-planning .product-goal button[data-action^="delete"],
+    .revamp-planning .product-chip-rule button {
+        border: 0;
+        color: var(--rv-muted);
+        background: transparent;
+        opacity: 0.65;
+        transition: color 150ms ease, opacity 150ms ease, background 150ms ease;
+    }
+
+    .revamp-planning .product-row-value button:hover,
+    .revamp-planning .product-goal button[data-action^="delete"]:hover,
+    .revamp-planning .product-chip-rule button:hover {
+        color: var(--rv-danger);
+        opacity: 1;
+    }
+
+    .revamp-planning .product-details {
+        border: 1px solid var(--rv-border);
+        border-radius: 12px;
+        background: var(--rv-bg-soft);
+    }
+
+    .revamp-planning .product-details > summary {
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        padding: 0 13px;
+        color: var(--rv-muted);
+        font-size: 0.76rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .revamp-planning .product-details[open] > summary {
+        color: var(--rv-text);
+        border-bottom: 1px solid var(--rv-border);
+    }
+
+    .revamp-planning .product-details > form,
+    .revamp-planning .product-details > div {
+        padding-left: 13px;
+        padding-right: 13px;
+        padding-bottom: 13px;
+    }
+
+    .revamp-planning .product-inline-form {
+        gap: 9px;
+    }
+
+    .revamp-planning .product-inline-form .form-control,
+    .revamp-planning .product-inline-form .form-select {
+        min-height: 38px;
+        border-color: var(--rv-border-strong);
+        border-radius: 10px;
+        background-color: var(--rv-bg-soft);
+        font-size: 0.78rem;
+    }
+
+    .revamp-planning .product-goal {
+        padding: 14px;
+        border: 1px solid var(--rv-border);
+        border-radius: 12px;
+        background: var(--rv-bg-soft);
+    }
+
+    .revamp-planning .product-progress {
+        height: 6px;
+        margin: 12px 0;
+        border-radius: 999px;
+        overflow: hidden;
+        background: var(--rv-border);
+    }
+
+    .revamp-planning .product-progress > span {
+        background: linear-gradient(90deg, var(--rv-accent), #aa9df8);
+    }
+
+    .revamp-planning .product-chip-rule {
+        border-color: var(--rv-border) !important;
+        background: var(--rv-bg-soft) !important;
+    }
+
+    .revamp-planning .product-calendar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        column-gap: 22px;
+    }
+
+    .revamp-planning .product-calendar-row {
+        min-width: 0;
+    }
+
+    .revamp-planning .product-calendar-date {
+        width: 42px;
+        flex: 0 0 42px;
+        color: var(--rv-accent);
+        font-weight: 760;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .revamp-planning .product-calendar-value {
+        margin-left: auto;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .revamp-planning .revamp-projection-row {
+        --bs-gutter-x: var(--rv-planning-gap);
+        margin-top: 0;
+    }
+
+    .revamp-planning .revamp-projection-row .card-body {
+        padding: 22px !important;
+    }
+
+    .revamp-planning #projectionChart {
+        height: 320px !important;
+    }
+}
+
+@media (min-width: 1180px) {
+    .revamp-planning-summary {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .revamp-planning-tabs {
+        width: fit-content;
+        min-width: 620px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1179.98px) {
+    .revamp-planning-summary {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .revamp-planning .revamp-planning-panel-goals,
+    .revamp-planning .revamp-planning-panel-household {
+        width: 100%;
+    }
+
+    .revamp-planning .product-calendar {
+        grid-template-columns: 1fr;
+    }
+
+    .revamp-planning .product-card-title {
+        gap: 10px;
+    }
+
+    .revamp-planning .product-card-title small {
+        max-width: 220px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .revamp-planning-overview,
+    .revamp-planning-tabs {
+        display: none !important;
+    }
+
+    .revamp-planning [data-revamp-planning-section][hidden],
+    .revamp-planning .revamp-projection-row[hidden] {
+        display: block !important;
+    }
+}
