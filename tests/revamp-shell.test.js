@@ -8,6 +8,7 @@ const js = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
 const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');
 const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
+const formsCss = fs.readFileSync(path.join(root, 'revamp-forms.css'), 'utf8');
 
 test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
@@ -43,6 +44,7 @@ test('new shell preserves accessibility hooks for navigation and actions', () =>
   assert.match(css, /:focus-visible/);
   assert.match(planningCss, /\.revamp-planning-tab:focus-visible/);
   assert.match(accountsCss, /:focus-visible/);
+  assert.match(formsCss, /:focus-visible/);
 });
 
 test('planning is organized into decision-oriented desktop tabs without replacing finance handlers', () => {
@@ -103,4 +105,17 @@ test('accounts and cards have dedicated desktop/tablet presentation while mobile
   assert.match(accountsCss, /#cards-grid/);
   assert.match(accountsCss, /\.billing-history/);
   assert.match(accountsCss, /\.pay-fatura-section/);
+});
+
+test('desktop and tablet forms share a consistent modal language without changing mobile', () => {
+  assert.match(formsCss, /@media \(min-width: 768px\)/);
+  assert.match(formsCss, /#transactionModal \.modal-dialog/);
+  assert.match(formsCss, /#accountModal \.modal-dialog/);
+  assert.match(formsCss, /#cardModal \.modal-dialog/);
+  assert.match(formsCss, /#productOnboardingModal \.modal-dialog/);
+  assert.match(formsCss, /\.form-control:focus/);
+  assert.match(formsCss, /\.form-select:focus/);
+  assert.match(formsCss, /\.tx-type-group/);
+  assert.match(formsCss, /\.btn-check:checked \+ \.btn-type/);
+  assert.match(formsCss, /@media \(max-width: 767\.98px\)/);
 });
