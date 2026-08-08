@@ -36,6 +36,7 @@ test('revamp assets are loaded from trusted local scripts', () => {
   assert.match(revamp, /revamp-dashboard\.css/);
   assert.match(revamp, /revamp-movements\.css/);
   assert.match(revamp, /revamp-planning\.css/);
+  assert.match(revamp, /revamp-accounts\.css/);
 });
 
 test('third-party JavaScript dependencies are version-pinned and consolidated', () => {
@@ -74,7 +75,7 @@ test('all external resources are limited to approved hosts', () => {
 });
 
 test('PWA navigation is network-first and all revamp assets are cached', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v10'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v11'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -88,4 +89,5 @@ test('PWA navigation is network-first and all revamp assets are cached', () => {
   assert.match(sw, /revamp-dashboard\.css/);
   assert.match(sw, /revamp-movements\.css/);
   assert.match(sw, /revamp-planning\.css/);
+  assert.match(sw, /revamp-accounts\.css/);
 });
