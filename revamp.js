@@ -40,7 +40,7 @@
             subtitle: 'Leve seus dados com você e importe extratos sem conectar seu banco.'
         }
     };
-    const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css'];
+    const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css', 'revamp-accounts.css'];
     const PLANNING_TABS = [
         { id: 'overview', label: 'Visão geral', icon: 'ph-squares-four' },
         { id: 'recurring', label: 'Compromissos', icon: 'ph-repeat' },
@@ -52,6 +52,7 @@
     let pageObserver = null;
     let dashboardObserver = null;
     let planningObserver = null;
+    let accountsObserver = null;
     let activePlanningTab = 'overview';
 
     function make(tag, className, text) {
@@ -206,6 +207,7 @@
             button.setAttribute('aria-current', active ? 'page' : 'false');
         });
         if (target === 'projecao') decoratePlanning();
+        if (target === 'accounts') decorateAccounts();
     }
 
     function arrangeDashboardPrimary(dashboard) {
@@ -430,11 +432,127 @@
         applyPlanningTab(view, activePlanningTab);
     }
 
+    function accountSnapshot() {
+        try {
+            const data = typeof root.getData === 'function' ? root.getData() : null;
+            if (!data) return null;
+            const accounts = Array.isArray(data.accounts) ? data.accounts : [];
+            const cards = Array.isArray(data.cards) ? data.cards : [];
+            const accountBalance = accounts.reduce((sum, account) => sum + Number(account.balance || 0), 0);
+            const cardLimit = cards.reduce((sum, card) => sum + Number(card.limit || 0), 0);
+            const cardOutstanding = cards.reduce((sum, card) => {
+                const value = typeof root.getOutstandingCardBalance === 'function'
+                    ? root.getOutstandingCardBalance(data, card.id)
+                    : 0;
+                return sum + Number(value || 0);
+            }, 0);
+            const cardAvailable = cardLimit - cardOutstanding;
+            const afterCards = accountBalance - cardOutstanding;
+            const utilization = cardLimit > 0 ? cardOutstanding / cardLimit * 100 : 0;
+            return {
+                accountBalance,
+                cardOutstanding,
+                cardLimit,
+                cardAvailable,
+                afterCards,
+                utilization,
+                accountCount: accounts.length,
+                cardCount: cards.length
+            };
+        } catch (error) {
+            console.warn('Resumo de contas indisponível:', error);
+            return null;
+        }
+    }
+
+    function accountsMetric(label, value, note, iconName, tone = '') {
+        const card = make('article', `revamp-accounts-metric${tone ? ` ${tone}` : ''}`);
+        const head = make('div', 'revamp-accounts-metric-head');
+        const iconWrap = make('span', 'revamp-accounts-metric-icon');
+        iconWrap.appendChild(makeIcon(iconName));
+        head.append(make('span', '', label), iconWrap);
+        const copy = make('div');
+        copy.append(make('strong', 'revamp-accounts-metric-value', value), make('small', '', note));
+        card.append(head, copy);
+        return card;
+    }
+
+    function ensureAccountsOverview(view) {
+        let overview = document.getElementById('revamp-accounts-overview');
+        if (!overview) {
+            overview = make('section', 'revamp-accounts-overview');
+            overview.id = 'revamp-accounts-overview';
+            const summary = make('div', 'revamp-accounts-summary');
+            summary.id = 'revamp-accounts-summary';
+            const context = make('div', 'revamp-accounts-context');
+            context.id = 'revamp-accounts-context';
+            overview.append(summary, context);
+            view.prepend(overview);
+        }
+
+        const snapshot = accountSnapshot() || {
+            accountBalance: 0,
+            cardOutstanding: 0,
+            cardLimit: 0,
+            cardAvailable: 0,
+            afterCards: 0,
+            utilization: 0,
+            accountCount: 0,
+            cardCount: 0
+        };
+        const summary = document.getElementById('revamp-accounts-summary');
+        if (summary) {
+            summary.replaceChildren(
+                accountsMetric('Saldo nas contas', money(snapshot.accountBalance), `${snapshot.accountCount} conta${snapshot.accountCount === 1 ? '' : 's'} bancária${snapshot.accountCount === 1 ? '' : 's'}`, 'ph-bank', 'primary'),
+                accountsMetric('Faturas pendentes', money(snapshot.cardOutstanding), `${snapshot.cardCount} cartão${snapshot.cardCount === 1 ? '' : 'ões'} · ${Math.round(snapshot.utilization)}% do limite`, 'ph-receipt', snapshot.utilization >= 80 ? 'warning' : ''),
+                accountsMetric('Limite disponível', money(snapshot.cardAvailable), `de ${money(snapshot.cardLimit)} em limites`, 'ph-credit-card'),
+                accountsMetric('Após cartões', money(snapshot.afterCards), 'saldo atual menos faturas não pagas', 'ph-scales', snapshot.afterCards < 0 ? 'warning' : '')
+            );
+        }
+
+        const context = document.getElementById('revamp-accounts-context');
+        if (context) {
+            context.replaceChildren();
+            const warning = snapshot.afterCards < 0 && snapshot.cardOutstanding > 0;
+            context.classList.toggle('warning', warning);
+            context.appendChild(makeIcon(warning ? 'ph-warning-circle' : 'ph-info'));
+            let message = 'Nenhuma fatura pendente. O saldo nas contas está totalmente livre de cartões.';
+            if (warning) {
+                message = `As faturas pendentes superam o saldo atual nas contas em ${money(Math.abs(snapshot.afterCards))}.`;
+            } else if (snapshot.cardOutstanding > 0) {
+                message = `Se você separar agora o valor das faturas pendentes, restam ${money(snapshot.afterCards)} nas contas.`;
+            } else if (!snapshot.accountCount && !snapshot.cardCount) {
+                message = 'Adicione uma conta ou cartão para começar a montar sua visão patrimonial.';
+            }
+            context.appendChild(make('span', '', message));
+        }
+    }
+
+    function decorateAccounts() {
+        const view = document.getElementById('accounts-view');
+        if (!view) return;
+        view.classList.add('revamp-accounts');
+        ensureAccountsOverview(view);
+
+        const accountsGrid = document.getElementById('accounts-grid');
+        const cardsGrid = document.getElementById('cards-grid');
+        const accountHead = accountsGrid?.previousElementSibling;
+        const cardHead = cardsGrid?.previousElementSibling;
+        [accountHead, cardHead].forEach(head => {
+            if (!head) return;
+            head.classList.add('revamp-entity-section-head');
+            const button = head.querySelector('button');
+            if (button) button.classList.add('revamp-add-entity');
+        });
+        accountsGrid?.classList.add('revamp-account-grid');
+        cardsGrid?.classList.add('revamp-card-grid');
+    }
+
     function decorateViews() {
         decorateDashboard();
         document.getElementById('movimentacao-view')?.classList.add('revamp-movements');
         decoratePlanning();
-        document.getElementById('accounts-view')?.classList.add('revamp-accounts');
+        decorateAccounts();
         document.getElementById('backup-view')?.classList.add('revamp-backup');
     }
 
@@ -458,6 +576,15 @@
             planningObserver = new MutationObserver(() => window.setTimeout(decoratePlanning, 0));
             planningObserver.observe(planningHub, { childList: true, subtree: true });
         }
+
+        const accountsGrid = document.getElementById('accounts-grid');
+        const cardsGrid = document.getElementById('cards-grid');
+        if (accountsGrid || cardsGrid) {
+            if (accountsObserver) accountsObserver.disconnect();
+            accountsObserver = new MutationObserver(() => window.setTimeout(decorateAccounts, 0));
+            if (accountsGrid) accountsObserver.observe(accountsGrid, { childList: true });
+            if (cardsGrid) accountsObserver.observe(cardsGrid, { childList: true });
+        }
     }
 
     function init() {
@@ -475,7 +602,15 @@
         }, 0));
     }
 
-    root.PlannkeRevamp = { init, navigate, syncPage, applyPlanningTab, pages: PAGES, planningTabs: PLANNING_TABS };
+    root.PlannkeRevamp = {
+        init,
+        navigate,
+        syncPage,
+        applyPlanningTab,
+        accountSnapshot,
+        pages: PAGES,
+        planningTabs: PLANNING_TABS
+    };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
     else init();
 })(typeof globalThis !== 'undefined' ? globalThis : window);
