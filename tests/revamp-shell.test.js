@@ -9,6 +9,7 @@ const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
 const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');
 const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
 const formsCss = fs.readFileSync(path.join(root, 'revamp-forms.css'), 'utf8');
+const statesCss = fs.readFileSync(path.join(root, 'revamp-states.css'), 'utf8');
 
 test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
@@ -45,6 +46,7 @@ test('new shell preserves accessibility hooks for navigation and actions', () =>
   assert.match(planningCss, /\.revamp-planning-tab:focus-visible/);
   assert.match(accountsCss, /:focus-visible/);
   assert.match(formsCss, /:focus-visible/);
+  assert.match(statesCss, /:focus-visible/);
 });
 
 test('planning is organized into decision-oriented desktop tabs without replacing finance handlers', () => {
@@ -118,4 +120,14 @@ test('desktop and tablet forms share a consistent modal language without changin
   assert.match(formsCss, /\.tx-type-group/);
   assert.match(formsCss, /\.btn-check:checked \+ \.btn-type/);
   assert.match(formsCss, /@media \(max-width: 767\.98px\)/);
+});
+
+test('empty states and microinteractions stay restrained and honor reduced motion', () => {
+  assert.match(statesCss, /#accounts-grid/);
+  assert.match(statesCss, /#cards-grid/);
+  assert.match(statesCss, /#all-transactions-body/);
+  assert.match(statesCss, /#toast-container/);
+  assert.match(statesCss, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(statesCss, /transition-duration: 0\.01ms/);
+  assert.match(statesCss, /@media \(max-width: 767\.98px\)/);
 });
