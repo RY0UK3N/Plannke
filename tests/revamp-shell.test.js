@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
 const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');
+const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
 
 test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
@@ -41,6 +42,7 @@ test('new shell preserves accessibility hooks for navigation and actions', () =>
   assert.match(js, /aria-selected/);
   assert.match(css, /:focus-visible/);
   assert.match(planningCss, /\.revamp-planning-tab:focus-visible/);
+  assert.match(accountsCss, /:focus-visible/);
 });
 
 test('planning is organized into decision-oriented desktop tabs without replacing finance handlers', () => {
@@ -76,4 +78,29 @@ test('planning desktop and tablet layouts remain separate from mobile', () => {
   assert.match(planningCss, /\.revamp-planning-summary/);
   assert.match(planningCss, /\.revamp-planning-tabs/);
   assert.match(planningCss, /\.product-calendar/);
+});
+
+test('accounts overview uses the existing outstanding-card calculation', () => {
+  assert.match(js, /function accountSnapshot\(/);
+  assert.match(js, /getOutstandingCardBalance/);
+  assert.match(js, /accountBalance/);
+  assert.match(js, /cardOutstanding/);
+  assert.match(js, /cardAvailable/);
+  assert.match(js, /afterCards/);
+  assert.match(js, /Saldo nas contas/);
+  assert.match(js, /Faturas pendentes/);
+  assert.match(js, /Limite disponível/);
+  assert.match(js, /Após cartões/);
+});
+
+test('accounts and cards have dedicated desktop/tablet presentation while mobile stays unchanged', () => {
+  assert.match(accountsCss, /@media \(min-width: 768px\)/);
+  assert.match(accountsCss, /@media \(min-width: 1180px\)/);
+  assert.match(accountsCss, /@media \(min-width: 768px\) and \(max-width: 1179\.98px\)/);
+  assert.match(accountsCss, /@media \(max-width: 767\.98px\)/);
+  assert.match(accountsCss, /\.revamp-accounts-summary/);
+  assert.match(accountsCss, /#accounts-grid/);
+  assert.match(accountsCss, /#cards-grid/);
+  assert.match(accountsCss, /\.billing-history/);
+  assert.match(accountsCss, /\.pay-fatura-section/);
 });
