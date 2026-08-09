@@ -11,14 +11,24 @@ const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'ut
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
-test('transaction runtime is loaded before the legacy app boot executes', () => {
+test('transaction runtime is required before the legacy app boot executes', () => {
   assert.match(navigation, /function loadTransactionActions\(/);
   assert.match(navigation, /script\.src = 'app-transactions\.js'/);
   assert.match(navigation, /root\.PlannkeTransactionsReady = transactionsReady/);
   assert.match(navigation, /const legacyInitApp = root\.initApp/);
+  assert.match(navigation, /transactionsReady[\s\S]*Módulo canônico de movimentações não inicializou/);
   assert.match(navigation, /transactionsReady[\s\S]*legacyInitApp\.apply\(root, args\)/);
+  assert.doesNotMatch(navigation, /usando runtime legado/i);
   assert.match(app, /setupForms\(\)/);
   assert.match(app, /setupModalEvents\(\)/);
+});
+
+test('early transaction actions wait for the canonical module instead of reaching app.js', () => {
+  ['openTxModal', 'toggleInstallmentField', 'updateInstallmentHelper', 'dupTx', 'edTx', 'delTx']
+    .forEach(name => assert.match(navigation, new RegExp(`'${name}'`)));
+  assert.match(navigation, /transactionActions\.forEach\(action =>/);
+  assert.match(navigation, /api\?\.\[action\]/);
+  assert.match(navigation, /Ação canônica de movimentações indisponível/);
 });
 
 test('canonical transaction module owns transaction form and CRUD globals', () => {
