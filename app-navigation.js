@@ -53,6 +53,30 @@
         });
     }
 
+    function loadEntityRuntime() {
+        if (root.PlannkeEntities) return Promise.resolve(root.PlannkeEntities);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+
+        const existing = document.querySelector('script[data-plannke-entities]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeEntities) return resolve(root.PlannkeEntities);
+                existing.addEventListener('load', () => resolve(root.PlannkeEntities || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de contas e cartões.')), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-entities.js';
+            script.async = false;
+            script.dataset.plannkeEntities = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeEntities || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de contas e cartões.')), { once: true });
+            document.body.appendChild(script);
+        });
+    }
+
     function waitForCanonicalRenderers() {
         if (root.PlannkeSafeRenderers) return Promise.resolve(root.PlannkeSafeRenderers);
         if (typeof document === 'undefined') return Promise.resolve(null);
@@ -73,9 +97,11 @@
 
     const transactionsReady = loadTransactionActions();
     const dashboardReady = loadDashboardRuntime();
+    const entitiesReady = loadEntityRuntime();
     const renderersReady = waitForCanonicalRenderers();
     root.PlannkeTransactionsReady = transactionsReady;
     root.PlannkeDashboardReady = dashboardReady;
+    root.PlannkeEntitiesReady = entitiesReady;
     root.PlannkeRenderersReady = renderersReady;
 
     const transactionActions = [
@@ -96,12 +122,32 @@
             .catch(error => console.error(`Falha ao executar ${action}:`, error));
     });
 
+    const entityActions = [
+        'viewAccountStatement',
+        'viewCardInvoice',
+        'handlePayFatura',
+        'edAcc',
+        'edCard',
+        'delAcc',
+        'delCard'
+    ];
+
+    entityActions.forEach(action => {
+        root[action] = (...args) => entitiesReady
+            .then(api => {
+                if (!api?.[action]) throw new Error(`Ação canônica de contas/cartões indisponível: ${action}`);
+                return api[action](...args);
+            })
+            .catch(error => console.error(`Falha ao executar ${action}:`, error));
+    });
+
     const legacyInitApp = root.initApp;
     if (typeof legacyInitApp === 'function') {
-        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, renderersReady])
-            .then(([transactions, dashboard, renderers]) => {
+        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, renderersReady])
+            .then(([transactions, dashboard, entities, renderers]) => {
                 if (!transactions) throw new Error('Módulo canônico de movimentações não inicializou.');
                 if (!dashboard) throw new Error('Runtime canônico do dashboard não inicializou.');
+                if (!entities) throw new Error('Runtime canônico de contas e cartões não inicializou.');
                 if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');
                 return legacyInitApp.apply(root, args);
             });
@@ -239,6 +285,7 @@
         setActiveNavigation,
         loadTransactionActions,
         loadDashboardRuntime,
+        loadEntityRuntime,
         waitForCanonicalRenderers,
         loadDataActions
     };
