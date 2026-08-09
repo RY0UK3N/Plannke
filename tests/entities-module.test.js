@@ -15,7 +15,7 @@ test('canonical account and card runtime is required before app boot', () => {
   assert.match(navigation, /function loadEntityRuntime\(/);
   assert.match(navigation, /script\.src = 'app-entities\.js'/);
   assert.match(navigation, /root\.PlannkeEntitiesReady = entitiesReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de contas e cartões não inicializou/);
 });
 
