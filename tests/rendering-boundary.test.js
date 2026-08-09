@@ -13,7 +13,7 @@ const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 test('application boot explicitly waits for the canonical rendering boundary', () => {
   assert.match(navigation, /function waitForCanonicalRenderers\(/);
   assert.match(navigation, /root\.PlannkeRenderersReady = renderersReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, renderersReady\]\)/);
   assert.match(navigation, /Renderizadores canônicos não inicializaram/);
   assert.match(navigation, /legacyInitApp\.apply\(root, args\)/);
 });
@@ -43,7 +43,7 @@ test('canonical data-heavy renderers do not build executable HTML strings', () =
   assert.match(renderers, /\.textContent = String\(textValue\)/);
 });
 
-test('dashboard renderer delegates only charts while owning user-data DOM', () => {
+test('dashboard renderer delegates charts while owning user-data DOM', () => {
   assert.match(renderers, /function safeRenderDashboard\(data\)/);
   assert.match(renderers, /renderChart\(data\)/);
   assert.match(renderers, /renderComparisonChart\(data\)/);
