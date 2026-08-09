@@ -29,8 +29,28 @@
         });
     }
 
+    function waitForCanonicalRenderers() {
+        if (root.PlannkeSafeRenderers) return Promise.resolve(root.PlannkeSafeRenderers);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+
+        return new Promise((resolve, reject) => {
+            const verify = () => {
+                if (root.PlannkeSafeRenderers) resolve(root.PlannkeSafeRenderers);
+                else reject(new Error('Renderizadores canônicos não inicializaram.'));
+            };
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', verify, { once: true });
+            } else {
+                Promise.resolve().then(verify);
+            }
+        });
+    }
+
     const transactionsReady = loadTransactionActions();
+    const renderersReady = waitForCanonicalRenderers();
     root.PlannkeTransactionsReady = transactionsReady;
+    root.PlannkeRenderersReady = renderersReady;
 
     const transactionActions = [
         'openTxModal',
@@ -52,9 +72,10 @@
 
     const legacyInitApp = root.initApp;
     if (typeof legacyInitApp === 'function') {
-        root.initApp = (...args) => transactionsReady
-            .then(api => {
-                if (!api) throw new Error('Módulo canônico de movimentações não inicializou.');
+        root.initApp = (...args) => Promise.all([transactionsReady, renderersReady])
+            .then(([transactions, renderers]) => {
+                if (!transactions) throw new Error('Módulo canônico de movimentações não inicializou.');
+                if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');
                 return legacyInitApp.apply(root, args);
             });
     }
@@ -190,6 +211,7 @@
         navigateTo,
         setActiveNavigation,
         loadTransactionActions,
+        waitForCanonicalRenderers,
         loadDataActions
     };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
