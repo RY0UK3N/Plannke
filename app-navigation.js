@@ -5,6 +5,43 @@
     let navigationBound = false;
     let shortcutsBound = false;
 
+    function loadTransactionActions() {
+        if (root.PlannkeTransactions) return Promise.resolve(root.PlannkeTransactions);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+
+        const existing = document.querySelector('script[data-plannke-transactions]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeTransactions) return resolve(root.PlannkeTransactions);
+                existing.addEventListener('load', () => resolve(root.PlannkeTransactions || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar ações de movimentações.')), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-transactions.js';
+            script.async = false;
+            script.dataset.plannkeTransactions = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeTransactions || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar ações de movimentações.')), { once: true });
+            document.body.appendChild(script);
+        });
+    }
+
+    const transactionsReady = loadTransactionActions();
+    root.PlannkeTransactionsReady = transactionsReady;
+
+    const legacyInitApp = root.initApp;
+    if (typeof legacyInitApp === 'function') {
+        root.initApp = (...args) => transactionsReady
+            .catch(error => {
+                console.error('Módulo canônico de movimentações indisponível; usando runtime legado.', error);
+                return null;
+            })
+            .then(() => legacyInitApp.apply(root, args));
+    }
+
     function loadDataActions() {
         if (root.PlannkeDataActions) return Promise.resolve(root.PlannkeDataActions);
         if (typeof document === 'undefined') return Promise.resolve(null);
@@ -138,6 +175,7 @@
         setupKeyboardShortcuts,
         navigateTo,
         setActiveNavigation,
+        loadTransactionActions,
         loadDataActions
     };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
