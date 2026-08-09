@@ -5,48 +5,51 @@
     let navigationBound = false;
     let shortcutsBound = false;
 
-    function loadScriptApi(options) {
-        const { apiName, selector, src, datasetKey, errorMessage } = options;
-        if (root[apiName]) return Promise.resolve(root[apiName]);
+    function loadTransactionActions() {
+        if (root.PlannkeTransactions) return Promise.resolve(root.PlannkeTransactions);
         if (typeof document === 'undefined') return Promise.resolve(null);
 
-        const existing = document.querySelector(selector);
+        const existing = document.querySelector('script[data-plannke-transactions]');
         if (existing) {
             return new Promise((resolve, reject) => {
-                if (root[apiName]) return resolve(root[apiName]);
-                existing.addEventListener('load', () => resolve(root[apiName] || null), { once: true });
-                existing.addEventListener('error', () => reject(new Error(errorMessage)), { once: true });
+                if (root.PlannkeTransactions) return resolve(root.PlannkeTransactions);
+                existing.addEventListener('load', () => resolve(root.PlannkeTransactions || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar ações de movimentações.')), { once: true });
             });
         }
 
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = src;
+            script.src = 'app-transactions.js';
             script.async = false;
-            script.dataset[datasetKey] = 'true';
-            script.addEventListener('load', () => resolve(root[apiName] || null), { once: true });
-            script.addEventListener('error', () => reject(new Error(errorMessage)), { once: true });
+            script.dataset.plannkeTransactions = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeTransactions || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar ações de movimentações.')), { once: true });
             document.body.appendChild(script);
         });
     }
 
-    function loadTransactionActions() {
-        return loadScriptApi({
-            apiName: 'PlannkeTransactions',
-            selector: 'script[data-plannke-transactions]',
-            src: 'app-transactions.js',
-            datasetKey: 'plannkeTransactions',
-            errorMessage: 'Falha ao carregar ações de movimentações.'
-        });
-    }
-
     function loadDashboardRuntime() {
-        return loadScriptApi({
-            apiName: 'PlannkeDashboard',
-            selector: 'script[data-plannke-dashboard]',
-            src: 'app-dashboard.js',
-            datasetKey: 'plannkeDashboard',
-            errorMessage: 'Falha ao carregar runtime do dashboard.'
+        if (root.PlannkeDashboard) return Promise.resolve(root.PlannkeDashboard);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+
+        const existing = document.querySelector('script[data-plannke-dashboard]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeDashboard) return resolve(root.PlannkeDashboard);
+                existing.addEventListener('load', () => resolve(root.PlannkeDashboard || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar runtime do dashboard.')), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-dashboard.js';
+            script.async = false;
+            script.dataset.plannkeDashboard = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeDashboard || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar runtime do dashboard.')), { once: true });
+            document.body.appendChild(script);
         });
     }
 
@@ -105,12 +108,26 @@
     }
 
     function loadDataActions() {
-        return loadScriptApi({
-            apiName: 'PlannkeDataActions',
-            selector: 'script[data-plannke-data-actions]',
-            src: 'app-data.js',
-            datasetKey: 'plannkeDataActions',
-            errorMessage: 'Falha ao carregar ações de dados.'
+        if (root.PlannkeDataActions) return Promise.resolve(root.PlannkeDataActions);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+
+        const existing = document.querySelector('script[data-plannke-data-actions]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeDataActions) return resolve(root.PlannkeDataActions);
+                existing.addEventListener('load', () => resolve(root.PlannkeDataActions || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar ações de dados.')), { once: true });
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-data.js';
+            script.async = false;
+            script.dataset.plannkeDataActions = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeDataActions || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar ações de dados.')), { once: true });
+            document.body.appendChild(script);
         });
     }
 
@@ -220,7 +237,6 @@
         setupKeyboardShortcuts,
         navigateTo,
         setActiveNavigation,
-        loadScriptApi,
         loadTransactionActions,
         loadDashboardRuntime,
         waitForCanonicalRenderers,
