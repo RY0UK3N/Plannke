@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
@@ -34,6 +35,22 @@ test('canonical transaction module owns transaction form and CRUD globals', () =
   assert.match(transactions, /root\.PlannkeTransactions = api/);
   assert.match(transactions, /root\.saveTransaction\(/);
   assert.match(transactions, /root\.deleteTransaction\(id\)/);
+});
+
+test('installment schedule clamps month-end dates instead of rolling into later months', () => {
+  const sandbox = { console };
+  sandbox.globalThis = sandbox;
+  vm.runInNewContext(transactions, sandbox, { filename: 'app-transactions.js' });
+
+  const leapYear = Array.from(sandbox.PlannkeTransactions.buildInstallmentDates('2024-01-31', 3));
+  const commonYear = Array.from(sandbox.PlannkeTransactions.buildInstallmentDates('2025-01-31', 3));
+  const thirtyDayMonth = Array.from(sandbox.PlannkeTransactions.buildInstallmentDates('2025-03-31', 3));
+
+  assert.deepEqual(leapYear, ['2024-01-31', '2024-02-29', '2024-03-31']);
+  assert.deepEqual(commonYear, ['2025-01-31', '2025-02-28', '2025-03-31']);
+  assert.deepEqual(thirtyDayMonth, ['2025-03-31', '2025-04-30', '2025-05-31']);
+  assert.match(transactions, /root\.addMonthsClamped/);
+  assert.doesNotMatch(transactions, /\.setMonth\(/);
 });
 
 test('transaction form renders user-controlled names with DOM APIs', () => {
