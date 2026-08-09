@@ -15,6 +15,7 @@ const LOCAL_ASSETS = [
   './app-transactions.js',
   './app-dashboard.js',
   './app-entities.js',
+  './app-settings.js',
   './app-data.js',
   './storage-adapter.js',
   './storage-ui.js',
