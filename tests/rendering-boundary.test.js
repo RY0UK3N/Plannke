@@ -13,7 +13,7 @@ const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 test('application boot explicitly waits for the canonical rendering boundary', () => {
   assert.match(navigation, /function waitForCanonicalRenderers\(/);
   assert.match(navigation, /root\.PlannkeRenderersReady = renderersReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, renderersReady\]\)/);
   assert.match(navigation, /Renderizadores canônicos não inicializaram/);
   assert.match(navigation, /legacyInitApp\.apply\(root, args\)/);
 });
