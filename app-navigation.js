@@ -149,6 +149,8 @@
                 if (!dashboard) throw new Error('Runtime canônico do dashboard não inicializou.');
                 if (!entities) throw new Error('Runtime canônico de contas e cartões não inicializou.');
                 if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');
+                entities.setupModalEvents?.();
+                entities.setupForms?.();
                 return legacyInitApp.apply(root, args);
             });
     }
