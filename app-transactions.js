@@ -181,7 +181,6 @@
     function openTxModal(preType) {
         if (byId('tx-id')) byId('tx-id').value = '';
         populateAccountDropdowns();
-
         if (byId('tx-date')) byId('tx-date').value = todayLocal();
 
         if (preType) {
@@ -212,21 +211,7 @@
     function setupModalEvents() {
         if (modalEventsBound) return;
         modalEventsBound = true;
-
         byId('transactionModal')?.addEventListener('hidden.bs.modal', resetTransactionModal);
-        byId('accountModal')?.addEventListener('hidden.bs.modal', () => {
-            byId('accountForm')?.reset();
-            if (byId('acc-id')) byId('acc-id').value = '';
-            if (byId('acc-modal-title')) byId('acc-modal-title').textContent = 'Nova Conta';
-        });
-        byId('cardModal')?.addEventListener('hidden.bs.modal', () => {
-            byId('cardForm')?.reset();
-            if (byId('card-id')) byId('card-id').value = '';
-            if (byId('card-modal-title')) byId('card-modal-title').textContent = 'Novo Cartão de Crédito';
-        });
-        byId('entityDetailModal')?.addEventListener('hidden.bs.modal', () => {
-            root._detailContext = { id: null, type: 'account' };
-        });
     }
 
     function saveTransactionForm() {
@@ -294,29 +279,6 @@
     function setupForms() {
         if (formsBound) return;
         formsBound = true;
-
-        byId('accountForm')?.addEventListener('submit', event => {
-            event.preventDefault();
-            root.saveAccount(byId('acc-id').value, byId('acc-name').value, root.getCurrencyValue('acc-balance'));
-            root.closeModal('accountModal');
-            root.renderAll();
-            root.showToast('Conta salva!');
-        });
-
-        byId('cardForm')?.addEventListener('submit', event => {
-            event.preventDefault();
-            root.saveCard(
-                byId('card-id').value,
-                byId('card-name').value,
-                root.getCurrencyValue('card-limit'),
-                byId('card-closing').value,
-                byId('card-due').value
-            );
-            root.closeModal('cardModal');
-            root.renderAll();
-            root.showToast('Cartão salvo!');
-        });
-
         byId('transactionForm')?.addEventListener('submit', event => {
             event.preventDefault();
             saveTransactionForm();
