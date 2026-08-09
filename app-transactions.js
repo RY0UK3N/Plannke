@@ -17,6 +17,28 @@
         return `${year}-${month}-${day}`;
     }
 
+    function daysInMonth(year, month1Based) {
+        return new Date(year, month1Based, 0).getDate();
+    }
+
+    function addMonthsClampedLocal(dateStr, offset) {
+        if (typeof root.addMonthsClamped === 'function') {
+            return root.addMonthsClamped(dateStr, offset);
+        }
+        const match = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+        if (!match) return dateStr;
+        const absoluteMonth = Number(match[1]) * 12 + Number(match[2]) - 1 + Number(offset || 0);
+        const year = Math.floor(absoluteMonth / 12);
+        const month = ((absoluteMonth % 12) + 12) % 12 + 1;
+        const day = Math.min(Number(match[3]), daysInMonth(year, month));
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    function buildInstallmentDates(dateStr, count) {
+        const total = Math.max(parseInt(count, 10) || 1, 1);
+        return Array.from({ length: total }, (_, index) => addMonthsClampedLocal(dateStr, index));
+    }
+
     function appendOption(parent, value, label, selected) {
         const option = document.createElement('option');
         option.value = value;
@@ -115,8 +137,8 @@
     function toggleInstallmentField() {
         const checked = document.querySelector('input[name="type"]:checked');
         if (!checked) return;
+
         const type = checked.value;
-        const wrapper = byId('tx-fields-wrapper');
         const installmentMark = byId('tx-is-installment-group');
         const installments = byId('tx-installments-group');
         const categoryGroup = byId('tx-category-group');
@@ -127,7 +149,7 @@
         const isInstallment = !!byId('tx-is-installment')?.checked;
         const previousCategory = categorySelect?.value || '';
 
-        wrapper?.classList.remove('hidden');
+        byId('tx-fields-wrapper')?.classList.remove('hidden');
         if (accountLabel) accountLabel.textContent = 'Conta ou Cartão';
 
         if (type === 'transfer') {
@@ -157,12 +179,10 @@
     }
 
     function openTxModal(preType) {
-        const id = byId('tx-id');
-        if (id) id.value = '';
+        if (byId('tx-id')) byId('tx-id').value = '';
         populateAccountDropdowns();
 
-        const date = byId('tx-date');
-        if (date) date.value = todayLocal();
+        if (byId('tx-date')) byId('tx-date').value = todayLocal();
 
         if (preType) {
             document.querySelectorAll('input[name="type"]').forEach(radio => {
@@ -192,6 +212,7 @@
     function setupModalEvents() {
         if (modalEventsBound) return;
         modalEventsBound = true;
+
         byId('transactionModal')?.addEventListener('hidden.bs.modal', resetTransactionModal);
         byId('accountModal')?.addEventListener('hidden.bs.modal', () => {
             byId('accountForm')?.reset();
@@ -240,13 +261,22 @@
             } else if (installments > 1 && type === 'expense') {
                 const groupId = root.generateId();
                 const partValue = amount / installments;
-                let [year, month, day] = date.split('-').map(Number);
-                const installmentDate = new Date(year, month - 1, day);
-                for (let number = 1; number <= installments; number++) {
-                    const localDate = `${installmentDate.getFullYear()}-${String(installmentDate.getMonth() + 1).padStart(2, '0')}-${String(installmentDate.getDate()).padStart(2, '0')}`;
-                    root.saveTransaction(null, type, description, partValue, localDate, account, category, number, installments, groupId, null, false);
-                    installmentDate.setMonth(installmentDate.getMonth() + 1);
-                }
+                buildInstallmentDates(date, installments).forEach((installmentDate, index) => {
+                    root.saveTransaction(
+                        null,
+                        type,
+                        description,
+                        partValue,
+                        installmentDate,
+                        account,
+                        category,
+                        index + 1,
+                        installments,
+                        groupId,
+                        null,
+                        false
+                    );
+                });
                 root.showToast(`${installments}x de ${root.formatCurrency(partValue)} salvas! 📅`);
             } else {
                 root.saveTransaction(null, type, description, amount, date, account, category, 1, 1, null, destination, isRecurring);
@@ -296,16 +326,19 @@
     function loadTransactionIntoForm(transaction, mode) {
         if (!transaction) return;
         const type = ['income', 'expense', 'transfer'].includes(transaction.type) ? transaction.type : 'expense';
+
         if (byId('tx-id')) byId('tx-id').value = mode === 'edit' ? transaction.id : '';
         if (byId('tx-desc')) byId('tx-desc').value = transaction.description || '';
         root.setCurrencyValue('tx-amount', transaction.amount);
         if (byId('tx-date')) byId('tx-date').value = mode === 'edit' ? transaction.date : todayLocal();
+
         const radio = document.querySelector(`input[name="type"][value="${type}"]`);
         if (radio) radio.checked = true;
 
         populateAccountDropdowns(transaction.accountId, transaction.destinationId || '');
         byId('tx-fields-wrapper')?.classList.remove('hidden');
         toggleInstallmentField();
+
         if (byId('tx-account')) byId('tx-account').value = transaction.accountId || '';
         if (type === 'transfer' && byId('tx-destination')) byId('tx-destination').value = transaction.destinationId || '';
         if (transaction.category && transaction.category !== 'Transferência' && byId('tx-category')) {
@@ -314,6 +347,7 @@
         }
         if (byId('tx-is-recurring')) byId('tx-is-recurring').checked = !!transaction.recurring;
         if (byId('tx-modal-title')) byId('tx-modal-title').textContent = mode === 'edit' ? 'Editar Transação' : 'Duplicar Transação';
+
         byId('tx-installments-group')?.classList.add('hidden');
         root.bootstrap.Modal.getOrCreateInstance(byId('transactionModal')).show();
     }
@@ -330,6 +364,7 @@
         const transaction = root.getData().transactions.find(candidate => candidate.id === id);
         if (!transaction) return;
         const typeLabel = transaction.type === 'income' ? 'entrada' : transaction.type === 'expense' ? 'gasto' : 'transferência';
+
         root._showDeleteConfirm(
             'Excluir transação?',
             `${transaction.description} · ${typeLabel} de ${root.formatDate(transaction.date)}`,
@@ -350,6 +385,7 @@
         toggleInstallmentField,
         updateInstallmentHelper,
         saveTransactionForm,
+        buildInstallmentDates,
         dupTx,
         edTx,
         delTx
