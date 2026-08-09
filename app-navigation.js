@@ -32,14 +32,31 @@
     const transactionsReady = loadTransactionActions();
     root.PlannkeTransactionsReady = transactionsReady;
 
+    const transactionActions = [
+        'openTxModal',
+        'toggleInstallmentField',
+        'updateInstallmentHelper',
+        'dupTx',
+        'edTx',
+        'delTx'
+    ];
+
+    transactionActions.forEach(action => {
+        root[action] = (...args) => transactionsReady
+            .then(api => {
+                if (!api?.[action]) throw new Error(`Ação canônica de movimentações indisponível: ${action}`);
+                return api[action](...args);
+            })
+            .catch(error => console.error(`Falha ao executar ${action}:`, error));
+    });
+
     const legacyInitApp = root.initApp;
     if (typeof legacyInitApp === 'function') {
         root.initApp = (...args) => transactionsReady
-            .catch(error => {
-                console.error('Módulo canônico de movimentações indisponível; usando runtime legado.', error);
-                return null;
-            })
-            .then(() => legacyInitApp.apply(root, args));
+            .then(api => {
+                if (!api) throw new Error('Módulo canônico de movimentações não inicializou.');
+                return legacyInitApp.apply(root, args);
+            });
     }
 
     function loadDataActions() {
@@ -69,9 +86,6 @@
     const dataActionsReady = loadDataActions();
     root.PlannkeDataReady = dataActionsReady;
 
-    // Retire the old app.js actions immediately. Even if the canonical module is
-    // still downloading, a very early click waits for it instead of reaching the
-    // old Memory Card/localStorage implementation.
     ['confirmClearData', 'exportToExcel'].forEach(action => {
         root[action] = (...args) => dataActionsReady
             .then(api => api?.[action]?.(...args))
