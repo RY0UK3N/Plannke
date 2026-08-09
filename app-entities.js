@@ -126,6 +126,7 @@
     function paymentAccountSelect(data) {
         const select = byId('detail-pay-acc-select');
         if (!select) return null;
+        select.disabled = false;
         select.replaceChildren(option('', 'Debitar de...'));
         data.accounts.forEach(account => {
             select.appendChild(option(account.id, `${account.name} (${root.formatCurrency(account.balance)})`));
@@ -136,7 +137,7 @@
     function configureInvoiceFooter(data, card, billing, period) {
         const footer = byId('detail-footer-pay');
         const status = byId('detail-pay-status');
-        let button = replaceButton(byId('detail-pay-btn'));
+        const button = replaceButton(byId('detail-pay-btn'));
         const select = paymentAccountSelect(data);
         if (!footer || !status || !button || !select) return;
 
