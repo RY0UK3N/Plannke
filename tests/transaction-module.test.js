@@ -47,6 +47,12 @@ test('canonical transaction module owns transaction form and CRUD globals', () =
   assert.match(transactions, /root\.deleteTransaction\(id\)/);
 });
 
+test('transaction runtime no longer binds account or card forms and detail modal', () => {
+  assert.doesNotMatch(transactions, /accountForm|cardForm|saveAccount\(|saveCard\(|entityDetailModal/);
+  assert.match(transactions, /transactionForm/);
+  assert.match(transactions, /transactionModal/);
+});
+
 test('installment schedule clamps month-end dates instead of rolling into later months', () => {
   const sandbox = { console };
   sandbox.globalThis = sandbox;
