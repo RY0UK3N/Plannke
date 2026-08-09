@@ -5,6 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
 const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
 const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
@@ -16,6 +17,17 @@ test('canonical account and card runtime is required before app boot', () => {
   assert.match(navigation, /root\.PlannkeEntitiesReady = entitiesReady/);
   assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de contas e cartões não inicializou/);
+});
+
+test('entity forms and modal lifecycle are bound by the entity runtime before legacy init', () => {
+  assert.match(navigation, /entities\.setupModalEvents\?\.\(\);/);
+  assert.match(navigation, /entities\.setupForms\?\.\(\);/);
+  assert.ok(navigation.indexOf('entities.setupForms?.();') < navigation.indexOf('legacyInitApp.apply(root, args)'));
+  assert.match(entities, /accountForm/);
+  assert.match(entities, /cardForm/);
+  assert.match(entities, /saveAccount\(/);
+  assert.match(entities, /saveCard\(/);
+  assert.doesNotMatch(transactions, /accountForm|cardForm|saveAccount\(|saveCard\(|entityDetailModal/);
 });
 
 test('early entity actions wait for the canonical module', () => {
