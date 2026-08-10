@@ -59,7 +59,7 @@ test('navigation wraps canonical init before app-boot captures it', () => {
 });
 
 test('PWA and syntax checks use canonical UI runtime and boot instead of app.js', () => {
-  assert.match(sw, /plannke-shell-v29/);
+  assert.match(sw, /plannke-shell-v30/);
   assert.match(sw, /'\.\/app-ui\.js'/);
   assert.match(sw, /'\.\/app-runtime\.js'/);
   assert.match(sw, /'\.\/app-boot\.js'/);
