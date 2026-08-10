@@ -1,0 +1,36 @@
+name: Integrate movements once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  integrate-movements:
+    if: github.head_ref == 'feature/movements-runtime-extraction'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/movements-runtime-extraction
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Integrate canonical movements runtime
+        run: node scripts/integrate-movements-once.js
+      - name: Validate repository
+        run: npm test
+      - name: Commit integrated runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Integrate canonical movements runtime"
+          git push origin HEAD:feature/movements-runtime-extraction
