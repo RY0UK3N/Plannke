@@ -124,6 +124,28 @@
         });
     }
 
+    function loadMovementRuntime() {
+        if (root.PlannkeMovements) return Promise.resolve(root.PlannkeMovements);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+        const existing = document.querySelector('script[data-plannke-movements]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeMovements) return resolve(root.PlannkeMovements);
+                existing.addEventListener('load', () => resolve(root.PlannkeMovements || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de Movimentações.')), { once: true });
+            });
+        }
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-movements.js';
+            script.async = false;
+            script.dataset.plannkeMovements = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeMovements || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de Movimentações.')), { once: true });
+            document.body.appendChild(script);
+        });
+    }
+
     function waitForCanonicalRenderers() {
         if (root.PlannkeSafeRenderers) return Promise.resolve(root.PlannkeSafeRenderers);
         if (typeof document === 'undefined') return Promise.resolve(null);
@@ -142,12 +164,14 @@
     const entitiesReady = loadEntityRuntime();
     const settingsReady = loadSettingsRuntime();
     const planningReady = loadPlanningRuntime();
+    const movementsReady = loadMovementRuntime();
     const renderersReady = waitForCanonicalRenderers();
     root.PlannkeTransactionsReady = transactionsReady;
     root.PlannkeDashboardReady = dashboardReady;
     root.PlannkeEntitiesReady = entitiesReady;
     root.PlannkeSettingsReady = settingsReady;
     root.PlannkePlanningReady = planningReady;
+    root.PlannkeMovementsReady = movementsReady;
     root.PlannkeRenderersReady = renderersReady;
 
     const transactionActions = ['openTxModal', 'toggleInstallmentField', 'updateInstallmentHelper', 'dupTx', 'edTx', 'delTx'];
@@ -187,13 +211,14 @@
 
     const legacyInitApp = root.initApp;
     if (typeof legacyInitApp === 'function') {
-        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, renderersReady])
-            .then(([transactions, dashboard, entities, settings, planning, renderers]) => {
+        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady])
+            .then(([transactions, dashboard, entities, settings, planning, movements, renderers]) => {
                 if (!transactions) throw new Error('Módulo canônico de movimentações não inicializou.');
                 if (!dashboard) throw new Error('Runtime canônico do dashboard não inicializou.');
                 if (!entities) throw new Error('Runtime canônico de contas e cartões não inicializou.');
                 if (!settings) throw new Error('Runtime canônico de configurações não inicializou.');
                 if (!planning) throw new Error('Runtime canônico de Planejamento não inicializou.');
+                if (!movements) throw new Error('Runtime canônico de Movimentações não inicializou.');
                 if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');
                 entities.setupModalEvents?.();
                 entities.setupForms?.();
@@ -254,9 +279,8 @@
         const view = document.getElementById(`${target}-view`);
         if (!view) return;
         const leaving = document.querySelector('.content-view:not(.hidden)')?.id?.replace('-view', '');
-        if (leaving === 'movimentacao' && target !== 'movimentacao' && typeof _fluxoChart !== 'undefined' && _fluxoChart) {
-            _fluxoChart.dispose();
-            _fluxoChart = null;
+        if (leaving === 'movimentacao' && target !== 'movimentacao') {
+            root.PlannkeMovements?.disposeChart?.();
         }
         document.querySelectorAll('.content-view').forEach(candidate => candidate.classList.toggle('hidden', candidate !== view));
         setActiveNavigation(target);
@@ -311,6 +335,7 @@
         loadEntityRuntime,
         loadSettingsRuntime,
         loadPlanningRuntime,
+        loadMovementRuntime,
         waitForCanonicalRenderers,
         loadDataActions
     };

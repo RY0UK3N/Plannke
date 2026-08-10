@@ -15,7 +15,7 @@ test('canonical settings runtime is required before app boot', () => {
   assert.match(navigation, /function loadSettingsRuntime\(/);
   assert.match(navigation, /script\.src = 'app-settings\.js'/);
   assert.match(navigation, /root\.PlannkeSettingsReady = settingsReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de configurações não inicializou/);
 });
 
