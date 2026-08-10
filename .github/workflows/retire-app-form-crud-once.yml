@@ -1,0 +1,35 @@
+name: Retire app form CRUD once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  retire-form-crud:
+    if: github.head_ref == 'refactor/retire-app-monolith-copies'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/retire-app-monolith-copies
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Retire legacy form and CRUD runtime
+        run: node scripts/retire-app-form-crud-once.js
+      - name: Validate repository
+        run: npm test
+      - name: Commit cleaned runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Retire legacy app form and CRUD runtime"
+          git push origin HEAD:refactor/retire-app-monolith-copies
