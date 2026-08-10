@@ -20,6 +20,7 @@ function extractHandlers(content) {
 
 test('canonical actions recognize every static compatibility action in the shell', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
+  assert.equal(fs.existsSync(path.join(root, 'ui-bridge.js')), false);
   const unknown = [];
   let count = 0;
   sources.forEach(source => {

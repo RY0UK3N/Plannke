@@ -6,7 +6,6 @@ const actions = require('../app-actions.js');
 
 const root = path.resolve(__dirname, '..');
 const source = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
-const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
@@ -30,9 +29,9 @@ test('canonical actions stay isolated from shell boot storage and rendering owne
   assert.doesNotMatch(source, /renderDashboard|renderProjection|safeRender|StorageCoordinator/);
 });
 
-test('static shell loads app-actions instead of the retired UI bridge', () => {
+test('static shell loads app-actions with no retired UI bridge', () => {
   assert.match(index, /<script src="app-actions\.js" data-plannke-actions="true"><\/script>/);
-  assert.doesNotMatch(index, /<script src="ui-bridge\.js"/);
+  assert.doesNotMatch(index, /ui-bridge\.js|data-plannke-ui-bridge/);
   const shellAt = index.indexOf('src="app-shell.js"');
   const actionsAt = index.indexOf('src="app-actions.js"');
   const bootAt = index.indexOf('src="app-boot.js"');
@@ -46,19 +45,16 @@ test('insights fallback loads the canonical action router after the shell', () =
   assert.doesNotMatch(insights, /ui-bridge\.js|plannkeUiBridge|loadBridge/);
 });
 
-test('PWA and CI use app-actions while ui-bridge is outside runtime', () => {
+test('PWA and CI use app-actions with no retired bridge reference', () => {
   assert.match(sw, /plannke-shell-v32/);
   assert.match(sw, /'\.\/app-actions\.js'/);
-  assert.doesNotMatch(sw, /'\.\/ui-bridge\.js'/);
+  assert.doesNotMatch(sw, /ui-bridge\.js/);
   assert.match(pkg, /node --check app-actions\.js/);
+  assert.doesNotMatch(pkg, /node --check ui-bridge\.js/);
 });
 
-test('old bridge remains equivalent only as a temporary removal checkpoint', () => {
-  assert.equal(fs.existsSync(path.join(root, 'ui-bridge.js')), true);
-  ['splitArgs', 'parseCall', 'canHandle', 'dispatch', 'init'].forEach(name => {
-    assert.match(bridge, new RegExp(name));
-    assert.match(source, new RegExp(name));
-  });
+test('ui-bridge.js is physically retired from the repository', () => {
+  assert.equal(fs.existsSync(path.join(root, 'ui-bridge.js')), false);
 });
 
 test('one-time canonical action router swap artifacts are not shipped', () => {
