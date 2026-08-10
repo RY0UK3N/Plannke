@@ -3,7 +3,7 @@
     'use strict';
 
     let C = root.PlannkeCore || null;
-    let legacyProjection = null;
+    let legacyProjection = typeof root.PlannkeProjectionBase === 'function' ? root.PlannkeProjectionBase : null;
     let projectionBoundaryInstalled = false;
     let projectionBoundaryLocked = false;
 
@@ -466,7 +466,7 @@
     function installProjectionBoundary() {
         if (projectionBoundaryInstalled) return canonicalRenderProjection;
         projectionBoundaryInstalled = true;
-        if (typeof root.renderProjection === 'function' && !root.renderProjection.__plannkeCanonicalPlanning) legacyProjection = root.renderProjection;
+        if (!legacyProjection && typeof root.renderProjection === 'function' && !root.renderProjection.__plannkeCanonicalPlanning) legacyProjection = root.renderProjection;
         projectionBoundaryLocked = true;
         Object.defineProperty(root, 'renderProjection', {
             configurable: true,
