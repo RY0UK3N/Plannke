@@ -6,7 +6,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
-const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 
 function accountsMarkup() {
   const start = html.indexOf('<div class="content-view hidden" id="accounts-view">');
@@ -19,12 +18,12 @@ test('accounts workspace creation controls have explicit IDs and no compatibilit
   const markup = accountsMarkup();
   assert.match(markup, /id="accounts-add-account"/);
   assert.match(markup, /id="accounts-add-card"/);
-  assert.doesNotMatch(markup, /data-plannke-onclick="openModal/);
+  assert.doesNotMatch(markup, /data-plannke-onclick/);
 });
 
 test('entity detail period selector no longer stores executable compatibility code', () => {
   assert.match(html, /id="detail-period-select"/);
-  assert.doesNotMatch(html, /data-plannke-onchange="window\._detailContext/);
+  assert.doesNotMatch(html, /data-plannke-onchange/);
 });
 
 test('app-entities binds static entity controls exactly once', () => {
@@ -37,10 +36,8 @@ test('app-entities binds static entity controls exactly once', () => {
   assert.match(entities, /bindEntityControls\(\);/);
 });
 
-test('generic modal and detail-period compatibility routes are retired', () => {
-  assert.doesNotMatch(actions, /'openModal'/);
-  assert.doesNotMatch(actions, /detail-period/);
-  assert.doesNotMatch(actions, /_detailContext\?\.onPeriodChange/);
+test('entity controls no longer depend on generic compatibility routes', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
 
 test('one-time entity control binding artifacts are not shipped', () => {
