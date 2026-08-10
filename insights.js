@@ -18,28 +18,12 @@
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
         else init();
 
-        const loadActions = () => {
-            if (document.querySelector('script[data-plannke-actions]')) return;
-            const actions = document.createElement('script');
-            actions.src = './app-actions.js';
-            actions.dataset.plannkeActions = 'true';
-            actions.defer = true;
-            document.head.appendChild(actions);
-        };
-
-        if (root.PlannkeShell) {
-            loadActions();
-        } else {
-            const existingShell = document.querySelector('script[data-plannke-shell]');
-            if (existingShell) existingShell.addEventListener('load', loadActions, { once: true });
-            else {
-                const shell = document.createElement('script');
-                shell.src = './app-shell.js';
-                shell.dataset.plannkeShell = 'true';
-                shell.defer = true;
-                shell.addEventListener('load', loadActions, { once: true });
-                document.head.appendChild(shell);
-            }
+        if (!root.PlannkeShell && !document.querySelector('script[data-plannke-shell]')) {
+            const shell = document.createElement('script');
+            shell.src = './app-shell.js';
+            shell.dataset.plannkeShell = 'true';
+            shell.defer = true;
+            document.head.appendChild(shell);
         }
     }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (C) {
