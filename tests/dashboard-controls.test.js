@@ -37,3 +37,8 @@ test('dashboard-local actions no longer occupy compatibility allowlist', () => {
   assert.doesNotMatch(actions, /'openBudgetManager'/);
   assert.doesNotMatch(actions, /'filterDashboardToTransactions'/);
 });
+
+test('one-time dashboard control binding artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'bind-dashboard-controls-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'bind-dashboard-controls-once.yml')), false);
+});
