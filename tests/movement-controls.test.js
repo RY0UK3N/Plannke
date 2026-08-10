@@ -6,7 +6,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
-const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 
 function movementMarkup() {
   const start = html.indexOf('<div class="content-view hidden" id="movimentacao-view">');
@@ -34,9 +33,8 @@ test('app-movements explicitly binds its static controls once', () => {
   assert.match(movements, /root\.PlannkeMovements = api;\s*bindMovementControls\(\)/);
 });
 
-test('movement-local and retired dashboard controls no longer occupy compatibility allowlist', () => {
-  ['changeMonth', 'setMovViewMode', 'renderMovimentacao', 'clearTxSearch', 'filterDashboardToTransactions']
-    .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
+test('movement controls no longer depend on compatibility routing', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
 
 test('one-time movement control binding artifacts are not shipped', () => {

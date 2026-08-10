@@ -6,7 +6,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
-const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 
 function transactionMarkup() {
   const start = html.indexOf('<div class="modal fade" id="transactionModal"');
@@ -34,10 +33,8 @@ test('app-transactions binds its static controls exactly once', () => {
   assert.match(transactions, /root\.PlannkeTransactions = api;\s*bindTransactionControls\(\)/);
 });
 
-test('transaction-local compatibility routes are retired', () => {
-  ['openCategoryManager', 'toggleInstallmentField', 'updateInstallmentHelper']
-    .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
-  assert.doesNotMatch(actions, /show-picker|this\\\.showPicker/);
+test('transaction controls no longer depend on compatibility routing', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
 
 test('one-time transaction control binding artifacts are not shipped', () => {

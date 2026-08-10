@@ -6,13 +6,11 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
-const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 
 test('settings-owned static controls no longer store compatibility code', () => {
   ['settings-theme-toggle', 'cat-modal-tab-expense', 'cat-modal-tab-income', 'cat-tab-expense', 'cat-tab-income', 'cat-modal-add', 'cat-add']
     .forEach(id => assert.match(html, new RegExp(`id="${id}"`)));
-  ['toggleTheme', 'switchCatTabModal', 'addCustomCategoryModal', 'switchCatTab', 'addCustomCategory']
-    .forEach(name => assert.doesNotMatch(html, new RegExp(`data-plannke-(?:onclick|onchange)="${name}`)));
+  assert.doesNotMatch(html, /data-plannke-(?:onclick|onchange|oninput)=/);
 });
 
 test('app-settings binds its static controls exactly once', () => {
@@ -27,9 +25,8 @@ test('app-settings binds its static controls exactly once', () => {
   assert.match(settings, /root\.PlannkeSettings = api;\s*bindSettingsControls\(\)/);
 });
 
-test('settings static actions no longer occupy compatibility allowlist', () => {
-  ['switchCatTabModal', 'addCustomCategoryModal', 'toggleTheme', 'switchCatTab', 'addCustomCategory']
-    .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
+test('settings controls no longer depend on compatibility routing', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
 
 test('one-time settings control binding artifacts are not shipped', () => {
