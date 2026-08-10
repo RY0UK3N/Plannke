@@ -74,6 +74,20 @@ test('safe transaction renderer reads month state from canonical movements runti
   assert.doesNotMatch(renderers, /_currentMonth/);
 });
 
+test('HTML-facing movement actions are published by the canonical runtime', () => {
+  [
+    '_populateMovFilters', 'renderMonthTabs', 'renderMovimentacao', 'renderSankey',
+    'renderSunburst', 'setMovViewMode', 'changeMonth', 'clearTxSearch',
+    'filterDashboardToTransactions', 'updateMonthNavigator'
+  ].forEach(name => assert.match(movements, new RegExp(`root\\.${name} = `)));
+  assert.match(movements, /root\.PlannkeMovements = api/);
+});
+
+test('one-time movement integration files are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'integrate-movements-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'integrate-movements-once.yml')), false);
+});
+
 test('movements runtime is syntax-checked and available offline', () => {
   assert.match(pkg, /node --check app-movements\.js/);
   assert.match(sw, /'\.\/app-movements\.js'/);
