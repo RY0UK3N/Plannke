@@ -21,7 +21,6 @@
     // Temporary compatibility vocabulary for static data-plannke actions.
     // This shrinks as each workspace moves to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
-        'confirmClearData',
         'deleteCategoryModal', 'openColorPicker', 'deleteCategory',
         'selectCatColor', 'handleBudgetInput', 'saveBudgetEntry',
         'dupTx', 'edTx', 'delTx', 'edAcc', 'delAcc', 'viewAccountStatement',

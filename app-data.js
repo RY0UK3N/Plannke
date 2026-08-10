@@ -196,6 +196,7 @@
         if (controlsBound || typeof document === 'undefined') return;
         controlsBound = true;
         document.getElementById('data-export-excel')?.addEventListener('click', exportToExcel);
+        document.getElementById('settings-clear-data')?.addEventListener('click', confirmClearData);
     }
 
     root.confirmClearData = confirmClearData;
