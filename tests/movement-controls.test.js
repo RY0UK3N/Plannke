@@ -39,3 +39,8 @@ test('movement-local controls no longer occupy compatibility allowlist', () => {
     .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
   assert.match(actions, /'filterDashboardToTransactions'/);
 });
+
+test('one-time movement control binding artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'bind-movement-controls-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'bind-movement-controls-once.yml')), false);
+});
