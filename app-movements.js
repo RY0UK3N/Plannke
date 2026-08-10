@@ -7,6 +7,7 @@
     let fluxoChart = null;
     let movementViewMode = 'list';
     let resizeAttached = false;
+    let controlsBound = false;
 
     function byId(id) {
         return document.getElementById(id);
@@ -350,10 +351,28 @@
         updateMonthNavigator(currentMonth);
     }
 
+    function bindMovementControls() {
+        if (controlsBound || typeof document === 'undefined') return;
+        controlsBound = true;
+
+        const renderCurrentMovement = () => renderMovimentacao(root.getData?.());
+        byId('mov-month-prev')?.addEventListener('click', () => changeMonth(-1));
+        byId('mov-month-next')?.addEventListener('click', () => changeMonth(1));
+        byId('btn-mov-list')?.addEventListener('click', () => setMovViewMode('list'));
+        byId('btn-mov-sankey')?.addEventListener('click', () => setMovViewMode('sankey'));
+        byId('btn-mov-sunburst')?.addEventListener('click', () => setMovViewMode('sunburst'));
+        ['tx-filter', 'tx-filter-category', 'tx-filter-account'].forEach(id => {
+            byId(id)?.addEventListener('change', renderCurrentMovement);
+        });
+        byId('tx-search')?.addEventListener('input', renderCurrentMovement);
+        byId('tx-search-clear')?.addEventListener('click', clearTxSearch);
+    }
+
     const api = {
         get currentMonth() { return currentMonth; },
         get availableMonths() { return [...availableMonths]; },
         get viewMode() { return movementViewMode; },
+        bindMovementControls,
         populateMovementFilters,
         renderMonthTabs,
         renderMovimentacao,
@@ -380,4 +399,5 @@
     root.filterDashboardToTransactions = filterDashboardToTransactions;
     root.updateMonthNavigator = updateMonthNavigator;
     root.PlannkeMovements = api;
+    bindMovementControls();
 })(typeof globalThis !== 'undefined' ? globalThis : this);
