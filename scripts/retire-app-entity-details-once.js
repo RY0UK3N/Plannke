@@ -8,7 +8,8 @@ const workflowPath = path.join(root, '.github', 'workflows', 'retire-app-entity-
 const selfPath = __filename;
 
 let app = fs.readFileSync(appPath, 'utf8');
-const startMarker = `/* ============================================================\n   VALORES DE DETALHE (Extratos / Faturas)\n   ============================================================ */\nwindow._detailContext = {`;
+const sectionLabel = 'VALORES DE DETALHE (Extratos / Faturas)';
+const startMarker = `/* ============================================================\n   ${sectionLabel}\n   ============================================================ */\nwindow._detailContext = {`;
 const endMarker = 'function filterDashboardToTransactions(type) {';
 const start = app.indexOf(startMarker);
 const end = app.indexOf(endMarker, start + startMarker.length);
@@ -22,7 +23,7 @@ if (app.indexOf(startMarker, start + startMarker.length) >= 0) {
 
 app = app.slice(0, start) + app.slice(end);
 [
-  'window._detailContext = {',
+  sectionLabel,
   'function viewAccountStatement(',
   'function viewCardInvoice('
 ].forEach(marker => {
@@ -40,7 +41,7 @@ if (!test.includes("const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8
   );
 }
 
-const entityTest = `\ntest('app monolith no longer owns account statement or card invoice details', () => {\n  assert.doesNotMatch(app, /window\\._detailContext\\s*=\\s*\\{/);\n  assert.doesNotMatch(app, /function viewAccountStatement\\(/);\n  assert.doesNotMatch(app, /function viewCardInvoice\\(/);\n  assert.match(entities, /function viewAccountStatement\\(/);\n  assert.match(entities, /function viewCardInvoice\\(/);\n  assert.match(entities, /root\\._detailContext = \\{/);\n});\n`;
+const entityTest = `\ntest('app monolith no longer owns account statement or card invoice details', () => {\n  assert.doesNotMatch(app, /VALORES DE DETALHE \\(Extratos \\/ Faturas\\)/);\n  assert.doesNotMatch(app, /function viewAccountStatement\\(/);\n  assert.doesNotMatch(app, /function viewCardInvoice\\(/);\n  assert.match(entities, /function viewAccountStatement\\(/);\n  assert.match(entities, /function viewCardInvoice\\(/);\n  assert.match(entities, /root\\._detailContext = \\{/);\n});\n`;
 if (!test.includes("test('app monolith no longer owns account statement or card invoice details'")) {
   test = `${test.trimEnd()}\n${entityTest}`;
 }
