@@ -4,6 +4,7 @@
 
     let summaryChart = null;
     let comparisonChart = null;
+    let controlsBound = false;
 
     function localToday() {
         const now = new Date();
@@ -238,6 +239,16 @@
         });
     }
 
+    function bindDashboardControls() {
+        if (controlsBound || typeof document === 'undefined') return;
+        controlsBound = true;
+        document.getElementById('dashboard-budget-manage')?.addEventListener('click', () => root.openBudgetManager?.());
+        document.getElementById('dashboard-view-all-transactions')?.addEventListener('click', event => {
+            event.preventDefault();
+            root.filterDashboardToTransactions?.('all');
+        });
+    }
+
     function refreshTheme() {
         summaryChart?.update('none');
         comparisonChart?.update('none');
@@ -257,6 +268,8 @@
     root.PlannkeDashboard = {
         renderChart,
         renderComparisonChart,
-        refreshTheme
+        refreshTheme,
+        bindDashboardControls
     };
+    bindDashboardControls();
 })(typeof globalThis !== 'undefined' ? globalThis : this);
