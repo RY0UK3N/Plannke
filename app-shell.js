@@ -83,7 +83,7 @@
 
         const settings = make('button', 'revamp-settings');
         settings.type = 'button';
-        settings.dataset.plannkeOnclick = 'openSettingsPanel()';
+        settings.addEventListener('click', () => root.openSettingsPanel?.());
         settings.setAttribute('aria-label', 'Configurações');
         settings.append(icon('ph-gear'), make('span', '', 'Configurações'));
         sidebar.append(brand, nav, spacer, localStatus, settings);
@@ -105,7 +105,7 @@
         const actions = make('div', 'revamp-topbar-actions');
         const add = make('button', 'revamp-primary-action');
         add.type = 'button';
-        add.dataset.plannkeOnclick = 'openTxModal(null)';
+        add.addEventListener('click', () => root.openTxModal?.(null));
         add.append(icon('ph-plus'), make('span', '', 'Nova movimentação'));
         actions.appendChild(add);
         topbar.append(topbarCopy, actions);
