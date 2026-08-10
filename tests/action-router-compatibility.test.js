@@ -29,7 +29,7 @@ test('canonical actions recognize every static compatibility action in the shell
       if (!actions.canHandle(handler.code)) unknown.push(`${source.file}: ${handler.attr}="${handler.code}"`);
     });
   });
-  assert.ok(count > 20, 'expected to inventory the remaining compatibility actions');
+  assert.ok(count > 0, 'compatibility inventory stays active until the final data-plannke action is retired');
   assert.deepEqual(unknown, []);
   sources.forEach(source => assert.doesNotMatch(source.content, /\s(?:onclick|onchange|oninput)=/));
 });
