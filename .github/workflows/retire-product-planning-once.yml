@@ -1,18 +1,19 @@
 name: Retire legacy planning once
 
 on:
-  push:
+  pull_request:
     branches:
-      - refactor/retire-legacy-runtime-copies
-    paths:
-      - scripts/retire-product-planning-once.js
-      - .github/workflows/retire-product-planning-once.yml
+      - main
+    types:
+      - opened
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   retire-planning:
+    if: github.head_ref == 'refactor/retire-legacy-runtime-copies'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
