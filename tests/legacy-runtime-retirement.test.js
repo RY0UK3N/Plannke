@@ -23,3 +23,8 @@ test('product public surface no longer exports the retired household planning he
   assert.doesNotMatch(productUiLogic, /PlannkeProduct\.householdBalances/);
   assert.match(planning, /householdBalances,/);
 });
+
+test('one-time cleanup automation is not shipped with the branch', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-product-planning-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-product-planning-once.yml')), false);
+});
