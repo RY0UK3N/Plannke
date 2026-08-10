@@ -16,6 +16,7 @@ const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
 const dashboard = fs.readFileSync(path.join(root, 'app-dashboard.js'), 'utf8');
 const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
+const projection = fs.readFileSync(path.join(root, 'app-projection.js'), 'utf8');
 
 test('product layer no longer owns the planning projection runtime', () => {
   assert.doesNotMatch(product, /const originalProjection = globalThis\.renderProjection/);
@@ -48,6 +49,8 @@ test('one-time cleanup automation is not shipped with the branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-movements-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-excel-once.js')), false);
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-excel-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-projection-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-projection-once.yml')), false);
 });
 
 test('app monolith no longer owns account statement or card invoice details', () => {
@@ -137,7 +140,9 @@ test('app monolith no longer owns canonical dashboard transaction or entity rend
   assert.match(movements, /root\.renderMovimentacao = renderMovimentacao/);
   assert.match(movements, /root\.renderSankey = renderSankey/);
   assert.match(movements, /root\.renderSunburst = renderSunburst/);
-  assert.match(app, /function renderProjection\(/);
+  assert.doesNotMatch(app, /function renderProjection\(/);
+  assert.match(projection, /function renderProjection\(data, options = \{\}\)/);
+  assert.match(planning, /root\.PlannkeProjection\?\.renderProjection\?\.\(/);
 });
 
 test('renderAll reaches data-heavy surfaces only after canonical renderers are ready', () => {
@@ -176,11 +181,32 @@ test('app monolith no longer owns movement state filters or charts', () => {
   assert.match(movements, /root\.renderSunburst = renderSunburst/);
   assert.match(movements, /root\.changeMonth = changeMonth/);
   assert.match(movements, /root\.clearTxSearch = clearTxSearch/);
-  assert.match(app, /function renderProjection\(/);
+  assert.doesNotMatch(app, /function renderProjection\(/);
+  assert.match(projection, /function renderProjection\(data, options = \{\}\)/);
+  assert.match(planning, /root\.PlannkeProjection\?\.renderProjection\?\.\(/);
 });
 
 test('legacy renderAll reaches movement globals only after canonical movement runtime is ready', () => {
   assert.match(app, /function renderAll\(\)[\s\S]*renderMovimentacao\(data\);[\s\S]*_populateMovFilters\(data\);/);
   assert.match(navigation, /root\.PlannkeMovementsReady = movementsReady/);
   assert.ok(navigation.indexOf("if (!movements) throw new Error('Runtime canônico de Movimentações não inicializou.');") < navigation.indexOf('legacyInitApp.apply(root, args)'));
+});
+
+test('app monolith no longer owns projection model chart or summary', () => {
+  assert.doesNotMatch(app, /function renderProjection\(/);
+  assert.doesNotMatch(app, /_projectionChart|projectionChart/);
+  assert.doesNotMatch(app, /projection-summary-list|projectionChart/);
+
+  assert.match(projection, /function buildProjectionModel\(/);
+  assert.match(projection, /function renderProjection\(data, options = \{\}\)/);
+  assert.match(projection, /function renderSummary\(/);
+  assert.match(projection, /root\.PlannkeProjection = api/);
+  assert.match(planning, /root\.PlannkeProjection\?\.renderProjection\?\.\(/);
+});
+
+test('legacy renderAll reaches projection only after canonical projection and planning runtimes are ready', () => {
+  assert.match(app, /function renderAll\(\)[\s\S]*renderProjection\(data\);/);
+  assert.match(navigation, /root\.PlannkeProjectionReady = projectionReady/);
+  assert.match(navigation, /root\.PlannkePlanningReady = planningReady/);
+  assert.ok(navigation.indexOf("if (!projection) throw new Error('Runtime canônico de Projeção não inicializou.');") < navigation.indexOf('legacyInitApp.apply(root, args)'));
 });
