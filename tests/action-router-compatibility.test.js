@@ -18,7 +18,7 @@ function extractHandlers(content) {
   return handlers;
 }
 
-test('canonical actions recognize every static compatibility action in the shell', () => {
+test('static shell contains no unrecognized compatibility actions', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
   assert.equal(fs.existsSync(path.join(root, 'ui-bridge.js')), false);
   const unknown = [];
@@ -29,7 +29,7 @@ test('canonical actions recognize every static compatibility action in the shell
       if (!actions.canHandle(handler.code)) unknown.push(`${source.file}: ${handler.attr}="${handler.code}"`);
     });
   });
-  assert.ok(count > 0, 'compatibility inventory stays active until the final data-plannke action is retired');
+  assert.equal(count, 0, 'static shell should not store executable compatibility actions');
   assert.deepEqual(unknown, []);
   sources.forEach(source => assert.doesNotMatch(source.content, /\s(?:onclick|onchange|oninput)=/));
 });
