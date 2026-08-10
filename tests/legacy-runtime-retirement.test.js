@@ -15,6 +15,7 @@ const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
 const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
 const dashboard = fs.readFileSync(path.join(root, 'app-dashboard.js'), 'utf8');
+const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
 
 test('product layer no longer owns the planning projection runtime', () => {
   assert.doesNotMatch(product, /const originalProjection = globalThis\.renderProjection/);
@@ -43,6 +44,8 @@ test('one-time cleanup automation is not shipped with the branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-settings-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-renderers-once.js')), false);
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-renderers-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-movements-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-movements-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-excel-once.js')), false);
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-excel-once.yml')), false);
 });
@@ -127,10 +130,13 @@ test('app monolith no longer owns canonical dashboard transaction or entity rend
   assert.match(renderers, /root\.renderCards = safeRenderCards/);
   assert.match(entities, /root\.handlePayFatura = handlePayFatura/);
 
-  assert.match(app, /const COLOR_MAP = new Proxy/);
-  assert.match(app, /function renderMovimentacao\(/);
-  assert.match(app, /function renderSankey\(/);
-  assert.match(app, /function renderSunburst\(/);
+  assert.doesNotMatch(app, /const COLOR_MAP = new Proxy/);
+  assert.doesNotMatch(app, /function renderMovimentacao\(/);
+  assert.doesNotMatch(app, /function renderSankey\(/);
+  assert.doesNotMatch(app, /function renderSunburst\(/);
+  assert.match(movements, /root\.renderMovimentacao = renderMovimentacao/);
+  assert.match(movements, /root\.renderSankey = renderSankey/);
+  assert.match(movements, /root\.renderSunburst = renderSunburst/);
   assert.match(app, /function renderProjection\(/);
 });
 
@@ -156,4 +162,25 @@ test('app monolith no longer owns Excel or Memory Card runtime', () => {
   assert.match(appData, /Plannke_Relatorio_/);
   assert.doesNotMatch(appData, /importFromExcel|FileReader|Memory Card|_backupDone/);
   assert.match(navigation, /\['confirmClearData', 'exportToExcel'\]/);
+});
+
+test('app monolith no longer owns movement state filters or charts', () => {
+  ['clearTxSearch', '_populateMovFilters', 'filterDashboardToTransactions', 'renderMonthTabs', 'setMovViewMode', 'renderMovimentacao', 'renderSankey', 'renderSunburst', 'updateMonthNavigator', 'changeMonth']
+    .forEach(name => assert.doesNotMatch(app, new RegExp('function\\s+' + name.replace('_', '\\_') + '\\s*\\(')));
+  assert.doesNotMatch(app, /_currentMonth|_fluxoChart|_movViewMode|const COLOR_MAP = new Proxy/);
+
+  assert.match(movements, /root\._populateMovFilters = populateMovementFilters/);
+  assert.match(movements, /root\.renderMonthTabs = renderMonthTabs/);
+  assert.match(movements, /root\.renderMovimentacao = renderMovimentacao/);
+  assert.match(movements, /root\.renderSankey = renderSankey/);
+  assert.match(movements, /root\.renderSunburst = renderSunburst/);
+  assert.match(movements, /root\.changeMonth = changeMonth/);
+  assert.match(movements, /root\.clearTxSearch = clearTxSearch/);
+  assert.match(app, /function renderProjection\(/);
+});
+
+test('legacy renderAll reaches movement globals only after canonical movement runtime is ready', () => {
+  assert.match(app, /function renderAll\(\)[\s\S]*renderMovimentacao\(data\);[\s\S]*_populateMovFilters\(data\);/);
+  assert.match(navigation, /root\.PlannkeMovementsReady = movementsReady/);
+  assert.ok(navigation.indexOf("if (!movements) throw new Error('Runtime canônico de Movimentações não inicializou.');") < navigation.indexOf('legacyInitApp.apply(root, args)'));
 });
