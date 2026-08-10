@@ -23,6 +23,7 @@ test('canonical shell owns desktop chrome and revamp assets', () => {
 
 test('compatibility bridge no longer owns shell construction or visual assets', () => {
   assert.doesNotMatch(bridge, /CANONICAL_PAGES|primeCanonicalShell|loadRevampAssets|loadDesktopAssets|Central financeira/);
+  assert.doesNotMatch(bridge, /revamp(?:-desktop)?\.(?:js|css)/);
   assert.match(bridge, /const DATA_ATTRS = \{/);
   assert.match(bridge, /const ALLOWED_CALLS = new Set/);
   assert.match(bridge, /function dispatch\(/);
@@ -48,4 +49,9 @@ test('canonical shell is syntax-checked and available offline', () => {
   assert.match(pkg, /node --check app-shell\.js/);
   assert.match(sw, /plannke-shell-v31/);
   assert.match(sw, /'\.\/app-shell\.js'/);
+});
+
+test('one-time app shell extraction artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'extract-app-shell-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'extract-app-shell-once.yml')), false);
 });
