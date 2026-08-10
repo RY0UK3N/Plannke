@@ -1,14 +1,18 @@
 {
+  "id": "./",
   "name": "Plannke",
   "short_name": "Plannke",
   "description": "Finanças pessoais privadas, locais e sob seu controle.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0d0d14",
-  "theme_color": "#0d0d14",
+  "background_color": "#0b0d12",
+  "theme_color": "#0b0d12",
   "lang": "pt-BR",
-  "categories": ["finance", "productivity"],
+  "categories": [
+    "finance",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "plannke-icon.svg",

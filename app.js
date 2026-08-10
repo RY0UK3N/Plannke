@@ -1,11 +1,8 @@
-document.addEventListener('DOMContentLoaded', () => { initApp(); });
-
 let _currentMonth = null;
 let _summaryChart = null;
 let _fluxoChart = null;
 let _fluxoMode = 'sankey';
 let _movViewMode = 'list'; // 'list', 'sankey', 'sunburst'
-let _backupDone = false;
 
 /* ============================================================
    INIT
@@ -15,9 +12,6 @@ function initApp() {
     setupModalEvents();
     setupForms();
     setupCurrencyInput();
-    loadFromLocalStorage();
-    checkImportPrompt();
-    setupBeforeUnload();
     setupKeyboardShortcuts();
     applyTheme(getSettings().theme || 'dark');
     renderAll();
@@ -33,123 +27,6 @@ function clearTxSearch() {
     const clearBtn = document.getElementById('tx-search-clear');
     if (clearBtn) clearBtn.classList.add('hidden');
     renderMovimentacao(getData());
-}
-
-/* ============================================================
-   ATALHOS DE TECLADO
-   ============================================================ */
-function setupKeyboardShortcuts() {
-    document.addEventListener('keydown', e => {
-        // Ignora quando está em campos de input
-        const tag = document.activeElement?.tagName;
-        if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-        // Ignora quando modal/offcanvas está aberto (exceto Esc)
-        const modalOpen = document.querySelector('.modal.show');
-        const offcanvasOpen = document.querySelector('.offcanvas.show');
-
-        switch (e.key) {
-            case 'Escape':
-                // Fecha modal ou offcanvas mais recente
-                if (modalOpen) bootstrap.Modal.getInstance(modalOpen)?.hide();
-                else if (offcanvasOpen) bootstrap.Offcanvas.getInstance(offcanvasOpen)?.hide();
-                break;
-            case '?':
-                if (!modalOpen && !offcanvasOpen)
-                    bootstrap.Modal.getOrCreateInstance(document.getElementById('shortcutsModal')).show();
-                break;
-        }
-
-        // Os atalhos abaixo requerem que nenhum modal/offcanvas esteja aberto
-        if (modalOpen || offcanvasOpen) return;
-
-        switch (e.key) {
-            case 'n': case 'N':
-                e.preventDefault();
-                openTxModal(null);
-                break;
-            case 'd': case 'D':
-                e.preventDefault();
-                _navigateTo('dashboard');
-                break;
-            case 'l': case 'L':
-                e.preventDefault();
-                _navigateTo('movimentacao');
-                break;
-            case 'c': case 'C':
-                e.preventDefault();
-                _navigateTo('accounts');
-                break;
-            case 'b': case 'B':
-                e.preventDefault();
-                _navigateTo('backup');
-                break;
-            case ',':
-                e.preventDefault();
-                openSettingsPanel();
-                break;
-            case '/':
-                e.preventDefault();
-                _navigateTo('movimentacao');
-                setTimeout(() => document.getElementById('tx-search')?.focus(), 150);
-                break;
-        }
-    });
-}
-
-/* ============================================================
-   PERSISTÊNCIA — localStorage (autosave) + prompts
-   ============================================================ */
-const LS_KEY = 'planner_autosave';
-
-function loadFromLocalStorage() {
-    try {
-        const raw = localStorage.getItem(LS_KEY);
-        if (raw && !sessionStorage.getItem('planner_session_cache')) {
-            sessionStorage.setItem('planner_session_cache', raw);
-        }
-    } catch(e) { console.warn('Erro ao carregar autosave:', e); }
-}
-
-// Espelha no localStorage sempre que saveData é chamado
-(function patchSaveData() {
-    const orig = window.saveData;
-    if (!orig) { setTimeout(patchSaveData, 50); return; }
-    window.saveData = function(data) {
-        orig(data);
-        try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e) {}
-    };
-})();
-
-function checkImportPrompt() {
-    // Sempre exibe o welcome modal no início da sessão (cada recarregamento)
-    // conforme solicitado pelo usuário.
-    setTimeout(() => {
-        const modalEl = document.getElementById('welcomeModal');
-        if (modalEl) {
-            bootstrap.Modal.getOrCreateInstance(modalEl).show();
-        }
-    }, 1000);
-}
-
-function setupBeforeUnload() {
-    window.addEventListener('beforeunload', e => {
-        const data = getData();
-        // Se não houver dados, não precisa de aviso
-        if (!data.transactions.length && !data.accounts.length && !data.cards.length) return;
-        
-        // Se já fez backup nesta sessão, pode sair tranquilo
-        if (_backupDone) return;
-
-        // Salva no localStorage como garantia extra
-        try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(ex) {}
-        
-        e.preventDefault();
-        e.returnValue = 'Você ainda não salvou seu Memory Card (.xlsx). Deseja sair mesmo assim?';
-    });
-}
-
-function handleExitClick() {
-    // Função removida a pedido do usuário
 }
 
 /* ============================================================
@@ -188,50 +65,6 @@ function setCurrencyValue(id, val) {
     const num = parseFloat(val) || 0;
     input.value = num > 0 ? num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
     input.dataset.rawValue = String(num);
-}
-
-/* ============================================================
-   NAVIGATION
-   ============================================================ */
-function setupNavigation() {
-    document.querySelectorAll('[data-target]').forEach(item => {
-        item.addEventListener('click', e => {
-            e.preventDefault();
-            const target = item.getAttribute('data-target');
-            _navigateTo(target);
-        });
-    });
-}
-
-function _navigateTo(target) {
-    // Se sair da view de movimentação, descarta instância ECharts para evitar container órfão
-    const leaving = document.querySelector('.content-view:not(.hidden)')?.id?.replace('-view', '');
-    if (leaving === 'movimentacao' && target !== 'movimentacao' && _fluxoChart) {
-        _fluxoChart.dispose();
-        _fluxoChart = null;
-    }
-
-    // Desktop nav
-    document.querySelectorAll('.planner-pill-nav [data-target]').forEach(n => n.classList.remove('active'));
-    const desktopLink = document.querySelector(`.planner-pill-nav [data-target="${target}"]`);
-    if (desktopLink) desktopLink.classList.add('active');
-
-    // Mobile tab bar
-    document.querySelectorAll('.mobile-tab-btn[data-target]').forEach(n => n.classList.remove('active'));
-    const mobileBtn = document.querySelector(`.mobile-tab-btn[data-target="${target}"]`);
-    if (mobileBtn) mobileBtn.classList.add('active');
-
-    document.querySelectorAll('.content-view').forEach(v => {
-        v.id === `${target}-view` ? v.classList.remove('hidden') : v.classList.add('hidden');
-    });
-    renderAll();
-    // Projeção verifica se a view está visível — renderiza após mostrar
-    if (target === 'projecao') renderProjection(getData());
-}
-
-// Called by mobile tab bar buttons (avoids duplicate event listeners)
-function mobileNav(btn, target) {
-    _navigateTo(target);
 }
 
 /* ============================================================

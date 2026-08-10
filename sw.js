@@ -1,4 +1,4 @@
-const CACHE_NAME = 'plannke-shell-v18';
+const CACHE_NAME = 'plannke-shell-v27';
 const LOCAL_ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,15 @@ const LOCAL_ASSETS = [
   './vendor/echarts.min.js',
   './storage.js',
   './app.js',
+  './app-navigation.js',
+  './app-transactions.js',
+  './app-dashboard.js',
+  './app-entities.js',
+  './app-settings.js',
+  './app-data.js',
+  './storage-adapter.js',
+  './storage-ui.js',
+  './storage-ui.css',
   './ui-bridge.js',
   './safe-renderers.js',
   './revamp.js',
@@ -66,23 +75,19 @@ self.addEventListener('fetch', event => {
 
   if (url.origin === self.location.origin) {
     event.respondWith(
-      caches.match(event.request).then(cached => {
-        const refresh = fetch(event.request).then(response => {
+      fetch(event.request)
+        .then(response => {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
           return response;
-        }).catch(() => cached);
-        return cached || refresh;
-      })
+        })
+        .catch(() => caches.match(event.request))
     );
     return;
   }
 
   event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
-      return response;
-    }))
+    caches.match(event.request)
+      .then(cached => cached || fetch(event.request))
   );
 });

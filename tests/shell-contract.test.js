@@ -5,6 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 
 function idsIn(html) {
   return new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));
@@ -23,14 +24,20 @@ const CORE_IDS = [
   'tx-date', 'tx-account', 'tx-destination', 'tx-fields-wrapper', 'tx-is-installment',
   'tx-is-recurring', 'tx-installments', 'accountModal', 'accountForm', 'acc-id', 'acc-name',
   'acc-balance', 'cardModal', 'cardForm', 'card-id', 'card-name', 'card-limit', 'card-closing',
-  'card-due', 'welcomeModal', 'entityDetailModal', 'detail-period-select', 'detail-tx-list',
+  'card-due', 'entityDetailModal', 'detail-period-select', 'detail-tx-list',
   'detail-pay-acc-select', 'detail-pay-btn', 'categoryModal', 'budgetModal', 'settingsOffcanvas',
-  'deleteConfirmModal', 'delete-confirm-btn', 'shortcutsModal', 'excelUpload', 'mobile-tab-bar'
+  'deleteConfirmModal', 'delete-confirm-btn', 'shortcutsModal'
 ];
 
-test('application shell preserves every core element required by the runtime', () => {
+test('application workspaces preserve every element still required by the runtime', () => {
   const missing = CORE_IDS.filter(id => !ids.has(id));
   assert.deepEqual(missing, []);
+});
+
+test('retired chrome and Memory Card controls are not part of the runtime contract', () => {
+  ['welcomeModal', 'excelUpload', 'mobile-tab-bar', 'backupReminderModal'].forEach(id => {
+    assert.equal(ids.has(id), false, `${id} should stay retired`);
+  });
 });
 
 test('core IDs are unique in the application shell', () => {
@@ -39,9 +46,11 @@ test('core IDs are unique in the application shell', () => {
   assert.deepEqual(duplicates, []);
 });
 
-test('all five primary views remain addressable by data-target navigation', () => {
+test('all five primary views are owned by canonical desktop navigation', () => {
   ['dashboard', 'movimentacao', 'projecao', 'accounts', 'backup'].forEach(target => {
-    assert.match(index, new RegExp(`data-target="${target}"`));
     assert.ok(ids.has(`${target}-view`));
+    assert.match(bridge, new RegExp(`\\['${target}',`));
   });
+  assert.match(bridge, /CANONICAL_PAGES/);
+  assert.match(bridge, /button\.dataset\.target = target/);
 });
