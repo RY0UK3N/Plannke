@@ -7,22 +7,25 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
+const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
-test('static shell loads canonical UI and runtime before navigation and bridge', () => {
+test('static shell loads canonical UI runtime navigation shell bridge and boot in order', () => {
   assert.doesNotMatch(html, /<script src="app\.js"><\/script>/);
   const storageIndex = html.indexOf('<script src="storage.js"></script>');
   const uiIndex = html.indexOf('<script src="app-ui.js"></script>');
   const runtimeIndex = html.indexOf('<script src="app-runtime.js"></script>');
   const navigationIndex = html.indexOf('<script src="app-navigation.js"></script>');
   const bridgeIndex = html.indexOf('<script src="ui-bridge.js" data-plannke-ui-bridge="true"></script>');
+  const bootIndex = html.indexOf('<script src="app-boot.js"></script>');
   assert.ok(storageIndex >= 0 && storageIndex < uiIndex);
   assert.ok(uiIndex < runtimeIndex);
   assert.ok(runtimeIndex < navigationIndex);
   assert.ok(navigationIndex < bridgeIndex);
+  assert.ok(bridgeIndex < bootIndex);
 });
 
 test('shared UI utilities own legacy globals without HTML-string rendering', () => {
@@ -48,19 +51,22 @@ test('application runtime owns init and render orchestration only', () => {
   assert.doesNotMatch(runtime, /innerHTML|echarts|new Chart|XLSX|FileReader/);
 });
 
-test('navigation still wraps the canonical init before ui bridge captures it', () => {
+test('navigation wraps canonical init before app-boot captures it', () => {
   assert.match(navigation, /const legacyInitApp = root\.initApp/);
   assert.match(navigation, /root\.initApp = \(\.\.\.args\) => Promise\.all/);
-  assert.match(bridge, /const applicationInit = root\?\.initApp/);
+  assert.match(boot, /const applicationInit = root\?\.initApp/);
+  assert.doesNotMatch(bridge, /const applicationInit = root\?\.initApp/);
 });
 
-test('PWA and syntax checks use canonical UI runtime instead of app.js', () => {
-  assert.match(sw, /plannke-shell-v28/);
+test('PWA and syntax checks use canonical UI runtime and boot instead of app.js', () => {
+  assert.match(sw, /plannke-shell-v29/);
   assert.match(sw, /'\.\/app-ui\.js'/);
   assert.match(sw, /'\.\/app-runtime\.js'/);
+  assert.match(sw, /'\.\/app-boot\.js'/);
   assert.doesNotMatch(sw, /'\.\/app\.js'/);
   assert.match(pkg, /node --check app-ui\.js/);
   assert.match(pkg, /node --check app-runtime\.js/);
+  assert.match(pkg, /node --check app-boot\.js/);
 });
 
 test('one-time canonical UI integration artifacts are not shipped', () => {
