@@ -4,21 +4,22 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const dataActions = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
-test('navigation and keyboard shortcuts no longer live in the app monolith', () => {
-  assert.doesNotMatch(app, /function setupNavigation\s*\(/);
-  assert.doesNotMatch(app, /function setupKeyboardShortcuts\s*\(/);
-  assert.doesNotMatch(app, /function _navigateTo\s*\(/);
-  assert.doesNotMatch(app, /function mobileNav\s*\(/);
-  assert.match(app, /setupNavigation\(\)/);
-  assert.match(app, /setupKeyboardShortcuts\(\)/);
-  assert.match(app, /_navigateTo\('dashboard'\)/);
+test('navigation and keyboard shortcuts live outside application orchestration', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
+  assert.doesNotMatch(runtime, /function setupNavigation\s*\(/);
+  assert.doesNotMatch(runtime, /function setupKeyboardShortcuts\s*\(/);
+  assert.doesNotMatch(runtime, /function _navigateTo\s*\(/);
+  assert.doesNotMatch(runtime, /function mobileNav\s*\(/);
+  assert.match(runtime, /root\.setupNavigation\?\.\(\)/);
+  assert.match(runtime, /root\.setupKeyboardShortcuts\?\.\(\)/);
+  assert.match(runtime, /root\._navigateTo\?\.\('dashboard'\)/);
 });
 
 test('canonical navigation module owns desktop navigation only', () => {
@@ -43,7 +44,7 @@ test('canonical app runtime loads before navigation and the bridge starts the ap
   assert.match(pkg, /node --check app-navigation\.js/);
 });
 
-test('canonical data actions supersede legacy app actions before interaction', () => {
+test('canonical data actions supersede retired app actions before interaction', () => {
   assert.match(navigation, /function loadDataActions\(/);
   assert.match(navigation, /script\.src = 'app-data\.js'/);
   assert.match(navigation, /root\.PlannkeDataReady = dataActionsReady/);
