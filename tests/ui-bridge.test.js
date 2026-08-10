@@ -61,7 +61,13 @@ test('static shell owns product loading and finance core has no duplicate dynami
 test('UI bridge no longer scans or observes the DOM for executable attributes', () => {
   const source = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
   assert.doesNotMatch(source, /EVENT_ATTRS|migrateElement|new MutationObserver/);
+  assert.doesNotMatch(source, /querySelectorAll\?\.\('\[onclick\],\[onchange\],\[oninput\]'\)/);
   assert.match(source, /document\.addEventListener\('click'/);
   assert.match(source, /document\.addEventListener\('change'/);
   assert.match(source, /document\.addEventListener\('input'/);
+});
+
+test('one-time inline handler migration retirement artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-inline-handler-migration-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-inline-handler-migration-once.yml')), false);
 });
