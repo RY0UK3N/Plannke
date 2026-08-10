@@ -11,12 +11,12 @@ const core = require(path.join(root, 'product-core.js'));
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
-function sandboxFor(data = null) {
+function sandboxFor(data = null, projectionRender = () => undefined) {
   let saved = null;
   const sandbox = {
     console,
     PlannkeCore: core,
-    renderProjection() {},
+    PlannkeProjection: { renderProjection: projectionRender },
     formatCurrency: value => String(value),
     formatDate: value => String(value),
     getData: data ? () => data : undefined,
@@ -29,12 +29,15 @@ function sandboxFor(data = null) {
   return { sandbox, saved: () => saved };
 }
 
-test('canonical planning runtime is loaded and required before app boot', () => {
-  assert.match(navigation, /PlannkeProjectionBase = root\.renderProjection/);
+test('canonical planning runtime waits for canonical projection before app boot', () => {
+  assert.doesNotMatch(navigation, /PlannkeProjectionBase/);
+  assert.match(navigation, /function loadProjectionRuntime\(/);
   assert.match(navigation, /function loadPlanningRuntime\(/);
-  assert.match(navigation, /script\.src = 'app-planning\.js'/);
+  assert.match(navigation, /projectionReady\.then\(/);
+  assert.match(navigation, /root\.PlannkeProjectionReady = projectionReady/);
   assert.match(navigation, /root\.PlannkePlanningReady = planningReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
+  assert.match(navigation, /Runtime canônico de Projeção não inicializou/);
   assert.match(navigation, /Runtime canônico de Planejamento não inicializou/);
 });
 
@@ -56,9 +59,7 @@ test('projection data includes clamped recurring occurrences from PlannkeCore', 
 
   const data = {
     accounts: [{ id: 'acc', name: 'Conta', balance: 1000 }],
-    cards: [],
-    transactions: [],
-    settings: {},
+    cards: [], transactions: [], settings: {},
     planning: {
       goals: [], reserves: [], categoryRules: [],
       recurringRules: [{
@@ -74,39 +75,31 @@ test('projection data includes clamped recurring occurrences from PlannkeCore', 
   assert.ok(projected.transactions.every(tx => tx.synthetic && tx.status === 'planned'));
 });
 
-test('planning boundary prevents product.js from reclaiming renderProjection during boot', async () => {
-  const { sandbox } = sandboxFor();
-  await sandbox.PlannkePlanning.ready;
-
-  const canonical = sandbox.renderProjection;
-  sandbox.renderProjection = () => 'product-wrapper';
-  assert.equal(sandbox.renderProjection, canonical);
-  assert.equal(canonical.__plannkeCanonicalPlanning, true);
-});
-
-test('planning projection calls the base captured before a product wrapper', async () => {
-  let baseCalls = 0;
-  let wrapperCalls = 0;
+test('planning projection delegates visual model to PlannkeProjection then renders hub', async () => {
+  let calls = 0;
+  let received = null;
   const data = {
     accounts: [], cards: [], transactions: [], settings: {},
     planning: { goals: [], reserves: [], recurringRules: [], categoryRules: [] }
   };
-  const sandbox = {
-    console,
-    PlannkeCore: core,
-    PlannkeProjectionBase() { baseCalls += 1; },
-    renderProjection() { wrapperCalls += 1; },
-    getData: () => data,
-    formatCurrency: value => String(value),
-    formatDate: value => String(value)
-  };
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(planning, sandbox, { filename: 'app-planning.js' });
+  const { sandbox } = sandboxFor(data, projectionData => {
+    calls += 1;
+    received = projectionData;
+    return { delegated: true };
+  });
   await sandbox.PlannkePlanning.ready;
 
-  sandbox.renderProjection(data);
-  assert.equal(baseCalls, 1);
-  assert.equal(wrapperCalls, 0);
+  const result = sandbox.renderProjection(data);
+  assert.equal(calls, 1);
+  assert.equal(result.delegated, true);
+  assert.ok(received);
+  assert.equal(sandbox.renderProjection.__plannkeCanonicalPlanning, true);
+});
+
+test('planning no longer owns projection capture or property locking', () => {
+  assert.doesNotMatch(planning, /legacyProjection|PlannkeProjectionBase|projectionBoundaryLocked|Object\.defineProperty\(root, 'renderProjection'/);
+  assert.match(planning, /root\.PlannkeProjection\?\.renderProjection\?\.\(/);
+  assert.match(planning, /root\.renderProjection = canonicalRenderProjection/);
 });
 
 test('household balances split completed shared expenses equally', async () => {
@@ -152,9 +145,7 @@ test('removing a household member clears live and persisted sharing references',
     accounts: [], cards: [], planning: {},
     settings: {
       household: { enabled: true, members: [{ id: 'a', name: 'Ana' }, { id: 'b', name: 'Bia' }] },
-      sharedTransactionMeta: {
-        tx1: { paidByMemberId: 'b', sharedWithMemberIds: ['a', 'b'] }
-      }
+      sharedTransactionMeta: { tx1: { paidByMemberId: 'b', sharedWithMemberIds: ['a', 'b'] } }
     },
     transactions: [{ id: 'tx1', paidByMemberId: 'b', sharedWithMemberIds: ['a', 'b'] }]
   };

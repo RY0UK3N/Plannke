@@ -22,7 +22,7 @@ test('canonical movements runtime is required before legacy init', () => {
   assert.match(navigation, /function loadMovementRuntime\(/);
   assert.match(navigation, /script\.src = 'app-movements\.js'/);
   assert.match(navigation, /root\.PlannkeMovementsReady = movementsReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de Movimentações não inicializou/);
   assert.match(navigation, /root\.PlannkeMovements\?\.disposeChart\?\.\(\)/);
 });
