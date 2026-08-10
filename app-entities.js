@@ -4,9 +4,18 @@
 
     let formsBound = false;
     let modalEventsBound = false;
+    let controlsBound = false;
 
     function byId(id) {
         return document.getElementById(id);
+    }
+
+    function bindEntityControls() {
+        if (controlsBound || typeof document === 'undefined') return;
+        controlsBound = true;
+        byId('accounts-add-account')?.addEventListener('click', () => root.bootstrap?.Modal?.getOrCreateInstance(byId('accountModal'))?.show());
+        byId('accounts-add-card')?.addEventListener('click', () => root.bootstrap?.Modal?.getOrCreateInstance(byId('cardModal'))?.show());
+        byId('detail-period-select')?.addEventListener('change', event => root._detailContext?.onPeriodChange?.(event.target.value));
     }
 
     function localToday() {
@@ -336,6 +345,7 @@
     const api = {
         setupForms,
         setupModalEvents,
+        bindEntityControls,
         viewAccountStatement,
         viewCardInvoice,
         handlePayFatura,
@@ -353,4 +363,5 @@
     root.delAcc = delAcc;
     root.delCard = delCard;
     root.PlannkeEntities = api;
+    bindEntityControls();
 })(typeof globalThis !== 'undefined' ? globalThis : this);

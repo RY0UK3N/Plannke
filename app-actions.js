@@ -22,7 +22,6 @@
     // This shrinks as each workspace moves to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
         'openCategoryManager',
-        'openModal',
         'switchCatTabModal', 'addCustomCategoryModal',
         'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
         'toggleInstallmentField', 'updateInstallmentHelper',
@@ -89,7 +88,6 @@
     function specialKind(code) {
         const value = normalizeCode(code);
         if (/^this\.showPicker\(\);?$/.test(value)) return 'show-picker';
-        if (/^window\._detailContext\?\.onPeriodChange\(this\.value\);?$/.test(value)) return 'detail-period';
         if (/^bootstrap\.Modal\.getOrCreateInstance\(document\.getElementById\(['"]shortcutsModal['"]\)\)\.show\(\);?$/.test(value)) return 'shortcuts';
         return null;
     }
@@ -109,10 +107,6 @@
         const kind = specialKind(code);
         if (kind === 'show-picker') {
             if (typeof element?.showPicker === 'function') element.showPicker();
-            return true;
-        }
-        if (kind === 'detail-period') {
-            root._detailContext?.onPeriodChange?.(element?.value);
             return true;
         }
         if (kind === 'shortcuts') {
