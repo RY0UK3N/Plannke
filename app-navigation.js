@@ -316,6 +316,10 @@
     function setupKeyboardShortcuts() {
         if (shortcutsBound) return;
         shortcutsBound = true;
+        document.getElementById('settings-shortcuts')?.addEventListener('click', () => {
+            const modal = document.getElementById('shortcutsModal');
+            if (modal && root.bootstrap?.Modal) root.bootstrap.Modal.getOrCreateInstance(modal).show();
+        });
         document.addEventListener('keydown', event => {
             const tag = document.activeElement?.tagName;
             if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
