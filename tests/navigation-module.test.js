@@ -33,15 +33,21 @@ test('canonical navigation module owns desktop navigation only', () => {
   assert.doesNotMatch(navigation, /\beval\s*\(|new\s+Function\s*\(/);
 });
 
-test('canonical app runtime loads before navigation and the bridge starts the application', () => {
+test('canonical app runtime loads before navigation shell actions and boot', () => {
   const uiAt = index.indexOf('src="app-ui.js"');
   const runtimeAt = index.indexOf('src="app-runtime.js"');
   const navigationAt = index.indexOf('src="app-navigation.js"');
-  const bridgeAt = index.indexOf('src="ui-bridge.js"');
-  assert.ok(uiAt >= 0 && runtimeAt > uiAt && navigationAt > runtimeAt && bridgeAt > navigationAt);
+  const shellAt = index.indexOf('src="app-shell.js"');
+  const actionsAt = index.indexOf('src="app-actions.js"');
+  const bootAt = index.indexOf('src="app-boot.js"');
+  assert.ok(uiAt >= 0 && runtimeAt > uiAt && navigationAt > runtimeAt);
+  assert.ok(shellAt > navigationAt && actionsAt > shellAt && bootAt > actionsAt);
+  assert.equal(index.indexOf('src="ui-bridge.js"'), -1);
   assert.equal(index.indexOf('src="app.js"'), -1);
   assert.match(sw, /'\.\/app-navigation\.js'/);
+  assert.match(sw, /'\.\/app-actions\.js'/);
   assert.match(pkg, /node --check app-navigation\.js/);
+  assert.match(pkg, /node --check app-actions\.js/);
 });
 
 test('canonical data actions supersede retired app actions before interaction', () => {
