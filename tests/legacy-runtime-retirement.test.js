@@ -8,6 +8,7 @@ const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
 const productUiLogic = fs.readFileSync(path.join(root, 'tests', 'product-ui-logic.test.js'), 'utf8');
 const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
 const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
 
@@ -60,4 +61,14 @@ test('app monolith no longer owns transaction/entity forms or CRUD actions', () 
   assert.match(app, /function _showDeleteConfirm\(/);
   assert.match(app, /function openModal\(/);
   assert.match(app, /function closeModal\(/);
+});
+
+test('legacy init only reaches form hooks after canonical modules are ready', () => {
+  assert.match(app, /function initApp\(\)[\s\S]*setupModalEvents\(\);[\s\S]*setupForms\(\);/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, renderersReady\]\)/);
+  assert.match(navigation, /entities\.setupModalEvents\?\.\(\);/);
+  assert.match(navigation, /entities\.setupForms\?\.\(\);/);
+  assert.ok(navigation.indexOf('entities.setupForms?.();') < navigation.indexOf('legacyInitApp.apply(root, args)'));
+  assert.match(transactions, /root\.setupModalEvents = setupModalEvents/);
+  assert.match(transactions, /root\.setupForms = setupForms/);
 });
