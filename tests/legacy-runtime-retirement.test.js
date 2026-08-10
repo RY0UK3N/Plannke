@@ -131,3 +131,13 @@ test('app monolith no longer owns canonical dashboard transaction or entity rend
   assert.match(app, /function renderSunburst\(/);
   assert.match(app, /function renderProjection\(/);
 });
+
+test('renderAll reaches data-heavy surfaces only after canonical renderers are ready', () => {
+  assert.match(app, /function renderAll\(\)[\s\S]*renderTransactions\(data\);[\s\S]*renderDashboard\(data\);[\s\S]*renderAccounts\(data\);[\s\S]*renderCards\(data\);/);
+  assert.match(navigation, /root\.PlannkeRenderersReady = renderersReady/);
+  assert.ok(navigation.indexOf("if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');") < navigation.indexOf('legacyInitApp.apply(root, args)'));
+  assert.match(renderers, /root\.renderTransactions = safeRenderTransactions/);
+  assert.match(renderers, /root\.renderDashboard = safeRenderDashboard/);
+  assert.match(renderers, /root\.renderAccounts = safeRenderAccounts/);
+  assert.match(renderers, /root\.renderCards = safeRenderCards/);
+});
