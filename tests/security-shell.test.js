@@ -15,7 +15,7 @@ const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
 const storageUi = fs.readFileSync(path.join(root, 'storage-ui.js'), 'utf8');
@@ -30,24 +30,25 @@ function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
 }
 
-test('product layer, app shell, compatibility bridge and safe renderers are loaded in the required order', () => {
+test('product layer, app shell, canonical actions and safe renderers are loaded in the required order', () => {
   assert.match(index, /<link rel="stylesheet" href="product\.css">/);
   assert.match(index, /<script src="app-shell\.js" data-plannke-shell="true"><\/script>/);
-  assert.match(index, /<script src="ui-bridge\.js" data-plannke-ui-bridge="true"><\/script>/);
+  assert.match(index, /<script src="app-actions\.js" data-plannke-actions="true"><\/script>/);
   assert.match(index, /<script src="safe-renderers\.js"><\/script>/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
   assert.match(index, /<script src="product\.js"><\/script>/);
   assert.equal(index.indexOf('app.js'), -1);
   assert.ok(index.indexOf('app-runtime.js') < index.indexOf('app-shell.js'));
-  assert.ok(index.indexOf('app-shell.js') < index.indexOf('ui-bridge.js'));
-  assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('app-boot.js'));
+  assert.ok(index.indexOf('app-shell.js') < index.indexOf('app-actions.js'));
+  assert.ok(index.indexOf('app-actions.js') < index.indexOf('app-boot.js'));
+  assert.equal(index.indexOf('ui-bridge.js'), -1);
   assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
   assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
   assert.match(insights, /shell\.src = '\.\/app-shell\.js'/);
-  assert.match(insights, /shell\.addEventListener\('load', loadBridge/);
-  assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
+  assert.match(insights, /shell\.addEventListener\('load', loadActions/);
+  assert.match(insights, /actions\.src = '\.\/app-actions\.js'/);
 });
 
 test('canonical app boot owns application start and waits for StorageAdapter', () => {
@@ -58,7 +59,7 @@ test('canonical app boot owns application start and waits for StorageAdapter', (
   assert.match(boot, /const storageReady = loadStorageAdapter\(\)/);
   assert.match(boot, /function startApplication\(\)/);
   assert.match(boot, /storageReady[\s\S]*applicationInit\.call\(root\)/);
-  assert.doesNotMatch(bridge, /loadStorageAdapter|startApplication|applicationInit/);
+  assert.doesNotMatch(actions, /loadStorageAdapter|startApplication|applicationInit/);
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
   assert.doesNotMatch(runtime, /document\.addEventListener\(['"]DOMContentLoaded['"][\s\S]*initApp/);
   assert.doesNotMatch(runtime, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload/);
@@ -236,7 +237,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v31'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v32'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -253,7 +254,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
 
   [
     'app-ui.js', 'app-runtime.js', 'app-shell.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
-    'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
+    'product-core.js', 'product.js', 'insights.js', 'app-actions.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
     'revamp-accounts.css', 'revamp-forms.css', 'revamp-states.css',
