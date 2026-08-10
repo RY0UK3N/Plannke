@@ -21,10 +21,8 @@
     // Temporary compatibility vocabulary for static data-plannke actions.
     // This shrinks as each workspace moves to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
-        'openCategoryManager',
         'switchCatTabModal', 'addCustomCategoryModal',
         'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
-        'toggleInstallmentField', 'updateInstallmentHelper',
         'deleteCategoryModal', 'openColorPicker', 'deleteCategory',
         'selectCatColor', 'handleBudgetInput', 'saveBudgetEntry',
         'dupTx', 'edTx', 'delTx', 'edAcc', 'delAcc', 'viewAccountStatement',
@@ -87,7 +85,6 @@
 
     function specialKind(code) {
         const value = normalizeCode(code);
-        if (/^this\.showPicker\(\);?$/.test(value)) return 'show-picker';
         if (/^bootstrap\.Modal\.getOrCreateInstance\(document\.getElementById\(['"]shortcutsModal['"]\)\)\.show\(\);?$/.test(value)) return 'shortcuts';
         return null;
     }
@@ -105,10 +102,6 @@
 
     function dispatch(code, element, event) {
         const kind = specialKind(code);
-        if (kind === 'show-picker') {
-            if (typeof element?.showPicker === 'function') element.showPicker();
-            return true;
-        }
         if (kind === 'shortcuts') {
             const modal = document.getElementById('shortcutsModal');
             if (modal && root.bootstrap?.Modal) root.bootstrap.Modal.getOrCreateInstance(modal).show();
