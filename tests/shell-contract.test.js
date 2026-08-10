@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
 
 function idsIn(html) {
   return new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));
@@ -46,11 +46,11 @@ test('core IDs are unique in the application shell', () => {
   assert.deepEqual(duplicates, []);
 });
 
-test('all five primary views are owned by canonical desktop navigation', () => {
+test('all five primary views are owned by canonical desktop shell navigation', () => {
   ['dashboard', 'movimentacao', 'projecao', 'accounts', 'backup'].forEach(target => {
     assert.ok(ids.has(`${target}-view`));
-    assert.match(bridge, new RegExp(`\\['${target}',`));
+    assert.match(shell, new RegExp(`\\['${target}',`));
   });
-  assert.match(bridge, /CANONICAL_PAGES/);
-  assert.match(bridge, /button\.dataset\.target = target/);
+  assert.match(shell, /CANONICAL_PAGES/);
+  assert.match(shell, /button\.dataset\.target = target/);
 });

@@ -7,7 +7,7 @@ const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'revamp-desktop.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
 const statesCss = fs.readFileSync(path.join(root, 'revamp-states.css'), 'utf8');
-const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
 
 test('final shell explicitly targets desktop app windows', () => {
   assert.match(css, /body\.plannke-revamp\s*\{[\s\S]*min-width: 1080px/);
@@ -18,10 +18,10 @@ test('final shell explicitly targets desktop app windows', () => {
 });
 
 test('desktop finishing assets load only after the base revamp is ready', () => {
-  assert.match(bridge, /function loadDesktopAssets\(/);
-  assert.match(bridge, /script\.addEventListener\('load', loadDesktopAssets/);
-  assert.match(bridge, /desktopStyle\.href = 'revamp-desktop\.css'/);
-  assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
+  assert.match(shell, /function loadDesktopAssets\(/);
+  assert.match(shell, /script\.addEventListener\('load', loadDesktopAssets/);
+  assert.match(shell, /desktopStyle\.href = 'revamp-desktop\.css'/);
+  assert.match(shell, /desktopScript\.src = 'revamp-desktop\.js'/);
 });
 
 test('desktop shell removes legacy mobile footer spacing and keeps brand copy stacked', () => {

@@ -18,12 +18,28 @@
         if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, { once: true });
         else init();
 
-        if (!document.querySelector('script[data-plannke-ui-bridge]')) {
+        const loadBridge = () => {
+            if (document.querySelector('script[data-plannke-ui-bridge]')) return;
             const bridge = document.createElement('script');
             bridge.src = './ui-bridge.js';
             bridge.dataset.plannkeUiBridge = 'true';
             bridge.defer = true;
             document.head.appendChild(bridge);
+        };
+
+        if (root.PlannkeShell) {
+            loadBridge();
+        } else {
+            const existingShell = document.querySelector('script[data-plannke-shell]');
+            if (existingShell) existingShell.addEventListener('load', loadBridge, { once: true });
+            else {
+                const shell = document.createElement('script');
+                shell.src = './app-shell.js';
+                shell.dataset.plannkeShell = 'true';
+                shell.defer = true;
+                shell.addEventListener('load', loadBridge, { once: true });
+                document.head.appendChild(shell);
+            }
         }
     }
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (C) {

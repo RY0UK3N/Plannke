@@ -7,6 +7,7 @@ const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
 const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
@@ -19,12 +20,14 @@ test('static shell loads canonical UI runtime navigation shell bridge and boot i
   const uiIndex = html.indexOf('<script src="app-ui.js"></script>');
   const runtimeIndex = html.indexOf('<script src="app-runtime.js"></script>');
   const navigationIndex = html.indexOf('<script src="app-navigation.js"></script>');
+  const shellIndex = html.indexOf('<script src="app-shell.js" data-plannke-shell="true"></script>');
   const bridgeIndex = html.indexOf('<script src="ui-bridge.js" data-plannke-ui-bridge="true"></script>');
   const bootIndex = html.indexOf('<script src="app-boot.js"></script>');
   assert.ok(storageIndex >= 0 && storageIndex < uiIndex);
   assert.ok(uiIndex < runtimeIndex);
   assert.ok(runtimeIndex < navigationIndex);
-  assert.ok(navigationIndex < bridgeIndex);
+  assert.ok(navigationIndex < shellIndex);
+  assert.ok(shellIndex < bridgeIndex);
   assert.ok(bridgeIndex < bootIndex);
 });
 
@@ -51,6 +54,13 @@ test('application runtime owns init and render orchestration only', () => {
   assert.doesNotMatch(runtime, /innerHTML|echarts|new Chart|XLSX|FileReader/);
 });
 
+test('desktop shell owns chrome while compatibility bridge owns only action routing', () => {
+  assert.match(shell, /root\.PlannkeShell = api/);
+  assert.match(shell, /function primeCanonicalShell\(/);
+  assert.doesNotMatch(bridge, /primeCanonicalShell|loadRevampAssets|CANONICAL_PAGES/);
+  assert.match(bridge, /function dispatch\(/);
+});
+
 test('navigation wraps canonical init before app-boot captures it', () => {
   assert.match(navigation, /const legacyInitApp = root\.initApp/);
   assert.match(navigation, /root\.initApp = \(\.\.\.args\) => Promise\.all/);
@@ -58,14 +68,16 @@ test('navigation wraps canonical init before app-boot captures it', () => {
   assert.doesNotMatch(bridge, /const applicationInit = root\?\.initApp/);
 });
 
-test('PWA and syntax checks use canonical UI runtime and boot instead of app.js', () => {
-  assert.match(sw, /plannke-shell-v30/);
+test('PWA and syntax checks use canonical UI runtime shell and boot instead of app.js', () => {
+  assert.match(sw, /plannke-shell-v31/);
   assert.match(sw, /'\.\/app-ui\.js'/);
   assert.match(sw, /'\.\/app-runtime\.js'/);
+  assert.match(sw, /'\.\/app-shell\.js'/);
   assert.match(sw, /'\.\/app-boot\.js'/);
   assert.doesNotMatch(sw, /'\.\/app\.js'/);
   assert.match(pkg, /node --check app-ui\.js/);
   assert.match(pkg, /node --check app-runtime\.js/);
+  assert.match(pkg, /node --check app-shell\.js/);
   assert.match(pkg, /node --check app-boot\.js/);
 });
 
