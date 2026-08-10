@@ -32,3 +32,8 @@ test('app-data binds report export explicitly once', () => {
 test('Excel export no longer occupies compatibility allowlist', () => {
   assert.doesNotMatch(actions, /'exportToExcel'/);
 });
+
+test('one-time data control binding artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'bind-data-controls-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'bind-data-controls-once.yml')), false);
+});
