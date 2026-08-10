@@ -37,12 +37,13 @@ test('card availability uses all outstanding unpaid billings', () => {
   assert.match(code, /limite comprometido/i);
 });
 
-test('safe renderers load after legacy functions and before product wrappers', () => {
-  const app = index.indexOf('<script src="app.js"></script>');
+test('safe renderers load after canonical orchestration and before product wrappers', () => {
+  const runtime = index.indexOf('<script src="app-runtime.js"></script>');
   const safe = index.indexOf('<script src="safe-renderers.js"></script>');
   const core = index.indexOf('<script src="product-core.js"></script>');
   const product = index.indexOf('<script src="product.js"></script>');
-  assert.ok(app >= 0 && safe > app, 'safe-renderers.js must load after app.js');
+  assert.ok(runtime >= 0 && safe > runtime, 'safe-renderers.js must load after app-runtime.js');
+  assert.equal(index.indexOf('<script src="app.js"></script>'), -1);
   assert.ok(core > safe, 'product-core.js must load after safe-renderers.js');
   assert.ok(product > core, 'product.js must remain last among product layers');
 });

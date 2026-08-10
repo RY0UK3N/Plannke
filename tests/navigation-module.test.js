@@ -32,11 +32,13 @@ test('canonical navigation module owns desktop navigation only', () => {
   assert.doesNotMatch(navigation, /\beval\s*\(|new\s+Function\s*\(/);
 });
 
-test('navigation module loads before the bridge starts the application', () => {
-  const appAt = index.indexOf('src="app.js"');
+test('canonical app runtime loads before navigation and the bridge starts the application', () => {
+  const uiAt = index.indexOf('src="app-ui.js"');
+  const runtimeAt = index.indexOf('src="app-runtime.js"');
   const navigationAt = index.indexOf('src="app-navigation.js"');
   const bridgeAt = index.indexOf('src="ui-bridge.js"');
-  assert.ok(appAt >= 0 && navigationAt > appAt && bridgeAt > navigationAt);
+  assert.ok(uiAt >= 0 && runtimeAt > uiAt && navigationAt > runtimeAt && bridgeAt > navigationAt);
+  assert.equal(index.indexOf('src="app.js"'), -1);
   assert.match(sw, /'\.\/app-navigation\.js'/);
   assert.match(pkg, /node --check app-navigation\.js/);
 });
