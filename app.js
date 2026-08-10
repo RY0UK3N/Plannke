@@ -74,36 +74,6 @@ function filterDashboardToTransactions(type) {
 }
 
 /* ============================================================
-   QUICK ADD (atalhos rápidos no dashboard)
-   ============================================================ */
-function setupQuickAdd() {
-    document.getElementById('qa-income')?.addEventListener('click', () => openTxModal('income'));
-    document.getElementById('qa-expense')?.addEventListener('click', () => openTxModal('expense'));
-    document.getElementById('qa-transfer')?.addEventListener('click', () => openTxModal('transfer'));
-}
-
-function openTxModal(preType) {
-    document.getElementById('tx-id').value = '';
-    _populateAccountDropdowns();
-
-    if (preType) {
-        document.querySelectorAll('input[name="type"]').forEach(r => r.checked = r.value === preType);
-        document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('tx-fields-wrapper').classList.remove('hidden');
-        toggleInstallmentField();
-    } else {
-        document.querySelectorAll('input[name="type"]').forEach(r => r.checked = false);
-        document.getElementById('tx-fields-wrapper').classList.add('hidden');
-        document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
-    }
-
-    document.getElementById('tx-installment-helper').textContent = '';
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('transactionModal')).show();
-    // Foca no campo descrição
-    setTimeout(() => document.getElementById('tx-desc')?.focus(), 350);
-}
-
-/* ============================================================
    MODAL SYSTEM
    ============================================================ */
 function openModal(modalId) {
@@ -117,51 +87,6 @@ function openModal(modalId) {
 function closeModal(modalId) {
     const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
     if (modal) modal.hide();
-}
-
-function setupModalEvents() {
-    document.getElementById('transactionModal').addEventListener('hidden.bs.modal', () => {
-        document.getElementById('transactionForm').reset();
-        document.getElementById('tx-id').value = '';
-        document.getElementById('tx-modal-title').textContent = 'Nova Transação';
-        document.getElementById('tx-fields-wrapper').classList.add('hidden');
-        document.getElementById('tx-installment-helper').textContent = '';
-        clearFormError();
-    });
-    document.getElementById('accountModal').addEventListener('hidden.bs.modal', () => {
-        document.getElementById('accountForm').reset();
-        document.getElementById('acc-id').value = '';
-        document.getElementById('acc-modal-title').textContent = 'Nova Conta';
-    });
-    document.getElementById('cardModal').addEventListener('hidden.bs.modal', () => {
-        document.getElementById('cardForm').reset();
-        document.getElementById('card-id').value = '';
-        document.getElementById('card-modal-title').textContent = 'Novo Cartão de Crédito';
-    });
-
-    document.getElementById('entityDetailModal').addEventListener('hidden.bs.modal', () => {
-        window._detailContext = { id: null, type: 'account' };
-    });
-}
-
-function _populateAccountDropdowns() {
-    const data = getData();
-    let html = '<option value="" disabled selected>Selecione...</option>';
-    if (data.accounts.length > 0) {
-        html += '<optgroup label="Contas Bancárias">';
-        data.accounts.forEach(a => { html += `<option value="${a.id}">${a.name}</option>`; });
-        html += '</optgroup>';
-    }
-    if (data.cards.length > 0) {
-        html += '<optgroup label="Cartões de Crédito">';
-        data.cards.forEach(c => { html += `<option value="${c.id}">${c.name}</option>`; });
-        html += '</optgroup>';
-    }
-    if (!html.includes('<option value=')) {
-        html = '<option value="" disabled selected>Crie uma conta primeiro</option>';
-    }
-    document.getElementById('tx-account').innerHTML = html;
-    document.getElementById('tx-destination').innerHTML = html;
 }
 
 /* ============================================================
@@ -448,75 +373,6 @@ function _catBadge(category) {
 }
 
 /* ============================================================
-   TRANSACTION FORM LOGIC
-   ============================================================ */
-function toggleInstallmentField() {
-    const checked = document.querySelector('input[name="type"]:checked');
-    if (!checked) return;
-    const type = checked.value;
-    document.getElementById('tx-fields-wrapper').classList.remove('hidden');
-
-    const isInstMarkGroup = document.getElementById('tx-is-installment-group');
-    const instGroup       = document.getElementById('tx-installments-group');
-    const catGroup        = document.getElementById('tx-category-group');
-    const destGroup       = document.getElementById('tx-destination-group');
-    const accLabel        = document.getElementById('tx-account-label');
-    const catSelect       = document.getElementById('tx-category');
-    const isInstChecked   = document.getElementById('tx-is-installment')?.checked;
-
-    accLabel.textContent = 'Conta ou Cartão';
-
-    if (type === 'transfer') {
-        isInstMarkGroup.classList.add('hidden');
-        instGroup.classList.add('hidden');
-        catGroup.classList.add('hidden');
-        destGroup.classList.remove('hidden');
-        accLabel.textContent = 'Conta de Origem';
-        catSelect.removeAttribute('required');
-        document.getElementById('tx-destination').setAttribute('required', 'true');
-    } else {
-        catGroup.classList.remove('hidden');
-        destGroup.classList.add('hidden');
-        catSelect.setAttribute('required', 'true');
-        document.getElementById('tx-destination').removeAttribute('required');
-
-        if (type === 'income') {
-            isInstMarkGroup.classList.add('hidden');
-            instGroup.classList.add('hidden');
-        } else {
-            isInstMarkGroup.classList.remove('hidden');
-            isInstChecked ? instGroup.classList.remove('hidden') : instGroup.classList.add('hidden');
-        }
-
-        // Rebuild categories using customizable system
-        catSelect.innerHTML = _buildCategoryOptions(type, catSelect.value);
-    }
-    updateInstallmentHelper();
-}
-
-function updateInstallmentHelper() {
-    const amount = getCurrencyValue('tx-amount');
-    const installments = parseInt(document.getElementById('tx-installments').value) || 1;
-    const isInstChecked = document.getElementById('tx-is-installment')?.checked;
-    const helperEl = document.getElementById('tx-installment-helper');
-    if (!helperEl) return;
-
-    if (!amount || amount <= 0 || !isInstChecked || installments <= 1) {
-        helperEl.classList.add('hidden'); helperEl.innerHTML = ''; return;
-    }
-    const partValue = amount / installments;
-    helperEl.classList.remove('hidden');
-    helperEl.innerHTML = `
-        <div class="inst-preview">
-            <i class="ph ph-info"></i>
-            <div>
-                <strong>${installments}x de ${formatCurrency(partValue)}</strong>
-                <span class="text-muted small"> · Total: ${formatCurrency(amount)}</span>
-            </div>
-        </div>`;
-}
-
-/* ============================================================
    FEEDBACK
    ============================================================ */
 function showToast(message, type = 'success') {
@@ -547,137 +403,8 @@ function clearFormError() {
 }
 
 /* ============================================================
-   FORMS
-   ============================================================ */
-function setupForms() {
-    document.getElementById('accountForm').addEventListener('submit', e => {
-        e.preventDefault();
-        saveAccount(
-            document.getElementById('acc-id').value,
-            document.getElementById('acc-name').value,
-            getCurrencyValue('acc-balance')
-        );
-        closeModal('accountModal'); renderAll();
-        showToast('Conta salva!');
-    });
-
-    document.getElementById('cardForm').addEventListener('submit', e => {
-        e.preventDefault();
-        saveCard(
-            document.getElementById('card-id').value,
-            document.getElementById('card-name').value,
-            getCurrencyValue('card-limit'),
-            document.getElementById('card-closing').value,
-            document.getElementById('card-due').value
-        );
-        closeModal('cardModal'); renderAll();
-        showToast('Cartão salvo!');
-    });
-
-    document.getElementById('transactionForm').addEventListener('submit', e => {
-        e.preventDefault();
-        clearFormError();
-
-        const typeInput = document.querySelector('input[name="type"]:checked');
-        if (!typeInput) { showFormError('Selecione o tipo de transação.'); return; }
-
-        const id = document.getElementById('tx-id').value;
-        const type = typeInput.value;
-        const desc = document.getElementById('tx-desc').value.trim();
-        const category = type === 'transfer' ? 'Transferência' : document.getElementById('tx-category').value;
-        const amount = getCurrencyValue('tx-amount');
-        const isInstCheckedForm = document.getElementById('tx-is-installment')?.checked;
-        const isRecurring = document.getElementById('tx-is-recurring')?.checked && type !== 'transfer';
-        const installments = (isInstCheckedForm && type === 'expense') ? (parseInt(document.getElementById('tx-installments').value) || 1) : 1;
-        const dateStr = document.getElementById('tx-date').value;
-        const account = document.getElementById('tx-account').value;
-        const destination = type === 'transfer' ? document.getElementById('tx-destination').value : null;
-
-        if (!desc) { showFormError('Informe a descrição.'); return; }
-        if (type !== 'transfer' && !category) { showFormError('Selecione uma categoria.'); return; }
-        if (!amount || amount <= 0) { showFormError('Informe um valor válido.'); return; }
-        if (!dateStr) { showFormError('Informe a data.'); return; }
-        if (!account) { showFormError('Selecione uma conta ou cartão.'); return; }
-        if (type === 'transfer' && !destination) { showFormError('Selecione a conta de destino.'); return; }
-        if (type === 'transfer' && account === destination) { showFormError('Origem e destino iguais.'); return; }
-
-        try {
-            if (id) {
-                saveTransaction(id, type, desc, amount, dateStr, account, category, 1, 1, null, destination, isRecurring);
-                showToast('Transação atualizada ✓');
-            } else if (installments > 1 && type === 'expense') {
-                const groupId = generateId();
-                const partValue = amount / installments;
-                let [y, m, d] = dateStr.split('-').map(Number);
-                let dt = new Date(y, m - 1, d);
-                for (let i = 1; i <= installments; i++) {
-                    const instDate = dt.toISOString().split('T')[0];
-                    saveTransaction(null, type, desc, partValue, instDate, account, category, i, installments, groupId, null, false);
-                    dt.setMonth(dt.getMonth() + 1);
-                }
-                showToast(`${installments}x de ${formatCurrency(amount / installments)} salvas! 📅`);
-            } else {
-                saveTransaction(null, type, desc, amount, dateStr, account, category, 1, 1, null, destination, isRecurring);
-                const verb = type === 'income' ? '✅ Entrada' : (type === 'transfer' ? '🔀 Transferência' : '💸 Gasto');
-                const recurTag = isRecurring ? ' 🔁' : '';
-                showToast(`${verb} de ${formatCurrency(amount)} salvo!${recurTag}`);
-            }
-            closeModal('transactionModal'); renderAll();
-        } catch (err) {
-            console.error(err);
-            showFormError('Erro inesperado. Verifique o console (F12).');
-        }
-    });
-}
-
-/* ============================================================
    CRUD WRAPPERS
    ============================================================ */
-function edAcc(id) {
-    const acc = getData().accounts.find(a => a.id === id);
-    if (!acc) return;
-    document.getElementById('acc-id').value = acc.id;
-    document.getElementById('acc-name').value = acc.name;
-    setCurrencyValue('acc-balance', acc.balance);
-    document.getElementById('acc-modal-title').textContent = 'Editar Conta';
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('accountModal')).show();
-}
-
-function edCard(id) {
-    const c = getData().cards.find(c => c.id === id);
-    if (!c) return;
-    document.getElementById('card-id').value = c.id;
-    document.getElementById('card-name').value = c.name;
-    setCurrencyValue('card-limit', c.limit);
-    document.getElementById('card-closing').value = c.closingDay || 1;
-    document.getElementById('card-due').value = c.dueDay;
-    document.getElementById('card-modal-title').textContent = 'Editar Cartão';
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('cardModal')).show();
-}
-
-/* ── Duplicate transaction ── */
-function dupTx(id) {
-    const tx = getData().transactions.find(t => t.id === id);
-    if (!tx) return;
-    // Pre-fill form with today's date, clear ID so it creates new
-    document.getElementById('tx-id').value = '';
-    document.getElementById('tx-desc').value = tx.description;
-    setCurrencyValue('tx-amount', tx.amount);
-    document.getElementById('tx-date').value = new Date().toISOString().split('T')[0];
-    document.querySelector(`input[name="type"][value="${tx.type}"]`).checked = true;
-    _populateAccountDropdowns();
-    document.getElementById('tx-fields-wrapper').classList.remove('hidden');
-    toggleInstallmentField();
-    document.getElementById('tx-account').value = tx.accountId;
-    if (tx.type === 'transfer' && tx.destinationId) document.getElementById('tx-destination').value = tx.destinationId;
-    if (tx.category && tx.category !== 'Transferência') document.getElementById('tx-category').value = tx.category;
-    const recurCheck = document.getElementById('tx-is-recurring');
-    if (recurCheck) recurCheck.checked = !!tx.recurring;
-    document.getElementById('tx-modal-title').textContent = 'Duplicar Transação';
-    document.getElementById('tx-installments-group').classList.add('hidden');
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('transactionModal')).show();
-}
-
 /* ── Rich delete confirmation ── */
 function _showDeleteConfirm(title, desc, value, onConfirm) {
     document.getElementById('delete-confirm-title').textContent = title;
@@ -692,65 +419,6 @@ function _showDeleteConfirm(title, desc, value, onConfirm) {
         onConfirm();
     });
     bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteConfirmModal')).show();
-}
-
-function edTx(id) {
-    const tx = getData().transactions.find(t => t.id === id);
-    if (!tx) return;
-    document.getElementById('tx-id').value = tx.id;
-    document.getElementById('tx-desc').value = tx.description;
-    setCurrencyValue('tx-amount', tx.amount);
-    document.getElementById('tx-date').value = tx.date;
-    document.querySelector(`input[name="type"][value="${tx.type}"]`).checked = true;
-
-    _populateAccountDropdowns();
-    document.getElementById('tx-fields-wrapper').classList.remove('hidden');
-    toggleInstallmentField();
-
-    document.getElementById('tx-account').value = tx.accountId;
-    if (tx.type === 'transfer' && tx.destinationId) document.getElementById('tx-destination').value = tx.destinationId;
-    if (tx.category && tx.category !== 'Transferência') document.getElementById('tx-category').value = tx.category;
-
-    const recurCheck = document.getElementById('tx-is-recurring');
-    if (recurCheck) recurCheck.checked = !!tx.recurring;
-
-    document.getElementById('tx-modal-title').textContent = 'Editar Transação';
-    document.getElementById('tx-installments-group').classList.add('hidden');
-    bootstrap.Modal.getOrCreateInstance(document.getElementById('transactionModal')).show();
-}
-
-function delTx(id) {
-    const tx = getData().transactions.find(t => t.id === id);
-    if (!tx) return;
-    const typeLabel = tx.type === 'income' ? 'entrada' : tx.type === 'expense' ? 'gasto' : 'transferência';
-    _showDeleteConfirm(
-        'Excluir transação?',
-        `${tx.description} · ${typeLabel} de ${formatDate(tx.date)}`,
-        formatCurrency(tx.amount),
-        () => { deleteTransaction(id); renderAll(); showToast('Transação excluída', 'error'); }
-    );
-}
-
-function delAcc(id) {
-    const acc = getData().accounts.find(a => a.id === id);
-    if (!acc) return;
-    _showDeleteConfirm(
-        'Apagar conta?',
-        acc.name,
-        `Saldo: ${formatCurrency(acc.balance)}`,
-        () => { deleteAccount(id); renderAll(); showToast('Conta removida', 'error'); }
-    );
-}
-
-function delCard(id) {
-    const card = getData().cards.find(c => c.id === id);
-    if (!card) return;
-    _showDeleteConfirm(
-        'Apagar cartão?',
-        card.name,
-        `Limite: ${formatCurrency(card.limit)}`,
-        () => { deleteCard(id); renderAll(); showToast('Cartão removido', 'error'); }
-    );
 }
 
 /* ============================================================
