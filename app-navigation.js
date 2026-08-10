@@ -5,6 +5,10 @@
     let navigationBound = false;
     let shortcutsBound = false;
 
+    if (!root.PlannkeProjectionBase && typeof root.renderProjection === 'function') {
+        root.PlannkeProjectionBase = root.renderProjection;
+    }
+
     function loadTransactionActions() {
         if (root.PlannkeTransactions) return Promise.resolve(root.PlannkeTransactions);
         if (typeof document === 'undefined') return Promise.resolve(null);
