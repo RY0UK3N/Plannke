@@ -14,6 +14,7 @@ const manifest = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8'
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
 const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
@@ -29,19 +30,23 @@ function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
 }
 
-test('product layer, UI bridge and safe renderers are loaded in the required order', () => {
+test('product layer, app shell, compatibility bridge and safe renderers are loaded in the required order', () => {
   assert.match(index, /<link rel="stylesheet" href="product\.css">/);
+  assert.match(index, /<script src="app-shell\.js" data-plannke-shell="true"><\/script>/);
   assert.match(index, /<script src="ui-bridge\.js" data-plannke-ui-bridge="true"><\/script>/);
   assert.match(index, /<script src="safe-renderers\.js"><\/script>/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
   assert.match(index, /<script src="product\.js"><\/script>/);
   assert.equal(index.indexOf('app.js'), -1);
-  assert.ok(index.indexOf('app-runtime.js') < index.indexOf('ui-bridge.js'));
+  assert.ok(index.indexOf('app-runtime.js') < index.indexOf('app-shell.js'));
+  assert.ok(index.indexOf('app-shell.js') < index.indexOf('ui-bridge.js'));
   assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('app-boot.js'));
   assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
   assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
+  assert.match(insights, /shell\.src = '\.\/app-shell\.js'/);
+  assert.match(insights, /shell\.addEventListener\('load', loadBridge/);
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
 });
 
@@ -84,14 +89,14 @@ test('canonical data actions replace the retired browser-storage and Memory Card
 });
 
 test('canonical desktop shell is primed synchronously before DOMContentLoaded', () => {
-  assert.match(bridge, /function primeCanonicalShell\(/);
-  assert.match(bridge, /api\.primeCanonicalShell\(\);\s*api\.loadRevampAssets\(\);/);
-  assert.match(bridge, /document\.body\.classList\.add\('plannke-revamp'\)/);
-  assert.match(bridge, /document\.body\.dataset\.plannkeCanonical = 'desktop'/);
-  assert.match(bridge, /Central financeira/);
-  assert.match(bridge, /CANONICAL_PAGES/);
-  assert.match(bridge, /\['backup', 'ph-database', 'Dados'\]/);
-  assert.doesNotMatch(bridge, /function canonicalStylesPresent\([^)]*\)[\s\S]*?\}\);\n\}\)\(/);
+  assert.match(shell, /function primeCanonicalShell\(/);
+  assert.match(shell, /api\.primeCanonicalShell\(\);\s*api\.loadRevampAssets\(\);/);
+  assert.match(shell, /document\.body\.classList\.add\('plannke-revamp'\)/);
+  assert.match(shell, /document\.body\.dataset\.plannkeCanonical = 'desktop'/);
+  assert.match(shell, /Central financeira/);
+  assert.match(shell, /CANONICAL_PAGES/);
+  assert.match(shell, /\['backup', 'ph-database', 'Dados'\]/);
+  assert.doesNotMatch(shell, /function canonicalStylesPresent\([^)]*\)[\s\S]*?\}\);\n\}\)\(/);
 });
 
 test('source document contains no legacy application chrome or Memory Card entry flow', () => {
@@ -119,9 +124,9 @@ test('canonical desktop styles are part of the first paint', () => {
   ].forEach(asset => assert.ok(productCss.includes(`@import url('./${asset}')`), `missing canonical CSS import: ${asset}`));
   assert.match(productCss, /body:not\(\.plannke-revamp\) > main/);
   assert.match(productCss, /visibility: hidden !important/);
-  assert.match(bridge, /function canonicalStylesPresent\(/);
-  assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-revamp\]'\)/);
-  assert.match(bridge, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-desktop-style\]'\)/);
+  assert.match(shell, /function canonicalStylesPresent\(/);
+  assert.match(shell, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-revamp\]'\)/);
+  assert.match(shell, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-desktop-style\]'\)/);
 });
 
 test('storage status and recovery UI are local and DOM-safe', () => {
@@ -151,11 +156,11 @@ test('storage UI observer cannot recursively rewrite its own status DOM', () => 
 });
 
 test('revamp and final desktop assets are loaded locally and in deterministic order', () => {
-  assert.match(bridge, /script\.src = 'revamp\.js'/);
-  assert.match(bridge, /script\.async = false/);
-  assert.match(bridge, /desktopScript\.src = 'revamp-desktop\.js'/);
-  assert.match(bridge, /desktopScript\.async = false/);
-  assert.match(bridge, /script\.addEventListener\('load', loadDesktopAssets/);
+  assert.match(shell, /script\.src = 'revamp\.js'/);
+  assert.match(shell, /script\.async = false/);
+  assert.match(shell, /desktopScript\.src = 'revamp-desktop\.js'/);
+  assert.match(shell, /desktopScript\.async = false/);
+  assert.match(shell, /script\.addEventListener\('load', loadDesktopAssets/);
   assert.match(revamp, /revamp-dashboard\.css/);
   assert.match(revamp, /revamp-movements\.css/);
   assert.match(revamp, /revamp-planning\.css/);
@@ -231,7 +236,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v30'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v31'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -247,7 +252,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
   assert.equal(parsedManifest.theme_color, '#0b0d12');
 
   [
-    'app-ui.js', 'app-runtime.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
+    'app-ui.js', 'app-runtime.js', 'app-shell.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
     'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
