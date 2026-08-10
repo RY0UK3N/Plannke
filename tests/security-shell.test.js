@@ -225,7 +225,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v27'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v28'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -241,7 +241,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
   assert.equal(parsedManifest.theme_color, '#0b0d12');
 
   [
-    'app-navigation.js', 'app-data.js',
+    'app-ui.js', 'app-runtime.js', 'app-navigation.js', 'app-data.js',
     'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
