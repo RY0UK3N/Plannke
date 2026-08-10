@@ -5,13 +5,14 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
-test('transaction runtime is required before the legacy app boot executes', () => {
+test('transaction runtime is required before canonical app boot executes', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
   assert.match(navigation, /function loadTransactionActions\(/);
   assert.match(navigation, /script\.src = 'app-transactions\.js'/);
   assert.match(navigation, /root\.PlannkeTransactionsReady = transactionsReady/);
@@ -19,11 +20,11 @@ test('transaction runtime is required before the legacy app boot executes', () =
   assert.match(navigation, /transactionsReady[\s\S]*Módulo canônico de movimentações não inicializou/);
   assert.match(navigation, /transactionsReady[\s\S]*legacyInitApp\.apply\(root, args\)/);
   assert.doesNotMatch(navigation, /usando runtime legado/i);
-  assert.match(app, /setupForms\(\)/);
-  assert.match(app, /setupModalEvents\(\)/);
+  assert.match(runtime, /root\.setupForms\?\.\(\)/);
+  assert.match(runtime, /root\.setupModalEvents\?\.\(\)/);
 });
 
-test('early transaction actions wait for the canonical module instead of reaching app.js', () => {
+test('early transaction actions wait for the canonical module instead of a retired monolith', () => {
   ['openTxModal', 'toggleInstallmentField', 'updateInstallmentHelper', 'dupTx', 'edTx', 'delTx']
     .forEach(name => assert.match(navigation, new RegExp(`'${name}'`)));
   assert.match(navigation, /transactionActions\.forEach\(action =>/);
