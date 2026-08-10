@@ -197,7 +197,7 @@
 
     function safeRenderTransactions(data) {
         if (!data) data = getData();
-        renderMonthTabs(data);
+        root.renderMonthTabs?.(data);
         const tbody = document.getElementById('all-transactions-body');
         const mobileList = document.getElementById('all-transactions-mobile');
         if (!tbody || !mobileList) return;
@@ -215,7 +215,8 @@
         if (filter !== 'all') filtered = filtered.filter(t => t.type === filter);
         if (filterCat !== 'all') filtered = filtered.filter(t => t.category === filterCat);
         if (filterAcc !== 'all') filtered = filtered.filter(t => t.accountId === filterAcc || t.destinationId === filterAcc);
-        if (_currentMonth) filtered = filtered.filter(t => String(t.date || '').startsWith(_currentMonth));
+        const currentMonth = root.PlannkeMovements?.currentMonth || '';
+        if (currentMonth) filtered = filtered.filter(t => String(t.date || '').startsWith(currentMonth));
         if (searchTerm) filtered = filtered.filter(t => String(t.description || '').toLowerCase().includes(searchTerm));
 
         const countBadge = document.getElementById('tx-result-count');

@@ -34,7 +34,7 @@ test('canonical planning runtime is loaded and required before app boot', () => 
   assert.match(navigation, /function loadPlanningRuntime\(/);
   assert.match(navigation, /script\.src = 'app-planning\.js'/);
   assert.match(navigation, /root\.PlannkePlanningReady = planningReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de Planejamento não inicializou/);
 });
 

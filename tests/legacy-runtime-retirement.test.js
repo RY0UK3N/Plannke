@@ -75,7 +75,7 @@ test('app monolith no longer owns transaction/entity forms or CRUD actions', () 
 
 test('legacy init only reaches form hooks after canonical modules are ready', () => {
   assert.match(app, /function initApp\(\)[\s\S]*setupModalEvents\(\);[\s\S]*setupForms\(\);/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /entities\.setupModalEvents\?\.\(\);/);
   assert.match(navigation, /entities\.setupForms\?\.\(\);/);
   assert.ok(navigation.indexOf('entities.setupForms?.();') < navigation.indexOf('legacyInitApp.apply(root, args)'));
