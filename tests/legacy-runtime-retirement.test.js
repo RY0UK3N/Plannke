@@ -14,6 +14,7 @@ const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'ut
 const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
 const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'app-dashboard.js'), 'utf8');
 
 test('product layer no longer owns the planning projection runtime', () => {
   assert.doesNotMatch(product, /const originalProjection = globalThis\.renderProjection/);
@@ -40,6 +41,8 @@ test('one-time cleanup automation is not shipped with the branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-form-crud-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-settings-once.js')), false);
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-settings-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-renderers-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-renderers-once.yml')), false);
 });
 
 test('app monolith no longer owns account statement or card invoice details', () => {
@@ -107,4 +110,24 @@ test('legacy init and render bridge resolve settings globals from canonical runt
   assert.ok(navigation.indexOf("if (!settings) throw new Error('Runtime canônico de configurações não inicializou.');") < navigation.indexOf('legacyInitApp.apply(root, args)'));
   assert.match(settings, /root\.applyTheme = applyTheme/);
   assert.match(settings, /root\.renderSettingsView = renderSettingsView/);
+});
+
+test('app monolith no longer owns canonical dashboard transaction or entity renderers', () => {
+  ['renderComparisonChart', 'renderDashboard', '_renderTxItem', 'renderTransactions', 'renderAccounts', 'renderCards', 'handlePayFatura', 'renderChart']
+    .forEach(name => assert.doesNotMatch(app, new RegExp('function\\s+' + name.replace('_', '\\_') + '\\s*\\(')));
+
+  assert.match(dashboard, /root\.renderChart = renderChart/);
+  assert.match(dashboard, /root\.renderComparisonChart = renderComparisonChart/);
+  assert.match(renderers, /root\._renderTxItem = safeRenderTxItem/);
+  assert.match(renderers, /root\.renderTransactions = safeRenderTransactions/);
+  assert.match(renderers, /root\.renderDashboard = safeRenderDashboard/);
+  assert.match(renderers, /root\.renderAccounts = safeRenderAccounts/);
+  assert.match(renderers, /root\.renderCards = safeRenderCards/);
+  assert.match(entities, /root\.handlePayFatura = handlePayFatura/);
+
+  assert.match(app, /const COLOR_MAP = new Proxy/);
+  assert.match(app, /function renderMovimentacao\(/);
+  assert.match(app, /function renderSankey\(/);
+  assert.match(app, /function renderSunburst\(/);
+  assert.match(app, /function renderProjection\(/);
 });
