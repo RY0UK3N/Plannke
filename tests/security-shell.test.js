@@ -5,7 +5,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
@@ -33,7 +34,8 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.match(index, /<script src="safe-renderers\.js"><\/script>/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
   assert.match(index, /<script src="product\.js"><\/script>/);
-  assert.ok(index.indexOf('app.js') < index.indexOf('ui-bridge.js'));
+  assert.equal(index.indexOf('app.js'), -1);
+  assert.ok(index.indexOf('app-runtime.js') < index.indexOf('ui-bridge.js'));
   assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('safe-renderers.js'));
   assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
@@ -50,8 +52,10 @@ test('canonical bridge owns application boot and waits for StorageAdapter', () =
   assert.match(bridge, /function startApplication\(\)/);
   assert.match(bridge, /storageReady[\s\S]*applicationInit\.call\(root\)/);
   assert.match(bridge, /api\.init\(\);\s*startApplication\(\);/);
-  assert.doesNotMatch(app, /document\.addEventListener\(['"]DOMContentLoaded['"][\s\S]*initApp/);
-  assert.doesNotMatch(app, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload/);
+  assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
+  assert.doesNotMatch(runtime, /document\.addEventListener\(['"]DOMContentLoaded['"][\s\S]*initApp/);
+  assert.doesNotMatch(runtime, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload/);
+  assert.doesNotMatch(ui, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload/);
   assert.match(storageAdapter, /class LocalStorageAdapter/);
   assert.match(storageAdapter, /class StorageCoordinator/);
   assert.match(storageAdapter, /const ready = coordinator\.initialize\(\)/);
