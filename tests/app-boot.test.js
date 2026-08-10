@@ -6,7 +6,6 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
@@ -22,42 +21,33 @@ test('canonical boot owns StorageAdapter readiness and application start', () =>
   assert.match(boot, /root\.PlannkeBoot = api/);
 });
 
-test('canonical actions do not own persistence readiness application start or shell construction', () => {
-  assert.doesNotMatch(actions, /function waitForStorageReady\(/);
-  assert.doesNotMatch(actions, /function loadStorageAdapter\(/);
-  assert.doesNotMatch(actions, /function loadStorageUiAssets\(/);
-  assert.doesNotMatch(actions, /const storageReady = loadStorageAdapter\(\)/);
-  assert.doesNotMatch(actions, /function startApplication\(\)/);
-  assert.doesNotMatch(actions, /const applicationInit = root\?\.initApp/);
-  assert.doesNotMatch(actions, /storage-adapter\.js|storage-ui\.js/);
-  assert.doesNotMatch(actions, /primeCanonicalShell|loadRevampAssets|loadDesktopAssets/);
+test('shell owns construction while boot alone owns application start', () => {
   assert.match(shell, /function primeCanonicalShell\(/);
   assert.match(shell, /function loadRevampAssets\(/);
-  assert.match(actions, /const start = \(\) => api\.init\(\)/);
+  assert.doesNotMatch(shell, /function waitForStorageReady\(|function startApplication\(/);
+  assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
 
-test('boot loads after navigation shell and canonical actions are installed', () => {
+test('boot loads after navigation and shell before canonical renderers', () => {
   const runtimeAt = index.indexOf('src="app-runtime.js"');
   const navigationAt = index.indexOf('src="app-navigation.js"');
   const shellAt = index.indexOf('src="app-shell.js"');
-  const actionsAt = index.indexOf('src="app-actions.js"');
   const bootAt = index.indexOf('src="app-boot.js"');
   const renderersAt = index.indexOf('src="safe-renderers.js"');
   assert.ok(runtimeAt >= 0 && navigationAt > runtimeAt);
-  assert.ok(shellAt > navigationAt && actionsAt > shellAt && bootAt > actionsAt && renderersAt > bootAt);
-  assert.doesNotMatch(index, /src="ui-bridge\.js"/);
+  assert.ok(shellAt > navigationAt && bootAt > shellAt && renderersAt > bootAt);
+  assert.doesNotMatch(index, /src="(?:ui-bridge|app-actions)\.js"/);
   assert.match(navigation, /const legacyInitApp = root\.initApp/);
 });
 
-test('canonical boot shell and actions are syntax-checked and available offline', () => {
+test('canonical boot and shell are syntax-checked and available offline', () => {
   assert.match(pkg, /node --check app-shell\.js/);
-  assert.match(pkg, /node --check app-actions\.js/);
   assert.match(pkg, /node --check app-boot\.js/);
-  assert.match(sw, /plannke-shell-v32/);
+  assert.doesNotMatch(pkg, /node --check app-actions\.js/);
+  assert.match(sw, /plannke-shell-v33/);
   assert.match(sw, /'\.\/app-shell\.js'/);
-  assert.match(sw, /'\.\/app-actions\.js'/);
   assert.match(sw, /'\.\/app-boot\.js'/);
-  assert.doesNotMatch(sw, /'\.\/ui-bridge\.js'/);
+  assert.doesNotMatch(sw, /'\.\/(?:ui-bridge|app-actions)\.js'/);
 });
 
 test('one-time app boot extraction artifacts are not shipped', () => {
