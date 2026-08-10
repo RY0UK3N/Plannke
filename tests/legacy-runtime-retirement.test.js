@@ -11,6 +11,9 @@ const app = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
 const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
+const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
+const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
 
 test('product layer no longer owns the planning projection runtime', () => {
   assert.doesNotMatch(product, /const originalProjection = globalThis\.renderProjection/);
@@ -35,6 +38,8 @@ test('one-time cleanup automation is not shipped with the branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-entity-details-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-form-crud-once.js')), false);
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-form-crud-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-settings-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-settings-once.yml')), false);
 });
 
 test('app monolith no longer owns account statement or card invoice details', () => {
@@ -71,4 +76,26 @@ test('legacy init only reaches form hooks after canonical modules are ready', ()
   assert.ok(navigation.indexOf('entities.setupForms?.();') < navigation.indexOf('legacyInitApp.apply(root, args)'));
   assert.match(transactions, /root\.setupModalEvents = setupModalEvents/);
   assert.match(transactions, /root\.setupForms = setupForms/);
+});
+
+test('app monolith no longer owns settings categories or budgets', () => {
+  [
+    '_loadCategories', '_saveCategories', '_loadBudgets', '_saveBudgets', '_getCatColor', '_setCatColor', '_getAllExpenseCats',
+    'openCategoryManager', 'switchCatTabModal', 'addCustomCategoryModal', 'deleteCategoryModal', 'switchCatTab',
+    'renderCategoryManager', 'openColorPicker', 'selectCatColor', 'addCustomCategory', 'deleteCategory',
+    'applyTheme', 'toggleTheme', 'openSettingsPanel', 'confirmClearData', 'renderSettingsView',
+    'openBudgetManager', 'renderBudgetManager', 'handleBudgetInput', 'saveBudgetEntry', 'renderBudgets'
+  ].forEach(name => assert.doesNotMatch(app, new RegExp('function\\s+' + name.replace('_', '\\_') + '\\s*\\(')));
+
+  assert.match(settings, /root\._loadCategories = loadCategories/);
+  assert.match(settings, /root\._loadBudgets = loadBudgets/);
+  assert.match(settings, /root\._getCatColor = getCategoryColor/);
+  assert.match(settings, /root\.applyTheme = applyTheme/);
+  assert.match(settings, /root\.openSettingsPanel = openSettingsPanel/);
+  assert.match(settings, /root\.openBudgetManager = openBudgetManager/);
+  assert.match(settings, /root\.handleBudgetInput = handleBudgetInput/);
+  assert.match(settings, /root\.saveBudgetEntry = saveBudgetEntry/);
+  assert.match(appData, /root\.confirmClearData = confirmClearData/);
+  assert.match(renderers, /root\.renderBudgets = safeRenderBudgets/);
+  assert.match(renderers, /root\.renderBudgetManager = safeRenderBudgetManager/);
 });
