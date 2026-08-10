@@ -14,6 +14,10 @@
         return node;
     }
 
+    function textNode(value) {
+        return document.createTextNode(String(value ?? ''));
+    }
+
     function icon(name) {
         return make('i', `ph ${name}`);
     }
@@ -22,13 +26,23 @@
         const node = make('button', className);
         node.type = 'button';
         if (iconName) node.appendChild(icon(iconName));
-        if (label) node.appendChild(document.createTextNode(iconName ? ` ${label}` : label));
+        if (label) node.appendChild(textNode(iconName ? ` ${label}` : label));
+        return node;
+    }
+
+    function actionButton(action, id, iconName, label) {
+        const node = button('', '', iconName);
+        node.className = '';
+        node.dataset.action = action;
+        node.dataset.id = id;
+        node.title = label;
+        node.setAttribute('aria-label', label);
         return node;
     }
 
     function input(name, type, placeholder, options = {}) {
         const node = make('input', options.className || 'form-control');
-        node.name = name;
+        if (name) node.name = name;
         node.type = type;
         if (placeholder) node.placeholder = placeholder;
         if (options.required) node.required = true;
@@ -47,6 +61,10 @@
         return option;
     }
 
+    function empty(message) {
+        return make('p', 'text-muted small mb-0', message);
+    }
+
     function clean(value, max = 160) {
         return C?.cleanText ? C.cleanText(value, max) : String(value ?? '').trim().slice(0, max);
     }
@@ -57,8 +75,7 @@
     }
 
     function dateLabel(value) {
-        if (typeof root.formatDate === 'function') return root.formatDate(value);
-        return String(value || '');
+        return typeof root.formatDate === 'function' ? root.formatDate(value) : String(value || '');
     }
 
     function waitForCore() {
@@ -68,8 +85,7 @@
             let attempts = 0;
             const check = () => {
                 if (root.PlannkeCore) return resolve(root.PlannkeCore);
-                attempts += 1;
-                if (attempts >= 200) return reject(new Error('PlannkeCore não inicializou para o Planejamento.'));
+                if (++attempts >= 200) return reject(new Error('PlannkeCore não inicializou para o Planejamento.'));
                 root.setTimeout(check, 10);
             };
             check();
@@ -117,10 +133,7 @@
         const recurring = C.recurringOccurrences(planning.recurringRules, C.addDays(today, 1), C.addDays(today, 370));
         return {
             ...data,
-            transactions: [
-                ...(data.transactions || []),
-                ...recurring.map(tx => ({ ...tx, recurring: false }))
-            ]
+            transactions: [...(data.transactions || []), ...recurring.map(tx => ({ ...tx, recurring: false }))]
         };
     }
 
@@ -135,41 +148,6 @@
         if (message) root.showToast?.(message);
     }
 
-    function deleteAction(action, id, hub) {
-        saveMutation((planning, data) => {
-            if (action === 'delete-rule') planning.recurringRules = planning.recurringRules.filter(item => item.id !== id);
-            if (action === 'delete-goal') planning.goals = planning.goals.filter(item => item.id !== id);
-            if (action === 'delete-reserve') planning.reserves = planning.reserves.filter(item => item.id !== id);
-            if (action === 'delete-cat-rule') planning.categoryRules = planning.categoryRules.filter(item => item.id !== id);
-            if (action === 'save-goal-current') {
-                const goal = planning.goals.find(item => item.id === id);
-                const current = hub.querySelector(`[data-goal-current="${CSS.escape(id)}"]`);
-                if (goal && current) goal.currentAmount = Math.max(0, Number(current.value || 0));
-            }
-            if (action === 'delete-member') {
-                const household = householdData(data);
-                household.members = household.members.filter(member => member.id !== id);
-                household.enabled = household.members.length > 0;
-                (data.transactions || []).forEach(tx => {
-                    if (tx.paidByMemberId === id) tx.paidByMemberId = null;
-                    tx.sharedWithMemberIds = (tx.sharedWithMemberIds || []).filter(memberId => memberId !== id);
-                });
-                const sharedMeta = data.settings?.sharedTransactionMeta;
-                if (sharedMeta && typeof sharedMeta === 'object') {
-                    Object.values(sharedMeta).forEach(meta => {
-                        if (!meta || typeof meta !== 'object') return;
-                        if (meta.paidByMemberId === id) meta.paidByMemberId = null;
-                        if (Array.isArray(meta.sharedWithMemberIds)) meta.sharedWithMemberIds = meta.sharedWithMemberIds.filter(memberId => memberId !== id);
-                    });
-                }
-            }
-        });
-    }
-
-    function empty(textValue) {
-        return make('p', 'text-muted small mb-0', textValue);
-    }
-
     function cardTitle(iconName, title, subtitle) {
         const wrap = make('div', 'product-card-title');
         const titleWrap = make('div');
@@ -178,34 +156,25 @@
         return wrap;
     }
 
-    function actionIconButton(action, id, iconName, label) {
-        const node = button('', '', iconName);
-        node.className = '';
-        node.dataset.action = action;
-        node.dataset.id = id;
-        node.title = label;
-        node.setAttribute('aria-label', label);
-        return node;
+    function planningCard(iconName, title, subtitle, ...children) {
+        const col = make('div', 'col-12 col-lg-6');
+        const card = make('div', 'card h-100');
+        const body = make('div', 'card-body');
+        body.append(cardTitle(iconName, title, subtitle), ...children);
+        card.appendChild(body);
+        col.appendChild(card);
+        return col;
     }
 
     function recurringList(planning) {
         const list = make('div', 'product-list mb-3');
-        if (!planning.recurringRules.length) {
-            list.appendChild(empty('Nenhum compromisso recorrente cadastrado.'));
-            return list;
-        }
+        if (!planning.recurringRules.length) return list.appendChild(empty('Nenhum compromisso recorrente cadastrado.')), list;
         planning.recurringRules.forEach(rule => {
             const row = make('div', 'product-list-row');
             const info = make('div');
-            info.append(
-                make('strong', '', rule.description),
-                make('small', '', `${rule.type === 'income' ? 'Entrada' : 'Saída'} · dia ${rule.dayOfMonth} · ${rule.category}`)
-            );
+            info.append(make('strong', '', rule.description), make('small', '', `${rule.type === 'income' ? 'Entrada' : 'Saída'} · dia ${rule.dayOfMonth} · ${rule.category}`));
             const value = make('div', `product-row-value ${rule.type}`);
-            value.append(
-                document.createTextNode(`${rule.type === 'income' ? '+' : '-'}${money(rule.amount)} `),
-                actionIconButton('delete-rule', rule.id, 'ph-trash', 'Excluir recorrência')
-            );
+            value.append(textNode(`${rule.type === 'income' ? '+' : '-'}${money(rule.amount)} `), actionButton('delete-rule', rule.id, 'ph-trash', 'Excluir recorrência'));
             row.append(info, value);
             list.appendChild(row);
         });
@@ -226,14 +195,7 @@
         account.required = true;
         appendOption(account, '', 'Conta...');
         (data.accounts || []).forEach(item => appendOption(account, item.id, `${item.name} · ${money(item.balance)}`));
-        form.append(
-            type,
-            input('description', 'text', 'Ex.: Aluguel', { required: true }),
-            input('amount', 'number', 'Valor', { required: true, min: 0.01, step: 0.01 }),
-            input('day', 'number', 'Dia', { required: true, min: 1, max: 31 }),
-            account,
-            input('category', 'text', 'Categoria', { value: 'Outros' })
-        );
+        form.append(type, input('description', 'text', 'Ex.: Aluguel', { required: true }), input('amount', 'number', 'Valor', { required: true, min: 0.01, step: 0.01 }), input('day', 'number', 'Dia', { required: true, min: 1, max: 31 }), account, input('category', 'text', 'Categoria', { value: 'Outros' }));
         const submit = button('Adicionar', 'btn btn-primary');
         submit.type = 'submit';
         form.appendChild(submit);
@@ -259,29 +221,19 @@
 
     function goalsList(planning) {
         const list = make('div', 'product-goals mb-3');
-        if (!planning.goals.length) {
-            list.appendChild(empty('Crie uma meta para separar dinheiro de um objetivo.'));
-            return list;
-        }
+        if (!planning.goals.length) return list.appendChild(empty('Crie uma meta para separar dinheiro de um objetivo.')), list;
         planning.goals.forEach(goal => {
             const item = make('div', 'product-goal');
             const header = make('div', 'd-flex justify-content-between');
             const labels = make('div');
-            labels.append(
-                make('strong', '', goal.name),
-                make('small', '', goal.targetDate ? `até ${dateLabel(goal.targetDate)}` : 'sem prazo')
-            );
-            header.append(labels, actionIconButton('delete-goal', goal.id, 'ph-trash', 'Excluir meta'));
-
+            labels.append(make('strong', '', goal.name), make('small', '', goal.targetDate ? `até ${dateLabel(goal.targetDate)}` : 'sem prazo'));
+            header.append(labels, actionButton('delete-goal', goal.id, 'ph-trash', 'Excluir meta'));
             const progress = make('div', 'product-progress');
             const fill = make('span');
-            const pct = Math.min(100, goal.targetAmount ? (goal.currentAmount / goal.targetAmount) * 100 : 0);
-            fill.style.width = `${Math.max(0, pct)}%`;
+            fill.style.width = `${Math.max(0, Math.min(100, goal.targetAmount ? goal.currentAmount / goal.targetAmount * 100 : 0))}%`;
             progress.appendChild(fill);
-
             const update = make('div', 'd-flex align-items-center gap-2');
             const current = input('', 'number', '', { className: 'form-control form-control-sm', min: 0, step: 0.01, value: Number(goal.currentAmount).toFixed(2) });
-            current.removeAttribute('name');
             current.dataset.goalCurrent = goal.id;
             const updateButton = button('Atualizar', 'btn btn-sm btn-outline-primary');
             updateButton.dataset.action = 'save-goal-current';
@@ -298,25 +250,14 @@
         details.appendChild(make('summary', '', 'Nova meta'));
         const form = make('form', 'product-inline-form mt-3');
         form.id = 'product-goal-form';
-        form.append(
-            input('name', 'text', 'Ex.: Viagem', { required: true }),
-            input('targetAmount', 'number', 'Objetivo R$', { required: true, min: 0.01, step: 0.01 }),
-            input('currentAmount', 'number', 'Já guardado', { min: 0, step: 0.01 }),
-            input('targetDate', 'date', '', {})
-        );
+        form.append(input('name', 'text', 'Ex.: Viagem', { required: true }), input('targetAmount', 'number', 'Objetivo R$', { required: true, min: 0.01, step: 0.01 }), input('currentAmount', 'number', 'Já guardado', { min: 0, step: 0.01 }), input('targetDate', 'date', ''));
         const submit = button('Criar', 'btn btn-primary');
         submit.type = 'submit';
         form.appendChild(submit);
         form.addEventListener('submit', event => {
             event.preventDefault();
             const values = new FormData(form);
-            saveMutation(planning => planning.goals.push({
-                id: C.safeId('', 'goal'),
-                name: clean(values.get('name')),
-                targetAmount: Number(values.get('targetAmount')),
-                currentAmount: Number(values.get('currentAmount') || 0),
-                targetDate: String(values.get('targetDate') || '')
-            }), 'Meta criada.');
+            saveMutation(planning => planning.goals.push({ id: C.safeId('', 'goal'), name: clean(values.get('name')), targetAmount: Number(values.get('targetAmount')), currentAmount: Number(values.get('currentAmount') || 0), targetDate: String(values.get('targetDate') || '') }), 'Meta criada.');
         });
         details.appendChild(form);
         return details;
@@ -324,16 +265,13 @@
 
     function reservesList(planning) {
         const list = make('div', 'product-list mb-3');
-        if (!planning.reserves.length) {
-            list.appendChild(empty('Nenhuma reserva definida.'));
-            return list;
-        }
+        if (!planning.reserves.length) return list.appendChild(empty('Nenhuma reserva definida.')), list;
         planning.reserves.forEach(reserve => {
             const row = make('div', 'product-list-row');
             const info = make('div');
             info.append(make('strong', '', reserve.name), make('small', '', 'Reserva separada do dinheiro livre'));
             const value = make('div', 'product-row-value');
-            value.append(document.createTextNode(`${money(reserve.amount)} `), actionIconButton('delete-reserve', reserve.id, 'ph-trash', 'Excluir reserva'));
+            value.append(textNode(`${money(reserve.amount)} `), actionButton('delete-reserve', reserve.id, 'ph-trash', 'Excluir reserva'));
             row.append(info, value);
             list.appendChild(row);
         });
@@ -343,36 +281,26 @@
     function reserveForm() {
         const form = make('form', 'product-inline-form compact');
         form.id = 'product-reserve-form';
-        form.append(
-            input('name', 'text', 'Nome', { required: true }),
-            input('amount', 'number', 'Valor', { required: true, min: 0.01, step: 0.01 })
-        );
+        form.append(input('name', 'text', 'Nome', { required: true }), input('amount', 'number', 'Valor', { required: true, min: 0.01, step: 0.01 }));
         const submit = button('Reservar', 'btn btn-outline-primary');
         submit.type = 'submit';
         form.appendChild(submit);
         form.addEventListener('submit', event => {
             event.preventDefault();
             const values = new FormData(form);
-            saveMutation(planning => planning.reserves.push({
-                id: C.safeId('', 'reserve'),
-                name: clean(values.get('name')),
-                amount: Number(values.get('amount'))
-            }), 'Reserva criada.');
+            saveMutation(planning => planning.reserves.push({ id: C.safeId('', 'reserve'), name: clean(values.get('name')), amount: Number(values.get('amount')) }), 'Reserva criada.');
         });
         return form;
     }
 
     function categoryRulesList(planning) {
         const list = make('div', 'product-rule-list mb-3');
-        if (!planning.categoryRules.length) {
-            list.appendChild(empty('Ex.: UBER → Transporte.'));
-            return list;
-        }
+        if (!planning.categoryRules.length) return list.appendChild(empty('Ex.: UBER → Transporte.')), list;
         planning.categoryRules.forEach(rule => {
             const row = make('div', 'product-chip-rule');
             const label = make('span');
-            label.append(document.createTextNode(`“${rule.contains}” → `), make('strong', '', rule.category));
-            row.append(label, actionIconButton('delete-cat-rule', rule.id, 'ph-x', 'Excluir regra'));
+            label.append(textNode(`“${rule.contains}” → `), make('strong', '', rule.category));
+            row.append(label, actionButton('delete-cat-rule', rule.id, 'ph-x', 'Excluir regra'));
             list.appendChild(row);
         });
         return list;
@@ -381,21 +309,14 @@
     function categoryRuleForm() {
         const form = make('form', 'product-inline-form compact');
         form.id = 'product-category-rule-form';
-        form.append(
-            input('contains', 'text', 'Texto, ex.: UBER', { required: true }),
-            input('category', 'text', 'Categoria', { required: true })
-        );
+        form.append(input('contains', 'text', 'Texto, ex.: UBER', { required: true }), input('category', 'text', 'Categoria', { required: true }));
         const submit = button('Criar regra', 'btn btn-outline-primary');
         submit.type = 'submit';
         form.appendChild(submit);
         form.addEventListener('submit', event => {
             event.preventDefault();
             const values = new FormData(form);
-            saveMutation(planning => planning.categoryRules.push({
-                id: C.safeId('', 'catrule'),
-                contains: clean(values.get('contains')).toLowerCase(),
-                category: clean(values.get('category'))
-            }), 'Regra criada.');
+            saveMutation(planning => planning.categoryRules.push({ id: C.safeId('', 'catrule'), contains: clean(values.get('contains')).toLowerCase(), category: clean(values.get('category')) }), 'Regra criada.');
         });
         return form;
     }
@@ -404,20 +325,14 @@
         const household = householdData(data);
         const balances = householdBalances(data);
         const list = make('div', 'product-list mb-3');
-        if (!household.members.length) {
-            list.appendChild(empty('Adicione pelo menos duas pessoas para dividir gastos.'));
-            return list;
-        }
+        if (!household.members.length) return list.appendChild(empty('Adicione pelo menos duas pessoas para dividir gastos.')), list;
         household.members.forEach(member => {
             const balance = Number(balances[member.id] || 0);
             const row = make('div', 'product-list-row');
             const info = make('div');
-            info.append(
-                make('strong', '', member.name),
-                make('small', '', balance > 0 ? 'tem a receber' : balance < 0 ? 'deve ao grupo' : 'está em dia')
-            );
+            info.append(make('strong', '', member.name), make('small', '', balance > 0 ? 'tem a receber' : balance < 0 ? 'deve ao grupo' : 'está em dia'));
             const value = make('div', `product-row-value ${balance >= 0 ? 'income' : 'expense'}`);
-            value.append(document.createTextNode(`${money(Math.abs(balance))} `), actionIconButton('delete-member', member.id, 'ph-trash', 'Excluir pessoa'));
+            value.append(textNode(`${money(Math.abs(balance))} `), actionButton('delete-member', member.id, 'ph-trash', 'Excluir pessoa'));
             row.append(info, value);
             list.appendChild(row);
         });
@@ -447,37 +362,46 @@
         const today = C.localDateString();
         const items = C.buildFinancialCalendar(data, today, C.addDays(today, 45)).slice(0, 14);
         const list = make('div', 'product-calendar');
-        if (!items.length) {
-            list.appendChild(empty('Nenhum compromisso previsto nos próximos 45 dias.'));
-            return list;
-        }
+        if (!items.length) return list.appendChild(empty('Nenhum compromisso previsto nos próximos 45 dias.')), list;
         items.forEach(item => {
             const row = make('div', 'product-calendar-row');
-            const label = dateLabel(item.date);
             const info = make('div');
-            info.append(
-                make('strong', '', item.description),
-                make('small', '', `${item.synthetic ? 'Recorrente' : 'Prevista'} · ${item.category || ''}`)
-            );
+            info.append(make('strong', '', item.description), make('small', '', `${item.synthetic ? 'Recorrente' : 'Prevista'} · ${item.category || ''}`));
             const sign = item.type === 'income' ? '+' : item.type === 'expense' ? '-' : '';
-            row.append(
-                make('span', 'product-calendar-date', label.slice(0, 5)),
-                info,
-                make('span', `product-calendar-value ${item.type}`, `${sign}${money(item.amount)}`)
-            );
+            row.append(make('span', 'product-calendar-date', dateLabel(item.date).slice(0, 5)), info, make('span', `product-calendar-value ${item.type}`, `${sign}${money(item.amount)}`));
             list.appendChild(row);
         });
         return list;
     }
 
-    function planningCard(iconName, title, subtitle, ...children) {
-        const col = make('div', 'col-12 col-lg-6');
-        const card = make('div', 'card h-100');
-        const body = make('div', 'card-body');
-        body.append(cardTitle(iconName, title, subtitle), ...children);
-        card.appendChild(body);
-        col.appendChild(card);
-        return col;
+    function handlePlanningAction(action, id, hub) {
+        saveMutation((planning, data) => {
+            if (action === 'delete-rule') planning.recurringRules = planning.recurringRules.filter(item => item.id !== id);
+            else if (action === 'delete-goal') planning.goals = planning.goals.filter(item => item.id !== id);
+            else if (action === 'delete-reserve') planning.reserves = planning.reserves.filter(item => item.id !== id);
+            else if (action === 'delete-cat-rule') planning.categoryRules = planning.categoryRules.filter(item => item.id !== id);
+            else if (action === 'save-goal-current') {
+                const goal = planning.goals.find(item => item.id === id);
+                const current = [...hub.querySelectorAll('[data-goal-current]')].find(node => node.dataset.goalCurrent === id);
+                if (goal && current) goal.currentAmount = Math.max(0, Number(current.value || 0));
+            } else if (action === 'delete-member') {
+                const household = householdData(data);
+                household.members = household.members.filter(member => member.id !== id);
+                household.enabled = household.members.length > 0;
+                (data.transactions || []).forEach(tx => {
+                    if (tx.paidByMemberId === id) tx.paidByMemberId = null;
+                    tx.sharedWithMemberIds = (tx.sharedWithMemberIds || []).filter(memberId => memberId !== id);
+                });
+                const sharedMeta = data.settings?.sharedTransactionMeta;
+                if (sharedMeta && typeof sharedMeta === 'object') {
+                    Object.values(sharedMeta).forEach(meta => {
+                        if (!meta || typeof meta !== 'object') return;
+                        if (meta.paidByMemberId === id) meta.paidByMemberId = null;
+                        if (Array.isArray(meta.sharedWithMemberIds)) meta.sharedWithMemberIds = meta.sharedWithMemberIds.filter(memberId => memberId !== id);
+                    });
+                }
+            }
+        });
     }
 
     function renderPlanningHub(data) {
@@ -493,14 +417,12 @@
         hub.replaceChildren();
 
         const planning = planningData(data);
-        const totalReserved = planning.reserves.reduce((sum, reserve) => sum + Number(reserve.amount || 0), 0)
-            + planning.goals.reduce((sum, goal) => sum + Number(goal.currentAmount || 0), 0);
-
+        const totalReserved = planning.reserves.reduce((sum, reserve) => sum + Number(reserve.amount || 0), 0) + planning.goals.reduce((sum, goal) => sum + Number(goal.currentAmount || 0), 0);
         const heading = make('div', 'product-section-heading mb-3');
         const titles = make('div');
         titles.append(make('span', 'product-eyebrow', 'Planejamento'), make('h4', '', 'Organize antes de gastar'));
         const reserved = make('span', 'product-total-reserved');
-        reserved.append(document.createTextNode('Reservado: '), make('strong', '', money(totalReserved)));
+        reserved.append(textNode('Reservado: '), make('strong', '', money(totalReserved)));
         heading.append(titles, reserved);
 
         const grid = make('div', 'row g-3 mb-4');
@@ -514,12 +436,7 @@
         const householdCol = make('div', 'col-12');
         const householdCard = make('div', 'card');
         const householdBody = make('div', 'card-body');
-        householdBody.append(
-            cardTitle('ph-users-three', 'Casa / casal', 'Divida gastos sem criar outra conta bancária'),
-            householdList(data),
-            memberForm(),
-            make('p', 'tiny text-muted mt-2 mb-0', 'Ao lançar um gasto, use “Dividir este gasto” para indicar quem pagou e com quem dividir igualmente.')
-        );
+        householdBody.append(cardTitle('ph-users-three', 'Casa / casal', 'Divida gastos sem criar outra conta bancária'), householdList(data), memberForm(), make('p', 'tiny text-muted mt-2 mb-0', 'Ao lançar um gasto, use “Dividir este gasto” para indicar quem pagou e com quem dividir igualmente.'));
         householdCard.appendChild(householdBody);
         householdCol.appendChild(householdCard);
         grid.appendChild(householdCol);
@@ -530,11 +447,11 @@
         calendarCard.appendChild(calendarBody);
 
         hub.append(heading, grid, calendarCard);
-        hub.addEventListener('click', event => {
+        hub.onclick = event => {
             const target = event.target.closest?.('[data-action]');
             if (!target) return;
-            deleteAction(target.dataset.action, target.dataset.id, hub);
-        }, { once: true });
+            handlePlanningAction(target.dataset.action, target.dataset.id, hub);
+        };
     }
 
     function canonicalRenderProjection(data) {
@@ -549,9 +466,7 @@
     function installProjectionBoundary() {
         if (projectionBoundaryInstalled) return canonicalRenderProjection;
         projectionBoundaryInstalled = true;
-        if (typeof root.renderProjection === 'function' && !root.renderProjection.__plannkeCanonicalPlanning) {
-            legacyProjection = root.renderProjection;
-        }
+        if (typeof root.renderProjection === 'function' && !root.renderProjection.__plannkeCanonicalPlanning) legacyProjection = root.renderProjection;
         projectionBoundaryLocked = true;
         Object.defineProperty(root, 'renderProjection', {
             configurable: true,
@@ -568,12 +483,7 @@
     function releaseProjectionBoundary() {
         if (!projectionBoundaryLocked) return;
         projectionBoundaryLocked = false;
-        Object.defineProperty(root, 'renderProjection', {
-            configurable: true,
-            enumerable: true,
-            writable: true,
-            value: canonicalRenderProjection
-        });
+        Object.defineProperty(root, 'renderProjection', { configurable: true, enumerable: true, writable: true, value: canonicalRenderProjection });
     }
 
     const api = {
@@ -583,6 +493,7 @@
         householdBalances,
         buildProjectionData,
         renderPlanningHub,
+        handlePlanningAction,
         installProjectionBoundary,
         releaseProjectionBoundary,
         renderProjection: canonicalRenderProjection
