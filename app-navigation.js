@@ -93,6 +93,33 @@
         });
     }
 
+    function loadPlanningRuntime() {
+        const settle = (resolve, reject) => {
+            const api = root.PlannkePlanning;
+            if (!api) return resolve(null);
+            Promise.resolve(api.ready).then(() => resolve(api), reject);
+        };
+        if (root.PlannkePlanning) return Promise.resolve(root.PlannkePlanning.ready).then(() => root.PlannkePlanning);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+        const existing = document.querySelector('script[data-plannke-planning]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkePlanning) return settle(resolve, reject);
+                existing.addEventListener('load', () => settle(resolve, reject), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de Planejamento.')), { once: true });
+            });
+        }
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-planning.js';
+            script.async = false;
+            script.dataset.plannkePlanning = 'true';
+            script.addEventListener('load', () => settle(resolve, reject), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de Planejamento.')), { once: true });
+            document.body.appendChild(script);
+        });
+    }
+
     function waitForCanonicalRenderers() {
         if (root.PlannkeSafeRenderers) return Promise.resolve(root.PlannkeSafeRenderers);
         if (typeof document === 'undefined') return Promise.resolve(null);
@@ -110,11 +137,13 @@
     const dashboardReady = loadDashboardRuntime();
     const entitiesReady = loadEntityRuntime();
     const settingsReady = loadSettingsRuntime();
+    const planningReady = loadPlanningRuntime();
     const renderersReady = waitForCanonicalRenderers();
     root.PlannkeTransactionsReady = transactionsReady;
     root.PlannkeDashboardReady = dashboardReady;
     root.PlannkeEntitiesReady = entitiesReady;
     root.PlannkeSettingsReady = settingsReady;
+    root.PlannkePlanningReady = planningReady;
     root.PlannkeRenderersReady = renderersReady;
 
     const transactionActions = ['openTxModal', 'toggleInstallmentField', 'updateInstallmentHelper', 'dupTx', 'edTx', 'delTx'];
@@ -154,12 +183,13 @@
 
     const legacyInitApp = root.initApp;
     if (typeof legacyInitApp === 'function') {
-        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, settingsReady, renderersReady])
-            .then(([transactions, dashboard, entities, settings, renderers]) => {
+        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, renderersReady])
+            .then(([transactions, dashboard, entities, settings, planning, renderers]) => {
                 if (!transactions) throw new Error('Módulo canônico de movimentações não inicializou.');
                 if (!dashboard) throw new Error('Runtime canônico do dashboard não inicializou.');
                 if (!entities) throw new Error('Runtime canônico de contas e cartões não inicializou.');
                 if (!settings) throw new Error('Runtime canônico de configurações não inicializou.');
+                if (!planning) throw new Error('Runtime canônico de Planejamento não inicializou.');
                 if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');
                 entities.setupModalEvents?.();
                 entities.setupForms?.();
@@ -276,6 +306,7 @@
         loadDashboardRuntime,
         loadEntityRuntime,
         loadSettingsRuntime,
+        loadPlanningRuntime,
         waitForCanonicalRenderers,
         loadDataActions
     };
