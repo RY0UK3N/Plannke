@@ -31,3 +31,8 @@ test('settings static actions no longer occupy compatibility allowlist', () => {
   ['switchCatTabModal', 'addCustomCategoryModal', 'toggleTheme', 'switchCatTab', 'addCustomCategory']
     .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
 });
+
+test('one-time settings control binding artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'bind-settings-controls-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'bind-settings-controls-once.yml')), false);
+});
