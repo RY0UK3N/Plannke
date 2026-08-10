@@ -21,6 +21,14 @@ test('canonical shell owns desktop chrome and revamp assets', () => {
   assert.doesNotMatch(shell, /\.innerHTML\s*=|\beval\s*\(|new\s+Function\s*\(/);
 });
 
+test('shell-owned settings and new-transaction actions use explicit listeners', () => {
+  assert.match(shell, /settings\.addEventListener\('click', \(\) => root\.openSettingsPanel\?\.\(\)\)/);
+  assert.match(shell, /add\.addEventListener\('click', \(\) => root\.openTxModal\?\.\(null\)\)/);
+  assert.doesNotMatch(shell, /dataset\.plannkeOnclick/);
+  assert.doesNotMatch(actions, /'openSettingsPanel'/);
+  assert.doesNotMatch(actions, /'openTxModal'/);
+});
+
 test('canonical action router does not own shell construction or visual assets', () => {
   assert.doesNotMatch(actions, /CANONICAL_PAGES|primeCanonicalShell|loadRevampAssets|loadDesktopAssets|Central financeira/);
   assert.doesNotMatch(actions, /revamp(?:-desktop)?\.(?:js|css)/);
