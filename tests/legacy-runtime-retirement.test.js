@@ -43,6 +43,8 @@ test('one-time cleanup automation is not shipped with the branch', () => {
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-settings-once.yml')), false);
   assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-renderers-once.js')), false);
   assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-renderers-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-app-excel-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-app-excel-once.yml')), false);
 });
 
 test('app monolith no longer owns account statement or card invoice details', () => {
@@ -140,4 +142,18 @@ test('renderAll reaches data-heavy surfaces only after canonical renderers are r
   assert.match(renderers, /root\.renderDashboard = safeRenderDashboard/);
   assert.match(renderers, /root\.renderAccounts = safeRenderAccounts/);
   assert.match(renderers, /root\.renderCards = safeRenderCards/);
+});
+
+test('app monolith no longer owns Excel or Memory Card runtime', () => {
+  assert.doesNotMatch(app, /EXCEL — Memory Card/);
+  assert.doesNotMatch(app, /function exportToExcel\(/);
+  assert.doesNotMatch(app, /function importFromExcel\(/);
+  assert.doesNotMatch(app, /\bFileReader\b/);
+  assert.doesNotMatch(app, /_backupDone/);
+  assert.doesNotMatch(app, /Planner_MemoryCard_/);
+
+  assert.match(appData, /root\.exportToExcel = exportToExcel/);
+  assert.match(appData, /Plannke_Relatorio_/);
+  assert.doesNotMatch(appData, /importFromExcel|FileReader|Memory Card|_backupDone/);
+  assert.match(navigation, /\['confirmClearData', 'exportToExcel'\]/);
 });
