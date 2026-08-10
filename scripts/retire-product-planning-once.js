@@ -3,7 +3,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const productPath = path.join(root, 'product.js');
-const testPath = path.join(root, 'tests', 'legacy-runtime-retirement.test.js');
+const productUiTestPath = path.join(root, 'tests', 'product-ui-logic.test.js');
+const retirementTestPath = path.join(root, 'tests', 'legacy-runtime-retirement.test.js');
 const workflowPath = path.join(root, '.github', 'workflows', 'retire-product-planning-once.yml');
 const selfPath = __filename;
 
@@ -49,7 +50,14 @@ source = source.replace(oldExport, newExport);
 
 fs.writeFileSync(productPath, source);
 
-const test = `const test = require('node:test');
+let productUiTests = fs.readFileSync(productUiTestPath, 'utf8');
+const obsoleteHouseholdTest = "\ntest('household balance shows who should receive after equal split', () => {";
+const obsoleteAt = productUiTests.indexOf(obsoleteHouseholdTest);
+if (obsoleteAt < 0) throw new Error('Obsolete PlannkeProduct household test marker not found');
+productUiTests = `${productUiTests.slice(0, obsoleteAt).trimEnd()}\n`;
+fs.writeFileSync(productUiTestPath, productUiTests);
+
+const retirementTest = `const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -57,6 +65,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
+const productUiLogic = fs.readFileSync(path.join(root, 'tests', 'product-ui-logic.test.js'), 'utf8');
 
 test('product layer no longer owns the planning projection runtime', () => {
   assert.doesNotMatch(product, /const originalProjection = globalThis\\.renderProjection/);
@@ -67,12 +76,14 @@ test('product layer no longer owns the planning projection runtime', () => {
   assert.match(planning, /function renderPlanningHub\\(/);
 });
 
-test('product public surface no longer exports the retired household renderer helper', () => {
+test('product public surface no longer exports the retired household planning helper', () => {
   assert.match(product, /globalThis\\.PlannkeProduct=\\{init,searchTransactions\\};/);
   assert.doesNotMatch(product, /PlannkeProduct=\\{[^}]*householdBalances/);
+  assert.doesNotMatch(productUiLogic, /PlannkeProduct\\.householdBalances/);
+  assert.match(planning, /householdBalances,/);
 });
 `;
-fs.writeFileSync(testPath, test);
+fs.writeFileSync(retirementTestPath, retirementTest);
 
 for (const temporary of [workflowPath, selfPath]) {
   if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
