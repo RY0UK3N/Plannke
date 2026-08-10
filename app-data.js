@@ -2,6 +2,8 @@
 (function (root) {
     'use strict';
 
+    let controlsBound = false;
+
     function localDateString(date = new Date()) {
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -190,6 +192,12 @@
         showToast('Relatório Excel exportado.');
     }
 
+    function bindDataControls() {
+        if (controlsBound || typeof document === 'undefined') return;
+        controlsBound = true;
+        document.getElementById('data-export-excel')?.addEventListener('click', exportToExcel);
+    }
+
     root.confirmClearData = confirmClearData;
     root.exportToExcel = exportToExcel;
     root.PlannkeDataActions = {
@@ -200,6 +208,8 @@
         transactionRows,
         accountRows,
         cardRows,
-        planningRows
+        planningRows,
+        bindDataControls
     };
+    bindDataControls();
 })(typeof globalThis !== 'undefined' ? globalThis : this);
