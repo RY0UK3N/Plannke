@@ -99,3 +99,12 @@ test('app monolith no longer owns settings categories or budgets', () => {
   assert.match(renderers, /root\.renderBudgets = safeRenderBudgets/);
   assert.match(renderers, /root\.renderBudgetManager = safeRenderBudgetManager/);
 });
+
+test('legacy init and render bridge resolve settings globals from canonical runtime', () => {
+  assert.match(app, /function initApp\(\)[\s\S]*applyTheme\(getSettings\(\)\.theme \|\| 'dark'\);/);
+  assert.match(app, /function renderAll\(\)[\s\S]*renderSettingsView\(\);/);
+  assert.match(navigation, /root\.PlannkeSettingsReady = settingsReady/);
+  assert.ok(navigation.indexOf("if (!settings) throw new Error('Runtime canônico de configurações não inicializou.');") < navigation.indexOf('legacyInitApp.apply(root, args)'));
+  assert.match(settings, /root\.applyTheme = applyTheme/);
+  assert.match(settings, /root\.renderSettingsView = renderSettingsView/);
+});
