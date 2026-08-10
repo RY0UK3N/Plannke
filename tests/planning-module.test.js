@@ -11,6 +11,24 @@ const core = require(path.join(root, 'product-core.js'));
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
+function sandboxFor(data = null) {
+  let saved = null;
+  const sandbox = {
+    console,
+    PlannkeCore: core,
+    renderProjection() {},
+    formatCurrency: value => String(value),
+    formatDate: value => String(value),
+    getData: data ? () => data : undefined,
+    saveData: data ? value => { saved = value; } : undefined,
+    renderAll() {},
+    showToast() {}
+  };
+  sandbox.globalThis = sandbox;
+  vm.runInNewContext(planning, sandbox, { filename: 'app-planning.js' });
+  return { sandbox, saved: () => saved };
+}
+
 test('canonical planning runtime is loaded and required before app boot', () => {
   assert.match(navigation, /function loadPlanningRuntime\(/);
   assert.match(navigation, /script\.src = 'app-planning\.js'/);
@@ -21,6 +39,7 @@ test('canonical planning runtime is loaded and required before app boot', () => 
 
 test('planning UI renders user-controlled values with DOM APIs', () => {
   assert.match(planning, /hub\.replaceChildren\(\)/);
+  assert.match(planning, /hub\.onclick = event =>/);
   assert.match(planning, /node\.textContent = String\(textValue\)/);
   assert.match(planning, /document\.createTextNode\(/);
   assert.match(planning, /form\.addEventListener\('submit'/);
@@ -31,15 +50,7 @@ test('planning UI renders user-controlled values with DOM APIs', () => {
 });
 
 test('projection data includes clamped recurring occurrences from PlannkeCore', async () => {
-  const sandbox = {
-    console,
-    PlannkeCore: core,
-    renderProjection() {},
-    formatCurrency: value => String(value),
-    formatDate: value => String(value)
-  };
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(planning, sandbox, { filename: 'app-planning.js' });
+  const { sandbox } = sandboxFor();
   await sandbox.PlannkePlanning.ready;
 
   const data = {
@@ -48,9 +59,7 @@ test('projection data includes clamped recurring occurrences from PlannkeCore', 
     transactions: [],
     settings: {},
     planning: {
-      goals: [],
-      reserves: [],
-      categoryRules: [],
+      goals: [], reserves: [], categoryRules: [],
       recurringRules: [{
         id: 'rent', type: 'expense', description: 'Aluguel', category: 'Casa', amount: 100,
         dayOfMonth: 31, accountId: 'acc', startDate: '2025-01-31', endDate: '', active: true
@@ -65,10 +74,7 @@ test('projection data includes clamped recurring occurrences from PlannkeCore', 
 });
 
 test('planning boundary prevents product.js from reclaiming renderProjection during boot', async () => {
-  const legacy = () => 'legacy';
-  const sandbox = { console, PlannkeCore: core, renderProjection: legacy };
-  sandbox.globalThis = sandbox;
-  vm.runInNewContext(planning, sandbox, { filename: 'app-planning.js' });
+  const { sandbox } = sandboxFor();
   await sandbox.PlannkePlanning.ready;
 
   const canonical = sandbox.renderProjection;
@@ -77,10 +83,64 @@ test('planning boundary prevents product.js from reclaiming renderProjection dur
   assert.equal(canonical.__plannkeCanonicalPlanning, true);
 });
 
-test('removing a household member also clears persisted sharing references', () => {
-  assert.match(planning, /sharedTransactionMeta/);
-  assert.match(planning, /meta\.paidByMemberId === id/);
-  assert.match(planning, /meta\.sharedWithMemberIds = meta\.sharedWithMemberIds\.filter/);
+test('household balances split completed shared expenses equally', async () => {
+  const { sandbox } = sandboxFor();
+  await sandbox.PlannkePlanning.ready;
+  const data = {
+    accounts: [], cards: [], planning: {},
+    settings: { household: { enabled: true, members: [{ id: 'a', name: 'Ana' }, { id: 'b', name: 'Bia' }] } },
+    transactions: [{ type: 'expense', status: 'completed', amount: 100, paidByMemberId: 'a', sharedWithMemberIds: ['b'] }]
+  };
+  const balances = sandbox.PlannkePlanning.householdBalances(data);
+  assert.equal(balances.a, 50);
+  assert.equal(balances.b, -50);
+});
+
+test('planning actions persist goal updates and item removals through saveData', async () => {
+  const data = {
+    accounts: [], cards: [], transactions: [], settings: {},
+    planning: {
+      goals: [{ id: 'g1', name: 'Viagem', targetAmount: 1000, currentAmount: 100, targetDate: '' }],
+      reserves: [{ id: 'r1', name: 'Emergência', amount: 200 }],
+      recurringRules: [{ id: 'rule1', type: 'expense', description: 'Internet', category: 'Casa', amount: 100, dayOfMonth: 10, accountId: 'acc', startDate: '2025-01-01', endDate: '', active: true }],
+      categoryRules: [{ id: 'cat1', contains: 'uber', category: 'Transporte' }]
+    }
+  };
+  const { sandbox, saved } = sandboxFor(data);
+  await sandbox.PlannkePlanning.ready;
+
+  const hub = { querySelectorAll: () => [{ dataset: { goalCurrent: 'g1' }, value: '350.50' }] };
+  sandbox.PlannkePlanning.handlePlanningAction('save-goal-current', 'g1', hub);
+  assert.equal(saved().planning.goals[0].currentAmount, 350.5);
+
+  sandbox.PlannkePlanning.handlePlanningAction('delete-reserve', 'r1', hub);
+  assert.equal(saved().planning.reserves.length, 0);
+  sandbox.PlannkePlanning.handlePlanningAction('delete-rule', 'rule1', hub);
+  assert.equal(saved().planning.recurringRules.length, 0);
+  sandbox.PlannkePlanning.handlePlanningAction('delete-cat-rule', 'cat1', hub);
+  assert.equal(saved().planning.categoryRules.length, 0);
+});
+
+test('removing a household member clears live and persisted sharing references', async () => {
+  const data = {
+    accounts: [], cards: [], planning: {},
+    settings: {
+      household: { enabled: true, members: [{ id: 'a', name: 'Ana' }, { id: 'b', name: 'Bia' }] },
+      sharedTransactionMeta: {
+        tx1: { paidByMemberId: 'b', sharedWithMemberIds: ['a', 'b'] }
+      }
+    },
+    transactions: [{ id: 'tx1', paidByMemberId: 'b', sharedWithMemberIds: ['a', 'b'] }]
+  };
+  const { sandbox, saved } = sandboxFor(data);
+  await sandbox.PlannkePlanning.ready;
+  sandbox.PlannkePlanning.handlePlanningAction('delete-member', 'b', { querySelectorAll: () => [] });
+
+  assert.deepEqual(Array.from(saved().settings.household.members, member => member.id), ['a']);
+  assert.equal(saved().transactions[0].paidByMemberId, null);
+  assert.deepEqual(Array.from(saved().transactions[0].sharedWithMemberIds), ['a']);
+  assert.equal(saved().settings.sharedTransactionMeta.tx1.paidByMemberId, null);
+  assert.deepEqual(Array.from(saved().settings.sharedTransactionMeta.tx1.sharedWithMemberIds), ['a']);
 });
 
 test('planning runtime is syntax-checked and available offline', () => {
