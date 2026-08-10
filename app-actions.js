@@ -23,7 +23,7 @@
     const ALLOWED_CALLS = new Set([
         'openCategoryManager',
         'openModal',
-        'exportToExcel', 'switchCatTabModal', 'addCustomCategoryModal',
+        'switchCatTabModal', 'addCustomCategoryModal',
         'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
         'toggleInstallmentField', 'updateInstallmentHelper',
         'deleteCategoryModal', 'openColorPicker', 'deleteCategory',
