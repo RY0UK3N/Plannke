@@ -189,6 +189,32 @@
         return insights.sort((a, b) => b.priority - a.priority).slice(0, 5);
     }
 
+    function make(tag, className, text) {
+        const node = document.createElement(tag);
+        if (className) node.className = className;
+        if (text !== undefined && text !== null) node.textContent = String(text);
+        return node;
+    }
+
+    function insightHeader(subtitle, compact = false) {
+        const header = make('div', `product-card-title${compact ? ' mb-0 pb-0 border-0' : ''}`);
+        const title = make('div');
+        const icon = make('i', 'ph ph-sparkle');
+        title.append(icon, make('strong', '', 'Insights locais'));
+        header.append(title, make('small', '', subtitle));
+        return header;
+    }
+
+    function insightRow(item) {
+        const row = make('div', `product-insight-row ${item.kind}`);
+        const iconWrap = make('span', 'product-insight-icon');
+        iconWrap.appendChild(make('i', `ph ${item.icon}`));
+        const copy = make('div');
+        copy.append(make('strong', '', item.title), make('small', '', item.text));
+        row.append(iconWrap, copy);
+        return row;
+    }
+
     function renderInsights(data) {
         const dashboard = document.getElementById('dashboard-view');
         if (!dashboard) return;
@@ -200,13 +226,20 @@
             const pulse = document.getElementById('financial-pulse');
             if (pulse) pulse.after(section); else dashboard.prepend(section);
         }
+
         const insights = buildInsights(data);
+        const body = make('div', 'card-body p-3 p-md-4');
+        section.replaceChildren(body);
+
         if (!insights.length) {
-            section.innerHTML = `<div class="card-body p-3 p-md-4"><div class="product-card-title mb-0 pb-0 border-0"><div><i class="ph ph-sparkle"></i><strong>Insights locais</strong></div><small>Cadastre mais movimentações para o Plannke encontrar padrões úteis.</small></div></div>`;
+            body.appendChild(insightHeader('Cadastre mais movimentações para o Plannke encontrar padrões úteis.', true));
             return;
         }
-        const rows = insights.map(item => `<div class="product-insight-row ${item.kind}"><span class="product-insight-icon"><i class="ph ${item.icon}"></i></span><div><strong>${item.title}</strong><small>${item.text}</small></div></div>`).join('');
-        section.innerHTML = `<div class="card-body p-3 p-md-4"><div class="product-card-title"><div><i class="ph ph-sparkle"></i><strong>Insights locais</strong></div><small>Calculados neste dispositivo, sem IA externa</small></div><div class="product-insights-list">${rows}</div></div>`;
+
+        body.appendChild(insightHeader('Calculados neste dispositivo, sem IA externa'));
+        const list = make('div', 'product-insights-list');
+        insights.forEach(item => list.appendChild(insightRow(item)));
+        body.appendChild(list);
     }
 
     return { previousComparableRange, categoryTotals, recurringMonthly, upcomingExpenses, buildInsights, renderInsights };
