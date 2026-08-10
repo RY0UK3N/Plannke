@@ -11,6 +11,8 @@ test('Insights render user-derived text with DOM APIs only', () => {
   assert.match(insights, /node\.textContent = String\(text\)/);
   assert.match(insights, /section\.replaceChildren\(body\)/);
   assert.match(insights, /copy\.append\(make\('strong', '', item\.title\), make\('small', '', item\.text\)\)/);
+  assert.match(insights, /row\.append\(iconWrap, copy\)/);
+  assert.match(insights, /insights\.forEach\(item => list\.appendChild\(insightRow\(item\)\)\)/);
   assert.doesNotMatch(insights, /\.innerHTML\s*=/);
   assert.doesNotMatch(insights, /\.outerHTML\s*=/);
   assert.doesNotMatch(insights, /insertAdjacentHTML\s*\(/);
