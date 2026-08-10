@@ -22,8 +22,8 @@
     // This shrinks as each workspace moves to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
         'openBudgetManager', 'openCategoryManager',
-        'filterDashboardToTransactions', 'changeMonth', 'setMovViewMode',
-        'renderMovimentacao', 'clearTxSearch', 'openModal',
+        'filterDashboardToTransactions',
+        'openModal',
         'exportToExcel', 'switchCatTabModal', 'addCustomCategoryModal',
         'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
         'toggleInstallmentField', 'updateInstallmentHelper',
