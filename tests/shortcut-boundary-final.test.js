@@ -6,17 +6,16 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 
 test('shortcut launcher is owned by navigation with no compatibility code', () => {
   assert.match(html, /id="settings-shortcuts"/);
-  assert.doesNotMatch(html, /data-plannke-onclick="[^"]*shortcutsModal/);
+  assert.doesNotMatch(html, /data-plannke-onclick/);
   assert.match(navigation, /document\.getElementById\('settings-shortcuts'\)\?\.addEventListener\('click'/);
   assert.match(navigation, /document\.getElementById\('shortcutsModal'\)/);
 });
 
-test('canonical action router has no shortcut-specific route', () => {
-  assert.doesNotMatch(actions, /shortcutsModal|return 'shortcuts'|kind === 'shortcuts'/);
+test('shortcut launcher no longer depends on a compatibility router', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
 
 test('one-time shortcut binding artifacts are not shipped', () => {
