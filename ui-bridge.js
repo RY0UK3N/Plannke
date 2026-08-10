@@ -18,7 +18,6 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
     'use strict';
 
-    const EVENT_ATTRS = ['onclick', 'onchange', 'oninput'];
     const DATA_ATTRS = {
         onclick: 'data-plannke-onclick',
         onchange: 'data-plannke-onchange',
@@ -33,9 +32,8 @@
         ['backup', 'ph-database', 'Dados']
     ];
 
-    // Temporary vocabulary for inline handlers that still live inside the
-    // remaining workspace markup/renderers. This set shrinks as UI modules
-    // move to explicit addEventListener bindings.
+    // Temporary compatibility vocabulary for static data-plannke actions.
+    // This shrinks as each workspace moves to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
         'openSettingsPanel', 'openBudgetManager', 'openCategoryManager',
         'filterDashboardToTransactions', 'changeMonth', 'setMovViewMode',
@@ -245,18 +243,6 @@
         return true;
     }
 
-    function migrateElement(element) {
-        if (!element || element.nodeType !== 1) return;
-        EVENT_ATTRS.forEach(attr => {
-            const code = element.getAttribute(attr);
-            if (!code) return;
-            const dataAttr = DATA_ATTRS[attr];
-            if (!element.hasAttribute(dataAttr)) element.setAttribute(dataAttr, code);
-            element.removeAttribute(attr);
-        });
-        element.querySelectorAll?.('[onclick],[onchange],[oninput]').forEach(migrateElement);
-    }
-
     function handleDelegated(event, sourceAttr) {
         let element = event.target;
         while (element && element !== document) {
@@ -325,16 +311,10 @@
         if (initialized || typeof document === 'undefined') return;
         initialized = true;
         primeCanonicalShell();
-        migrateElement(document.documentElement);
-
         document.addEventListener('click', event => handleDelegated(event, DATA_ATTRS.onclick));
         document.addEventListener('change', event => handleDelegated(event, DATA_ATTRS.onchange));
         document.addEventListener('input', event => handleDelegated(event, DATA_ATTRS.oninput));
 
-        const observer = new MutationObserver(records => {
-            records.forEach(record => record.addedNodes.forEach(node => migrateElement(node)));
-        });
-        observer.observe(document.documentElement, { childList: true, subtree: true });
     }
 
     return {
@@ -343,7 +323,6 @@
         parseCall,
         canHandle,
         dispatch,
-        migrateElement,
         primeCanonicalShell,
         loadDesktopAssets,
         loadRevampAssets,

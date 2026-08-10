@@ -47,7 +47,7 @@ test('boot loads after navigation wraps init and after shell bridge is installed
 
 test('canonical boot is syntax-checked and available offline', () => {
   assert.match(pkg, /node --check app-boot\.js/);
-  assert.match(sw, /plannke-shell-v29/);
+  assert.match(sw, /plannke-shell-v30/);
   assert.match(sw, /'\.\/app-boot\.js'/);
 });
 
