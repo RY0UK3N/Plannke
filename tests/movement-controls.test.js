@@ -34,10 +34,9 @@ test('app-movements explicitly binds its static controls once', () => {
   assert.match(movements, /root\.PlannkeMovements = api;\s*bindMovementControls\(\)/);
 });
 
-test('movement-local controls no longer occupy compatibility allowlist', () => {
-  ['changeMonth', 'setMovViewMode', 'renderMovimentacao', 'clearTxSearch']
+test('movement-local and retired dashboard controls no longer occupy compatibility allowlist', () => {
+  ['changeMonth', 'setMovViewMode', 'renderMovimentacao', 'clearTxSearch', 'filterDashboardToTransactions']
     .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
-  assert.match(actions, /'filterDashboardToTransactions'/);
 });
 
 test('one-time movement control binding artifacts are not shipped', () => {
