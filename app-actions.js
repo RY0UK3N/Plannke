@@ -84,7 +84,7 @@
 
     function specialKind(code) {
         const value = normalizeCode(code);
-        if (/^bootstrap\.Modal\.getOrCreateInstance\(document\.getElementById\(['"]shortcutsModal['"]\)\)\.show\(\);?$/.test(value)) return 'shortcuts';
+
         return null;
     }
 
@@ -101,11 +101,6 @@
 
     function dispatch(code, element, event) {
         const kind = specialKind(code);
-        if (kind === 'shortcuts') {
-            const modal = document.getElementById('shortcutsModal');
-            if (modal && root.bootstrap?.Modal) root.bootstrap.Modal.getOrCreateInstance(modal).show();
-            return true;
-        }
 
         const call = parseCall(code);
         if (!call) return false;
