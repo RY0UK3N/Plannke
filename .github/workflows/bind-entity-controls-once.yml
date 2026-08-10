@@ -1,0 +1,36 @@
+name: Bind entity controls once
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  contents: write
+
+jobs:
+  bind-entity-controls:
+    if: github.head_ref == 'refactor/entity-explicit-controls'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/entity-explicit-controls
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Bind entity controls explicitly
+        run: node scripts/bind-entity-controls-once.js
+      - name: Validate repository
+        run: npm test
+      - name: Commit explicit entity controls
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "Bind entity controls explicitly"
+          git push origin HEAD:refactor/entity-explicit-controls
