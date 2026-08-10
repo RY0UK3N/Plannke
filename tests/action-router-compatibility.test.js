@@ -23,14 +23,16 @@ test('retired action router is absent from shell cache CI and fallback loaders',
 });
 
 test('canonical owners use explicit event listeners instead of encoded handler source', () => {
-  const owners = [
+  const ownerFiles = [
     'app-shell.js', 'app-navigation.js', 'app-transactions.js', 'app-movements.js',
     'app-dashboard.js', 'app-entities.js', 'app-settings.js', 'app-data.js', 'safe-renderers.js'
-  ].map(file => fs.readFileSync(path.join(root, file), 'utf8'));
+  ];
+  const owners = ownerFiles.map(file => fs.readFileSync(path.join(root, file), 'utf8'));
   assert.ok(owners.some(source => /addEventListener\(/.test(source)));
   owners.forEach(source => {
     assert.doesNotMatch(source, /setAttribute\(['"]on(?:click|change|input)['"]/);
     assert.doesNotMatch(source, /dataset\.plannkeOn(?:click|change|input)/);
+    assert.doesNotMatch(source, /app-actions\.js|data-plannke-actions|PlannkeActions/);
   });
 });
 
