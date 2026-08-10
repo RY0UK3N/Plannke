@@ -21,8 +21,7 @@
     // Temporary compatibility vocabulary for static data-plannke actions.
     // This shrinks as each workspace moves to explicit addEventListener bindings.
     const ALLOWED_CALLS = new Set([
-        'openBudgetManager', 'openCategoryManager',
-        'filterDashboardToTransactions',
+        'openCategoryManager',
         'openModal',
         'exportToExcel', 'switchCatTabModal', 'addCustomCategoryModal',
         'toggleTheme', 'switchCatTab', 'addCustomCategory', 'confirmClearData',
