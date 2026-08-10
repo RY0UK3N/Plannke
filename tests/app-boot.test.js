@@ -24,9 +24,11 @@ test('canonical boot owns StorageAdapter readiness and application start', () =>
 test('UI bridge no longer owns persistence readiness or application start', () => {
   assert.doesNotMatch(bridge, /function waitForStorageReady\(/);
   assert.doesNotMatch(bridge, /function loadStorageAdapter\(/);
+  assert.doesNotMatch(bridge, /function loadStorageUiAssets\(/);
   assert.doesNotMatch(bridge, /const storageReady = loadStorageAdapter\(\)/);
   assert.doesNotMatch(bridge, /function startApplication\(\)/);
   assert.doesNotMatch(bridge, /const applicationInit = root\?\.initApp/);
+  assert.doesNotMatch(bridge, /storage-adapter\.js|storage-ui\.js/);
   assert.match(bridge, /api\.primeCanonicalShell\(\);/);
   assert.match(bridge, /api\.loadRevampAssets\(\);/);
   assert.match(bridge, /api\.init\(\);/);
@@ -47,4 +49,9 @@ test('canonical boot is syntax-checked and available offline', () => {
   assert.match(pkg, /node --check app-boot\.js/);
   assert.match(sw, /plannke-shell-v29/);
   assert.match(sw, /'\.\/app-boot\.js'/);
+});
+
+test('one-time app boot extraction artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'extract-app-boot-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'extract-app-boot-once.yml')), false);
 });
