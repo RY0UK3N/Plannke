@@ -62,3 +62,8 @@ test('PWA and syntax checks use canonical UI runtime instead of app.js', () => {
   assert.match(pkg, /node --check app-ui\.js/);
   assert.match(pkg, /node --check app-runtime\.js/);
 });
+
+test('one-time canonical UI integration artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'integrate-canonical-ui-runtime-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'integrate-canonical-ui-runtime-once.yml')), false);
+});
