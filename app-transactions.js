@@ -4,6 +4,7 @@
 
     let formsBound = false;
     let modalEventsBound = false;
+    let controlsBound = false;
 
     function byId(id) {
         return document.getElementById(id);
@@ -208,6 +209,20 @@
         root.clearFormError?.();
     }
 
+    function bindTransactionControls() {
+        if (controlsBound || typeof document === 'undefined') return;
+        controlsBound = true;
+
+        ['type-income', 'type-expense', 'type-transfer', 'tx-is-installment', 'tx-account'].forEach(id => {
+            byId(id)?.addEventListener('change', toggleInstallmentField);
+        });
+        byId('tx-installments')?.addEventListener('input', updateInstallmentHelper);
+        byId('tx-manage-categories')?.addEventListener('click', () => root.openCategoryManager?.());
+        byId('tx-date')?.addEventListener('click', event => {
+            try { event.currentTarget?.showPicker?.(); } catch (_) {}
+        });
+    }
+
     function setupModalEvents() {
         if (modalEventsBound) return;
         modalEventsBound = true;
@@ -342,6 +357,7 @@
     const api = {
         setupForms,
         setupModalEvents,
+        bindTransactionControls,
         openTxModal,
         populateAccountDropdowns,
         toggleInstallmentField,
@@ -363,4 +379,5 @@
     root.edTx = edTx;
     root.delTx = delTx;
     root.PlannkeTransactions = api;
+    bindTransactionControls();
 })(typeof globalThis !== 'undefined' ? globalThis : this);
