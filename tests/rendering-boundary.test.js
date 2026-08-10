@@ -52,14 +52,19 @@ test('dashboard renderer delegates charts while owning user-data DOM', () => {
   assert.match(renderers, /upcomingList\.replaceChildren\(\)/);
 });
 
-test('rendering boundary is loaded locally before application boot can complete', () => {
+test('rendering boundary is loaded locally after canonical actions and before product runtime', () => {
   const navigationAt = index.indexOf('src="app-navigation.js"');
-  const bridgeAt = index.indexOf('src="ui-bridge.js"');
+  const shellAt = index.indexOf('src="app-shell.js"');
+  const actionsAt = index.indexOf('src="app-actions.js"');
+  const bootAt = index.indexOf('src="app-boot.js"');
   const renderersAt = index.indexOf('src="safe-renderers.js"');
   const productAt = index.indexOf('src="product-core.js"');
 
-  assert.ok(navigationAt >= 0 && bridgeAt > navigationAt);
-  assert.ok(renderersAt > bridgeAt && productAt > renderersAt);
+  assert.ok(navigationAt >= 0 && shellAt > navigationAt && actionsAt > shellAt && bootAt > actionsAt);
+  assert.ok(renderersAt > bootAt && productAt > renderersAt);
+  assert.equal(index.indexOf('src="ui-bridge.js"'), -1);
+  assert.match(sw, /'\.\/app-actions\.js'/);
   assert.match(sw, /'\.\/safe-renderers\.js'/);
+  assert.match(pkg, /node --check app-actions\.js/);
   assert.match(pkg, /node --check safe-renderers\.js/);
 });
