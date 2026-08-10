@@ -5,9 +5,6 @@
     let navigationBound = false;
     let shortcutsBound = false;
 
-    if (!root.PlannkeProjectionBase && typeof root.renderProjection === 'function') {
-        root.PlannkeProjectionBase = root.renderProjection;
-    }
 
     function loadTransactionActions() {
         if (root.PlannkeTransactions) return Promise.resolve(root.PlannkeTransactions);
@@ -97,6 +94,28 @@
         });
     }
 
+    function loadProjectionRuntime() {
+        if (root.PlannkeProjection) return Promise.resolve(root.PlannkeProjection);
+        if (typeof document === 'undefined') return Promise.resolve(null);
+        const existing = document.querySelector('script[data-plannke-projection]');
+        if (existing) {
+            return new Promise((resolve, reject) => {
+                if (root.PlannkeProjection) return resolve(root.PlannkeProjection);
+                existing.addEventListener('load', () => resolve(root.PlannkeProjection || null), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de Projeção.')), { once: true });
+            });
+        }
+        return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = 'app-projection.js';
+            script.async = false;
+            script.dataset.plannkeProjection = 'true';
+            script.addEventListener('load', () => resolve(root.PlannkeProjection || null), { once: true });
+            script.addEventListener('error', () => reject(new Error('Falha ao carregar runtime de Projeção.')), { once: true });
+            document.body.appendChild(script);
+        });
+    }
+
     function loadPlanningRuntime() {
         const settle = (resolve, reject) => {
             const api = root.PlannkePlanning;
@@ -163,13 +182,18 @@
     const dashboardReady = loadDashboardRuntime();
     const entitiesReady = loadEntityRuntime();
     const settingsReady = loadSettingsRuntime();
-    const planningReady = loadPlanningRuntime();
+    const projectionReady = loadProjectionRuntime();
+    const planningReady = projectionReady.then(projection => {
+        if (!projection) throw new Error('Runtime canônico de Projeção não inicializou.');
+        return loadPlanningRuntime();
+    });
     const movementsReady = loadMovementRuntime();
     const renderersReady = waitForCanonicalRenderers();
     root.PlannkeTransactionsReady = transactionsReady;
     root.PlannkeDashboardReady = dashboardReady;
     root.PlannkeEntitiesReady = entitiesReady;
     root.PlannkeSettingsReady = settingsReady;
+    root.PlannkeProjectionReady = projectionReady;
     root.PlannkePlanningReady = planningReady;
     root.PlannkeMovementsReady = movementsReady;
     root.PlannkeRenderersReady = renderersReady;
@@ -211,12 +235,13 @@
 
     const legacyInitApp = root.initApp;
     if (typeof legacyInitApp === 'function') {
-        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady])
-            .then(([transactions, dashboard, entities, settings, planning, movements, renderers]) => {
+        root.initApp = (...args) => Promise.all([transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady])
+            .then(([transactions, dashboard, entities, settings, projection, planning, movements, renderers]) => {
                 if (!transactions) throw new Error('Módulo canônico de movimentações não inicializou.');
                 if (!dashboard) throw new Error('Runtime canônico do dashboard não inicializou.');
                 if (!entities) throw new Error('Runtime canônico de contas e cartões não inicializou.');
                 if (!settings) throw new Error('Runtime canônico de configurações não inicializou.');
+                if (!projection) throw new Error('Runtime canônico de Projeção não inicializou.');
                 if (!planning) throw new Error('Runtime canônico de Planejamento não inicializou.');
                 if (!movements) throw new Error('Runtime canônico de Movimentações não inicializou.');
                 if (!renderers) throw new Error('Renderizadores canônicos não inicializaram.');
@@ -334,6 +359,7 @@
         loadDashboardRuntime,
         loadEntityRuntime,
         loadSettingsRuntime,
+        loadProjectionRuntime,
         loadPlanningRuntime,
         loadMovementRuntime,
         waitForCanonicalRenderers,

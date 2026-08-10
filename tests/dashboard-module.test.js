@@ -14,7 +14,7 @@ test('canonical dashboard runtime is loaded and required before app boot', () =>
   assert.match(navigation, /function loadDashboardRuntime\(/);
   assert.match(navigation, /script\.src = 'app-dashboard\.js'/);
   assert.match(navigation, /root\.PlannkeDashboardReady = dashboardReady/);
-  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, planningReady, movementsReady, renderersReady\]\)/);
+  assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico do dashboard não inicializou/);
 });
 

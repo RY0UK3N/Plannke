@@ -3,9 +3,6 @@
     'use strict';
 
     let C = root.PlannkeCore || null;
-    let legacyProjection = typeof root.PlannkeProjectionBase === 'function' ? root.PlannkeProjectionBase : null;
-    let projectionBoundaryInstalled = false;
-    let projectionBoundaryLocked = false;
 
     function make(tag, className, textValue) {
         const node = document.createElement(tag);
@@ -457,34 +454,11 @@
     function canonicalRenderProjection(data) {
         const actual = data || root.getData?.();
         if (!actual) return;
-        const result = typeof legacyProjection === 'function' ? legacyProjection(buildProjectionData(actual)) : undefined;
+        const result = root.PlannkeProjection?.renderProjection?.(buildProjectionData(actual));
         renderPlanningHub(actual);
         return result;
     }
     canonicalRenderProjection.__plannkeCanonicalPlanning = true;
-
-    function installProjectionBoundary() {
-        if (projectionBoundaryInstalled) return canonicalRenderProjection;
-        projectionBoundaryInstalled = true;
-        if (!legacyProjection && typeof root.renderProjection === 'function' && !root.renderProjection.__plannkeCanonicalPlanning) legacyProjection = root.renderProjection;
-        projectionBoundaryLocked = true;
-        Object.defineProperty(root, 'renderProjection', {
-            configurable: true,
-            enumerable: true,
-            get() { return canonicalRenderProjection; },
-            set(candidate) {
-                if (candidate?.__plannkeCanonicalPlanning) return;
-                if (!legacyProjection && typeof candidate === 'function') legacyProjection = candidate;
-            }
-        });
-        return canonicalRenderProjection;
-    }
-
-    function releaseProjectionBoundary() {
-        if (!projectionBoundaryLocked) return;
-        projectionBoundaryLocked = false;
-        Object.defineProperty(root, 'renderProjection', { configurable: true, enumerable: true, writable: true, value: canonicalRenderProjection });
-    }
 
     const api = {
         get ready() { return ready; },
@@ -494,23 +468,14 @@
         buildProjectionData,
         renderPlanningHub,
         handlePlanningAction,
-        installProjectionBoundary,
-        releaseProjectionBoundary,
         renderProjection: canonicalRenderProjection
     };
 
     const ready = waitForCore().then(core => {
         if (!core) throw new Error('PlannkeCore indisponível para o Planejamento.');
+        if (!root.PlannkeProjection?.renderProjection) throw new Error('Runtime canônico de Projeção indisponível para o Planejamento.');
         C = core;
-        installProjectionBoundary();
-        if (typeof document !== 'undefined') {
-            const releaseAfterProductInit = () => root.setTimeout(() => {
-                releaseProjectionBoundary();
-                if (typeof root.getData === 'function') canonicalRenderProjection(root.getData());
-            }, 0);
-            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', releaseAfterProductInit, { once: true });
-            else releaseAfterProductInit();
-        }
+        root.renderProjection = canonicalRenderProjection;
         return api;
     });
 
