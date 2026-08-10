@@ -11,6 +11,7 @@ const actions = fs.readFileSync(path.join(root, 'app-actions.js'), 'utf8');
 test('settings reset button is inert markup with an explicit ID', () => {
   assert.match(html, /id="settings-clear-data"/);
   assert.doesNotMatch(html, /data-plannke-onclick="confirmClearData\(\)"/);
+  assert.doesNotMatch(html, /data-plannke-(?:onclick|onchange|oninput)=/);
 });
 
 test('app-data owns reset click and preserves confirmation before save', () => {
