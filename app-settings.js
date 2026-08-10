@@ -24,6 +24,7 @@
     };
 
     let activeTab = 'expense';
+    let controlsBound = false;
 
     function byId(id) {
         return document.getElementById(id);
@@ -324,6 +325,18 @@
         root.showToast?.('Cor atualizada!');
     }
 
+    function bindSettingsControls() {
+        if (controlsBound || typeof document === 'undefined') return;
+        controlsBound = true;
+        byId('settings-theme-toggle')?.addEventListener('change', toggleTheme);
+        byId('cat-modal-tab-expense')?.addEventListener('click', () => switchCatTabModal('expense'));
+        byId('cat-modal-tab-income')?.addEventListener('click', () => switchCatTabModal('income'));
+        byId('cat-modal-add')?.addEventListener('click', addCustomCategoryModal);
+        byId('cat-tab-expense')?.addEventListener('click', () => switchCatTab('expense'));
+        byId('cat-tab-income')?.addEventListener('click', () => switchCatTab('income'));
+        byId('cat-add')?.addEventListener('click', addCustomCategory);
+    }
+
     function openSettingsPanel() {
         const toggle = byId('settings-theme-toggle');
         if (toggle) toggle.checked = (root.getSettings?.().theme || 'dark') === 'light';
@@ -368,6 +381,7 @@
         applyTheme,
         toggleTheme,
         openSettingsPanel,
+        bindSettingsControls,
         openCategoryManager,
         switchCatTabModal,
         addCustomCategoryModal,
@@ -416,4 +430,5 @@
     root._setCatColor = setCategoryColor;
     root._getAllExpenseCats = getAllExpenseCategories;
     root.PlannkeSettings = api;
+    bindSettingsControls();
 })(typeof globalThis !== 'undefined' ? globalThis : this);
