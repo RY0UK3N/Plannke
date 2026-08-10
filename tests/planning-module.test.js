@@ -30,6 +30,7 @@ function sandboxFor(data = null) {
 }
 
 test('canonical planning runtime is loaded and required before app boot', () => {
+  assert.match(navigation, /PlannkeProjectionBase = root\.renderProjection/);
   assert.match(navigation, /function loadPlanningRuntime\(/);
   assert.match(navigation, /script\.src = 'app-planning\.js'/);
   assert.match(navigation, /root\.PlannkePlanningReady = planningReady/);
@@ -81,6 +82,31 @@ test('planning boundary prevents product.js from reclaiming renderProjection dur
   sandbox.renderProjection = () => 'product-wrapper';
   assert.equal(sandbox.renderProjection, canonical);
   assert.equal(canonical.__plannkeCanonicalPlanning, true);
+});
+
+test('planning projection calls the base captured before a product wrapper', async () => {
+  let baseCalls = 0;
+  let wrapperCalls = 0;
+  const data = {
+    accounts: [], cards: [], transactions: [], settings: {},
+    planning: { goals: [], reserves: [], recurringRules: [], categoryRules: [] }
+  };
+  const sandbox = {
+    console,
+    PlannkeCore: core,
+    PlannkeProjectionBase() { baseCalls += 1; },
+    renderProjection() { wrapperCalls += 1; },
+    getData: () => data,
+    formatCurrency: value => String(value),
+    formatDate: value => String(value)
+  };
+  sandbox.globalThis = sandbox;
+  vm.runInNewContext(planning, sandbox, { filename: 'app-planning.js' });
+  await sandbox.PlannkePlanning.ready;
+
+  sandbox.renderProjection(data);
+  assert.equal(baseCalls, 1);
+  assert.equal(wrapperCalls, 0);
 });
 
 test('household balances split completed shared expenses equally', async () => {
