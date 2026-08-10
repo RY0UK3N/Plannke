@@ -19,16 +19,8 @@ test('application boot explicitly waits for the canonical rendering boundary', (
 });
 
 test('safe renderer layer owns the current data-heavy rendering globals', () => {
-  [
-    '_renderTxItem',
-    'renderTransactions',
-    'renderAccounts',
-    'renderCards',
-    'renderBudgets',
-    'renderBudgetManager',
-    'renderDashboard'
-  ].forEach(name => assert.match(renderers, new RegExp(`root\\.${name} = `)));
-
+  ['_renderTxItem', 'renderTransactions', 'renderAccounts', 'renderCards', 'renderBudgets', 'renderBudgetManager', 'renderDashboard']
+    .forEach(name => assert.match(renderers, new RegExp(`root\\.${name} = `)));
   assert.match(renderers, /root\.PlannkeSafeRenderers = \{/);
   assert.match(renderers, /renderDashboard: safeRenderDashboard/);
   assert.match(renderers, /renderTransactions: safeRenderTransactions/);
@@ -52,19 +44,18 @@ test('dashboard renderer delegates charts while owning user-data DOM', () => {
   assert.match(renderers, /upcomingList\.replaceChildren\(\)/);
 });
 
-test('rendering boundary is loaded locally after canonical actions and before product runtime', () => {
+test('rendering boundary is loaded locally after canonical shell and boot before product runtime', () => {
   const navigationAt = index.indexOf('src="app-navigation.js"');
   const shellAt = index.indexOf('src="app-shell.js"');
-  const actionsAt = index.indexOf('src="app-actions.js"');
   const bootAt = index.indexOf('src="app-boot.js"');
   const renderersAt = index.indexOf('src="safe-renderers.js"');
   const productAt = index.indexOf('src="product-core.js"');
-
-  assert.ok(navigationAt >= 0 && shellAt > navigationAt && actionsAt > shellAt && bootAt > actionsAt);
+  assert.ok(navigationAt >= 0 && shellAt > navigationAt && bootAt > shellAt);
   assert.ok(renderersAt > bootAt && productAt > renderersAt);
   assert.equal(index.indexOf('src="ui-bridge.js"'), -1);
-  assert.match(sw, /'\.\/app-actions\.js'/);
+  assert.equal(index.indexOf('src="app-actions.js"'), -1);
+  assert.doesNotMatch(sw, /'\.\/app-actions\.js'/);
   assert.match(sw, /'\.\/safe-renderers\.js'/);
-  assert.match(pkg, /node --check app-actions\.js/);
+  assert.doesNotMatch(pkg, /node --check app-actions\.js/);
   assert.match(pkg, /node --check safe-renderers\.js/);
 });
