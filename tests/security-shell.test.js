@@ -15,6 +15,7 @@ const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const bridge = fs.readFileSync(path.join(root, 'ui-bridge.js'), 'utf8');
+const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
 const storageUi = fs.readFileSync(path.join(root, 'storage-ui.js'), 'utf8');
 const storageUiCss = fs.readFileSync(path.join(root, 'storage-ui.css'), 'utf8');
@@ -36,22 +37,23 @@ test('product layer, UI bridge and safe renderers are loaded in the required ord
   assert.match(index, /<script src="product\.js"><\/script>/);
   assert.equal(index.indexOf('app.js'), -1);
   assert.ok(index.indexOf('app-runtime.js') < index.indexOf('ui-bridge.js'));
-  assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('safe-renderers.js'));
+  assert.ok(index.indexOf('ui-bridge.js') < index.indexOf('app-boot.js'));
+  assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
   assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
   assert.match(product, /script\.src = 'insights\.js'/);
   assert.match(insights, /bridge\.src = '\.\/ui-bridge\.js'/);
 });
 
-test('canonical bridge owns application boot and waits for StorageAdapter', () => {
-  assert.match(bridge, /script\.src = 'storage-adapter\.js'/);
-  assert.match(bridge, /function waitForStorageReady\(/);
-  assert.match(bridge, /Promise\.resolve\(api\.ready\)/);
-  assert.match(bridge, /const applicationInit = root\?\.initApp/);
-  assert.match(bridge, /const storageReady = loadStorageAdapter\(\)/);
-  assert.match(bridge, /function startApplication\(\)/);
-  assert.match(bridge, /storageReady[\s\S]*applicationInit\.call\(root\)/);
-  assert.match(bridge, /api\.init\(\);\s*startApplication\(\);/);
+test('canonical app boot owns application start and waits for StorageAdapter', () => {
+  assert.match(boot, /script\.src = 'storage-adapter\.js'/);
+  assert.match(boot, /function waitForStorageReady\(/);
+  assert.match(boot, /Promise\.resolve\(api\.ready\)/);
+  assert.match(boot, /const applicationInit = root\?\.initApp/);
+  assert.match(boot, /const storageReady = loadStorageAdapter\(\)/);
+  assert.match(boot, /function startApplication\(\)/);
+  assert.match(boot, /storageReady[\s\S]*applicationInit\.call\(root\)/);
+  assert.doesNotMatch(bridge, /loadStorageAdapter|startApplication|applicationInit/);
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
   assert.doesNotMatch(runtime, /document\.addEventListener\(['"]DOMContentLoaded['"][\s\S]*initApp/);
   assert.doesNotMatch(runtime, /planner_autosave|planner_session_cache|loadFromLocalStorage|checkImportPrompt|setupBeforeUnload/);
@@ -123,7 +125,7 @@ test('canonical desktop styles are part of the first paint', () => {
 });
 
 test('storage status and recovery UI are local and DOM-safe', () => {
-  assert.match(bridge, /script\.src = 'storage-ui\.js'/);
+  assert.match(boot, /script\.src = 'storage-ui\.js'/);
   assert.match(storageUi, /Salvando…/);
   assert.match(storageUi, /Salvo localmente/);
   assert.match(storageUi, /Recuperação local/);
@@ -229,7 +231,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v28'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v29'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -245,7 +247,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
   assert.equal(parsedManifest.theme_color, '#0b0d12');
 
   [
-    'app-ui.js', 'app-runtime.js', 'app-navigation.js', 'app-data.js',
+    'app-ui.js', 'app-runtime.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
     'product-core.js', 'product.js', 'insights.js', 'ui-bridge.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
