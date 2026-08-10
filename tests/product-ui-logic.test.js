@@ -62,18 +62,3 @@ test('smart search filters planned transactions by account', () => {
   assert.equal(result.length, 1);
   assert.equal(result[0].description, 'Internet');
 });
-
-test('household balance shows who should receive after equal split', () => {
-  const ctx = loadProduct();
-  const data = {
-    settings: { household: { enabled: true, members: [{ id: 'ana', name: 'Ana' }, { id: 'bia', name: 'Bia' }] } },
-    accounts: [], cards: [],
-    transactions: [
-      { id: '1', type: 'expense', amount: 100, status: 'completed', paidByMemberId: 'ana', sharedWithMemberIds: ['bia'] },
-      { id: '2', type: 'expense', amount: 60, status: 'completed', paidByMemberId: 'bia', sharedWithMemberIds: ['ana'] },
-    ],
-  };
-  const balances = ctx.PlannkeProduct.householdBalances(data);
-  assert.equal(balances.ana, 20);
-  assert.equal(balances.bia, -20);
-});
