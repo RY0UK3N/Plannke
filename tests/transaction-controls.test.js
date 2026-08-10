@@ -39,3 +39,8 @@ test('transaction-local compatibility routes are retired', () => {
     .forEach(name => assert.doesNotMatch(actions, new RegExp(`'${name}'`)));
   assert.doesNotMatch(actions, /show-picker|this\\\.showPicker/);
 });
+
+test('one-time transaction control binding artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'bind-transaction-controls-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'bind-transaction-controls-once.yml')), false);
+});
