@@ -42,3 +42,8 @@ test('generic modal and detail-period compatibility routes are retired', () => {
   assert.doesNotMatch(actions, /detail-period/);
   assert.doesNotMatch(actions, /_detailContext\?\.onPeriodChange/);
 });
+
+test('one-time entity control binding artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'bind-entity-controls-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'bind-entity-controls-once.yml')), false);
+});
