@@ -57,6 +57,12 @@ security = replaceExact(
 const oldBootTest = `test('canonical bridge owns application boot and waits for StorageAdapter', () => {\n  assert.match(bridge, /script\\.src = 'storage-adapter\\.js'/);\n  assert.match(bridge, /function waitForStorageReady\\(/);\n  assert.match(bridge, /Promise\\.resolve\\(api\\.ready\\)/);\n  assert.match(bridge, /const applicationInit = root\\?\\.initApp/);\n  assert.match(bridge, /const storageReady = loadStorageAdapter\\(\\)/);\n  assert.match(bridge, /function startApplication\\(\\)/);\n  assert.match(bridge, /storageReady[\\s\\S]*applicationInit\\.call\\(root\\)/);\n  assert.match(bridge, /api\\.init\\(\\);\\s*startApplication\\(\\);/);`;
 const newBootTest = `test('canonical app boot owns application start and waits for StorageAdapter', () => {\n  assert.match(boot, /script\\.src = 'storage-adapter\\.js'/);\n  assert.match(boot, /function waitForStorageReady\\(/);\n  assert.match(boot, /Promise\\.resolve\\(api\\.ready\\)/);\n  assert.match(boot, /const applicationInit = root\\?\\.initApp/);\n  assert.match(boot, /const storageReady = loadStorageAdapter\\(\\)/);\n  assert.match(boot, /function startApplication\\(\\)/);\n  assert.match(boot, /storageReady[\\s\\S]*applicationInit\\.call\\(root\\)/);\n  assert.doesNotMatch(bridge, /loadStorageAdapter|startApplication|applicationInit/);`;
 security = replaceExact(security, oldBootTest, newBootTest, 'security boot ownership test');
+security = replaceExact(
+  security,
+  "  assert.match(bridge, /script\\.src = 'storage-ui\\.js'/);",
+  "  assert.match(boot, /script\\.src = 'storage-ui\\.js'/);",
+  'storage UI loader ownership'
+);
 security = replaceExact(security, "assert.match(sw, /CACHE_NAME = 'plannke-shell-v28'/);", "assert.match(sw, /CACHE_NAME = 'plannke-shell-v29'/);", 'security PWA cache version');
 security = replaceExact(
   security,
