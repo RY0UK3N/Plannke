@@ -5,7 +5,7 @@ const path = require('node:path');
 const bridge = require('../ui-bridge.js');
 
 const root = path.resolve(__dirname, '..');
-const sources = ['index.html', 'app.js'].map(file => ({
+const sources = ['index.html'].map(file => ({
   file,
   content: fs.readFileSync(path.join(root, file), 'utf8')
 }));
@@ -18,7 +18,8 @@ function extractHandlers(content) {
   return handlers;
 }
 
-test('UI bridge recognizes every legacy inline handler still awaiting migration', () => {
+test('UI bridge recognizes every inline handler still awaiting migration in the canonical shell', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
   const unknown = [];
   let count = 0;
   sources.forEach(source => {
