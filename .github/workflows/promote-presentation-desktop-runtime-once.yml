@@ -1,0 +1,31 @@
+name: Promote desktop presentation runtime once
+
+on:
+  push:
+    branches:
+      - refactor/promote-desktop-presentation-runtime
+
+permissions:
+  contents: write
+
+jobs:
+  promote-desktop-presentation-runtime:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refactor/promote-desktop-presentation-runtime
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Promote desktop presentation runtime
+        run: node scripts/promote-presentation-desktop-runtime-once.js
+      - name: Validate repository
+        run: npm test
+      - name: Commit canonical desktop presentation runtime
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "refactor: promote desktop presentation runtime"
+          git push origin HEAD:refactor/promote-desktop-presentation-runtime
