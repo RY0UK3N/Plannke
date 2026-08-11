@@ -151,13 +151,13 @@
 
         let script = document.querySelector('script[data-plannke-revamp]');
         if (script) {
-            if (root.PlannkeRevamp) loadDesktopAssets();
+            if (root.PlannkePresentation) loadDesktopAssets();
             else script.addEventListener('load', loadDesktopAssets, { once: true });
             return;
         }
 
         script = document.createElement('script');
-        script.src = 'revamp.js';
+        script.src = 'app-presentation.js';
         script.async = false;
         script.dataset.plannkeRevamp = 'desktop';
         script.addEventListener('load', loadDesktopAssets, { once: true });

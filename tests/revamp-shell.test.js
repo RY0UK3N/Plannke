@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const js = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
 const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
 const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');

@@ -19,7 +19,7 @@ const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
 const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
 const storageUi = fs.readFileSync(path.join(root, 'storage-ui.js'), 'utf8');
 const storageUiCss = fs.readFileSync(path.join(root, 'storage-ui.css'), 'utf8');
-const revamp = fs.readFileSync(path.join(root, 'revamp.js'), 'utf8');
+const revamp = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
 const desktop = fs.readFileSync(path.join(root, 'revamp-desktop.js'), 'utf8');
 const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
 const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
@@ -154,7 +154,7 @@ test('storage UI observer cannot recursively rewrite its own status DOM', () => 
 });
 
 test('revamp and final desktop assets are loaded locally and in deterministic order', () => {
-  assert.match(shell, /script\.src = 'revamp\.js'/);
+  assert.match(shell, /script\.src = 'app-presentation\.js'/);
   assert.match(shell, /script\.async = false/);
   assert.match(shell, /desktopScript\.src = 'revamp-desktop\.js'/);
   assert.match(shell, /desktopScript\.async = false/);
@@ -234,7 +234,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v33'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v34'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -252,7 +252,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
   [
     'app-ui.js', 'app-runtime.js', 'app-shell.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
     'product-core.js', 'product.js', 'insights.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
-    'revamp.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
+    'app-presentation.js', 'revamp.css', 'revamp-desktop.js', 'revamp-desktop.css',
     'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
     'revamp-accounts.css', 'revamp-forms.css', 'revamp-states.css',
     'vendor/bootstrap.min.css', 'vendor/bootstrap.bundle.min.js', 'vendor/phosphor-icons.css',
