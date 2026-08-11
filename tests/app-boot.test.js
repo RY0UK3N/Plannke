@@ -23,7 +23,7 @@ test('canonical boot owns StorageAdapter readiness and application start', () =>
 
 test('shell owns construction while boot alone owns application start', () => {
   assert.match(shell, /function primeCanonicalShell\(/);
-  assert.match(shell, /function loadRevampAssets\(/);
+  assert.match(shell, /function loadPresentationAssets\(/);
   assert.doesNotMatch(shell, /function waitForStorageReady\(|function startApplication\(/);
   assert.equal(fs.existsSync(path.join(root, 'app-actions.js')), false);
 });
@@ -44,7 +44,7 @@ test('canonical boot and shell are syntax-checked and available offline', () => 
   assert.match(pkg, /node --check app-shell\.js/);
   assert.match(pkg, /node --check app-boot\.js/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
-  assert.match(sw, /plannke-shell-v35/);
+  assert.match(sw, /plannke-shell-v36/);
   assert.match(sw, /'\.\/app-shell\.js'/);
   assert.match(sw, /'\.\/app-boot\.js'/);
   assert.doesNotMatch(sw, /'\.\/(?:ui-bridge|app-actions)\.js'/);

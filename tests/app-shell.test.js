@@ -13,7 +13,7 @@ const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 test('canonical shell owns desktop chrome and revamp assets', () => {
   assert.match(shell, /const CANONICAL_PAGES = \[/);
   assert.match(shell, /function primeCanonicalShell\(/);
-  assert.match(shell, /function loadRevampAssets\(/);
+  assert.match(shell, /function loadPresentationAssets\(/);
   assert.match(shell, /function loadDesktopAssets\(/);
   assert.match(shell, /Central financeira/);
   assert.match(shell, /root\.PlannkeShell = api/);
@@ -49,7 +49,7 @@ test('insights fallback loads only the canonical shell', () => {
 test('canonical shell is syntax-checked and available offline without action router', () => {
   assert.match(pkg, /node --check app-shell\.js/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
-  assert.match(sw, /plannke-shell-v35/);
+  assert.match(sw, /plannke-shell-v36/);
   assert.match(sw, /'\.\/app-shell\.js'/);
   assert.doesNotMatch(sw, /'\.\/(?:ui-bridge|app-actions)\.js'/);
 });
