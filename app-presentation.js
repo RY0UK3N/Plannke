@@ -527,7 +527,7 @@
         }, 0));
     }
 
-    root.PlannkeRevamp = {
+    root.PlannkePresentation = {
         init,
         navigate,
         syncPage,

@@ -517,7 +517,7 @@
         const brandSub = document.querySelector('.revamp-brand-copy span');
         if (brandSub) brandSub.textContent = 'Central financeira';
 
-        const pages = root.PlannkeRevamp?.pages;
+        const pages = root.PlannkePresentation?.pages;
         if (pages?.backup) {
             pages.backup.label = 'Dados';
             pages.backup.eyebrow = 'Dados locais';
@@ -526,7 +526,7 @@
         }
         const backupNav = document.querySelector('.revamp-nav-item[data-target="backup"] .revamp-nav-label');
         if (backupNav) backupNav.textContent = 'Dados';
-        root.PlannkeRevamp?.syncPage?.();
+        root.PlannkePresentation?.syncPage?.();
     }
 
     function ensurePlanningNavigation() {
@@ -542,7 +542,7 @@
         button.dataset.target = 'projecao';
         button.setAttribute('aria-label', 'Planejamento');
         button.append(icon('ph-target'), make('span', 'revamp-nav-label', 'Planejamento'));
-        button.addEventListener('click', () => root.PlannkeRevamp?.navigate?.('projecao') || root._navigateTo?.('projecao'));
+        button.addEventListener('click', () => root.PlannkePresentation?.navigate?.('projecao') || root._navigateTo?.('projecao'));
         const accounts = nav.querySelector('[data-target="accounts"]');
         nav.insertBefore(button, accounts || null);
     }
@@ -567,13 +567,13 @@
                     planningRepairEventPending = false;
                     const current = document.getElementById('projecao-view');
                     if (current && !current.classList.contains('hidden')) {
-                        root.PlannkeRevamp?.applyPlanningTab?.(current, current.dataset.planningTab || 'overview');
+                        root.PlannkePresentation?.applyPlanningTab?.(current, current.dataset.planningTab || 'overview');
                     }
                 }, 40);
                 return;
             }
             if (controls) controls.hidden = false;
-            root.PlannkeRevamp?.applyPlanningTab?.(view, view.dataset.planningTab || 'overview');
+            root.PlannkePresentation?.applyPlanningTab?.(view, view.dataset.planningTab || 'overview');
         }, 0);
     }
 
