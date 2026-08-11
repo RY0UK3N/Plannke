@@ -12,7 +12,8 @@ test('shell exposes presentation loader and metadata without revamp runtime voca
   assert.match(shell, /api\.loadPresentationAssets\(\)/);
   assert.match(shell, /function loadPresentationAssets\(\)/);
   assert.match(shell, /loadPresentationAssets\s*$/m);
-  assert.match(shell, /data-plannke-presentation/);
+  assert.match(shell, /querySelector\('link\[data-plannke-presentation\]'\)/);
+  assert.match(shell, /querySelector\('script\[data-plannke-presentation\]'\)/);
   assert.match(shell, /dataset\.plannkePresentation = 'desktop'/);
   assert.doesNotMatch(shell, /loadRevampAssets/);
   assert.doesNotMatch(shell, /data-plannke-revamp/);
@@ -29,6 +30,12 @@ test('body and view metadata use presentation names while visual selectors stay 
   assert.match(shell, /classList\.add\('plannke-revamp'\)/);
   assert.match(shell, /shell\.id = 'revamp-shell'/);
   assert.match(presentation, /revamp-nav-item/);
+});
+
+test('presentation metadata names do not rename the visual stylesheet boundary', () => {
+  assert.match(shell, /stylesheet\.href = 'revamp\.css'/);
+  assert.match(shell, /desktopStyle\.href = 'revamp-desktop\.css'/);
+  assert.match(presentation, /const VIEW_STYLES = \['revamp-dashboard\.css', 'revamp-movements\.css', 'revamp-planning\.css', 'revamp-accounts\.css'\]/);
 });
 
 test('PWA cache advances for presentation metadata update without renaming visual assets', () => {
