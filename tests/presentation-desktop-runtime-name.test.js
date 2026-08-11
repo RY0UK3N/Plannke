@@ -16,8 +16,18 @@ test('desktop presentation runtime uses its canonical app name', () => {
   assert.equal(fs.existsSync(path.join(root, 'revamp-desktop.js')), false);
   assert.equal(fs.existsSync(path.join(root, 'app-presentation-desktop.js')), true);
   const desktop = read('app-presentation-desktop.js');
+  assert.match(desktop, /Plannke canonical desktop presentation layer/);
   assert.match(desktop, /root\.PlannkePresentationDesktop = \{/);
   assert.doesNotMatch(desktop, /PlannkeDesktop/);
+});
+
+test('desktop presentation extends the canonical presentation runtime without replacing it', () => {
+  assert.equal(fs.existsSync(path.join(root, 'app-presentation.js')), true);
+  const presentation = read('app-presentation.js');
+  const desktop = read('app-presentation-desktop.js');
+  assert.match(presentation, /root\.PlannkePresentation = \{/);
+  assert.match(desktop, /root\.PlannkePresentation\?/);
+  assert.doesNotMatch(desktop, /root\.PlannkePresentation\s*=/);
 });
 
 test('shell PWA and CI load the renamed desktop presentation runtime', () => {
