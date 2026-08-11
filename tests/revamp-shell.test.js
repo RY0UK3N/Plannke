@@ -20,12 +20,14 @@ test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /new\s+Function\s*\(/);
 });
 
-test('revamp navigation covers the existing product views', () => {
+test('presentation navigation covers product views through the canonical navigation boundary', () => {
   ['dashboard', 'movimentacao', 'projecao', 'accounts', 'backup'].forEach(target => {
     assert.match(js, new RegExp(`${target}:\\s*\\{`));
   });
-  assert.match(js, /findLegacyNavigation/);
-  assert.match(js, /link\.click\(\)/);
+  assert.match(js, /function navigate\(target\)[\s\S]*root\._navigateTo\(target\)/);
+  assert.doesNotMatch(js, /findLegacyNavigation/);
+  assert.doesNotMatch(js, /planner-pill-nav/);
+  assert.doesNotMatch(js, /link\.click\(\)/);
 });
 
 test('final product direction is desktop-only while retaining the responsive base as fallback code', () => {
