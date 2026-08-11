@@ -19,7 +19,7 @@ test('static shell contains no executable compatibility actions', () => {
 
 test('retired action router is absent from shell cache CI and fallback loaders', () => {
   [index, sw, pkg, insights].forEach(source => assert.doesNotMatch(source, /app-actions\.js|data-plannke-actions|PlannkeActions/));
-  assert.match(sw, /plannke-shell-v34/);
+  assert.match(sw, /plannke-shell-v35/);
 });
 
 test('canonical owners use explicit event listeners instead of encoded handler source', () => {

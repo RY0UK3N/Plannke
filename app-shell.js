@@ -132,7 +132,7 @@
         }
         if (!document.querySelector('script[data-plannke-desktop]')) {
             const desktopScript = document.createElement('script');
-            desktopScript.src = 'revamp-desktop.js';
+            desktopScript.src = 'app-presentation-desktop.js';
             desktopScript.async = false;
             desktopScript.dataset.plannkeDesktop = 'true';
             document.body.appendChild(desktopScript);
