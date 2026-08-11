@@ -26,16 +26,19 @@ function walk(directory, out = []) {
 }
 
 let runtimePathRefs = 0;
+let escapedRuntimeRefs = 0;
 let globalRefs = 0;
 let cacheRefs = 0;
 for (const file of walk(root)) {
   let source = fs.readFileSync(file, 'utf8');
   const before = source;
   runtimePathRefs += source.split('revamp.js').length - 1;
+  escapedRuntimeRefs += source.split('revamp\\.js').length - 1;
   globalRefs += source.split('PlannkeRevamp').length - 1;
   cacheRefs += source.split('plannke-shell-v33').length - 1;
   source = source
     .replaceAll('revamp.js', 'app-presentation.js')
+    .replaceAll('revamp\\.js', 'app-presentation\\.js')
     .replaceAll('PlannkeRevamp', 'PlannkePresentation')
     .replaceAll('plannke-shell-v33', 'plannke-shell-v34');
   if (source !== before) fs.writeFileSync(file, source);
@@ -53,8 +56,10 @@ for (const temporary of [workflowPath, selfPath]) {
 
 for (const file of walk(root)) {
   const source = fs.readFileSync(file, 'utf8');
-  if (source.includes('revamp.js')) throw new Error(`Stale revamp.js reference in ${path.relative(root, file)}`);
+  if (source.includes('revamp.js') || source.includes('revamp\\.js')) {
+    throw new Error(`Stale revamp.js reference in ${path.relative(root, file)}`);
+  }
   if (source.includes('PlannkeRevamp')) throw new Error(`Stale PlannkeRevamp reference in ${path.relative(root, file)}`);
 }
 
-console.log(`Promoted presentation runtime: ${runtimePathRefs} path refs, ${globalRefs} global refs, ${cacheRefs} cache refs updated.`);
+console.log(`Promoted presentation runtime: ${runtimePathRefs} path refs, ${escapedRuntimeRefs} escaped refs, ${globalRefs} global refs, ${cacheRefs} cache refs updated.`);
