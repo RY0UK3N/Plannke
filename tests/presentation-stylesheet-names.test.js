@@ -45,7 +45,7 @@ test('stylesheet rename preserves the visual selector namespace for a later isol
 
 test('PWA cache advances for canonical presentation stylesheet filenames', () => {
   assert.match(sw, /plannke-shell-v37/);
-  Object.values(renamed).forEach(file => assert.match(sw, new RegExp(`'\\./${file.replaceAll('.', '\\.')}')`)));
+  Object.values(renamed).forEach(file => assert.ok(sw.includes(`'./${file}'`), `missing PWA stylesheet: ${file}`));
 });
 
 test('one-time stylesheet rename artifacts are not shipped', () => {
