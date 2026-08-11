@@ -41,6 +41,15 @@ test('stylesheet rename preserves the visual selector namespace for a later isol
   assert.match(sources, /\.revamp-/);
   assert.match(sources, /body\.plannke-revamp/);
   assert.match(productCss, /body:not\(\.plannke-revamp\)/);
+  assert.doesNotMatch(sources, /\.presentation-/);
+  assert.doesNotMatch(sources, /\.plannke-presentation/);
+});
+
+test('stylesheet dependency imports use canonical filenames without changing selector content', () => {
+  const accounts = fs.readFileSync(path.join(root, 'app-presentation-accounts.css'), 'utf8');
+  const forms = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
+  assert.match(accounts, /@import url\('\.\/app-presentation-forms\.css'\)/);
+  assert.match(forms, /@import url\('\.\/app-presentation-states\.css'\)/);
 });
 
 test('PWA cache advances for canonical presentation stylesheet filenames', () => {
