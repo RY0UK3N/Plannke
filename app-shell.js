@@ -7,7 +7,7 @@
     if (typeof document !== 'undefined') {
         const start = () => {
             api.primeCanonicalShell();
-            api.loadRevampAssets();
+            api.loadPresentationAssets();
         };
         if (document.body) start();
         else document.addEventListener('DOMContentLoaded', start, { once: true });
@@ -45,7 +45,7 @@
         const existing = document.getElementById('revamp-shell');
         if (existing) {
             document.body.classList.add('plannke-revamp');
-            document.body.dataset.revampVersion = '2';
+            document.body.dataset.presentationVersion = '2';
             document.body.dataset.plannkeCanonical = 'desktop';
             return existing;
         }
@@ -116,7 +116,7 @@
         content.append(topbar, main);
 
         document.body.classList.add('plannke-revamp');
-        document.body.dataset.revampVersion = '2';
+        document.body.dataset.presentationVersion = '2';
         document.body.dataset.plannkeCanonical = 'desktop';
         return shell;
     }
@@ -139,17 +139,17 @@
         }
     }
 
-    function loadRevampAssets() {
+    function loadPresentationAssets() {
         if (typeof document === 'undefined') return;
-        if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-revamp]')) {
+        if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-presentation]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
             stylesheet.href = 'revamp.css';
-            stylesheet.dataset.plannkeRevamp = 'desktop';
+            stylesheet.dataset.plannkePresentation = 'desktop';
             document.head.appendChild(stylesheet);
         }
 
-        let script = document.querySelector('script[data-plannke-revamp]');
+        let script = document.querySelector('script[data-plannke-presentation]');
         if (script) {
             if (root.PlannkePresentation) loadDesktopAssets();
             else script.addEventListener('load', loadDesktopAssets, { once: true });
@@ -159,7 +159,7 @@
         script = document.createElement('script');
         script.src = 'app-presentation.js';
         script.async = false;
-        script.dataset.plannkeRevamp = 'desktop';
+        script.dataset.plannkePresentation = 'desktop';
         script.addEventListener('load', loadDesktopAssets, { once: true });
         document.body.appendChild(script);
     }
@@ -168,6 +168,6 @@
         CANONICAL_PAGES,
         primeCanonicalShell,
         loadDesktopAssets,
-        loadRevampAssets
+        loadPresentationAssets
     };
 });

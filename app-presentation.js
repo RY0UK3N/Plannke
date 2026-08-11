@@ -78,7 +78,7 @@
             const link = document.createElement('link');
             link.rel = 'stylesheet';
             link.href = asset;
-            link.dataset.plannkeRevampView = asset;
+            link.dataset.plannkePresentationView = asset;
             document.head.appendChild(link);
         });
     }
@@ -98,7 +98,7 @@
     function syncPage() {
         const target = currentTarget();
         const page = PAGES[target] || PAGES.dashboard;
-        document.body.dataset.revampView = target;
+        document.body.dataset.presentationView = target;
         const eyebrow = document.getElementById('revamp-page-eyebrow');
         const title = document.getElementById('revamp-page-title');
         const subtitle = document.getElementById('revamp-page-subtitle');
