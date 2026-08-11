@@ -28,7 +28,7 @@ test('insights fallback requires only canonical shell', () => {
 });
 
 test('PWA and CI no longer carry the compatibility router', () => {
-  assert.match(sw, /plannke-shell-v34/);
+  assert.match(sw, /plannke-shell-v35/);
   assert.doesNotMatch(sw, /'\.\/app-actions\.js'/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
 });

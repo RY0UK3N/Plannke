@@ -1,4 +1,4 @@
-/* Final desktop-only product polish.
+/* Plannke canonical desktop presentation layer.
    Keeps finance/storage handlers intact while adapting the web preview to the desktop app direction. */
 (function (root) {
     'use strict';
@@ -642,7 +642,7 @@
         });
     }
 
-    root.PlannkeDesktop = {
+    root.PlannkePresentationDesktop = {
         init,
         decorateBackup,
         decorateForms,

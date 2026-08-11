@@ -24,7 +24,7 @@ test('shell PWA and CI load the renamed presentation runtime', () => {
   assert.match(shell, /script\.src = 'app-presentation\.js'/);
   assert.match(shell, /root\.PlannkePresentation/);
   assert.doesNotMatch(shell, /['"]revamp\.js['"]|PlannkeRevamp/);
-  assert.match(sw, /plannke-shell-v34/);
+  assert.match(sw, /plannke-shell-v35/);
   assert.match(sw, /'\.\/app-presentation\.js'/);
   assert.doesNotMatch(sw, /'\.\/revamp\.js'/);
   assert.match(pkg, /node --check app-presentation\.js/);
@@ -32,11 +32,11 @@ test('shell PWA and CI load the renamed presentation runtime', () => {
 });
 
 test('desktop finishing runtime follows the canonical presentation API without being renamed yet', () => {
-  assert.equal(fs.existsSync(path.join(root, 'revamp-desktop.js')), true);
-  const desktop = read('revamp-desktop.js');
+  assert.equal(fs.existsSync(path.join(root, 'app-presentation-desktop.js')), true);
+  const desktop = read('app-presentation-desktop.js');
   assert.match(desktop, /PlannkePresentation/);
   assert.doesNotMatch(desktop, /PlannkeRevamp/);
-  assert.match(shell, /desktopScript\.src = 'revamp-desktop\.js'/);
+  assert.match(shell, /desktopScript\.src = 'app-presentation-desktop\.js'/);
 });
 
 test('runtime rename leaves visual revamp selectors and CSS assets untouched', () => {
