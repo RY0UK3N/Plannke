@@ -21,9 +21,9 @@ const storageUi = fs.readFileSync(path.join(root, 'storage-ui.js'), 'utf8');
 const storageUiCss = fs.readFileSync(path.join(root, 'storage-ui.css'), 'utf8');
 const revamp = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
 const desktop = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8');
-const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
-const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
-const formsCss = fs.readFileSync(path.join(root, 'revamp-forms.css'), 'utf8');
+const desktopCss = fs.readFileSync(path.join(root, 'app-presentation-desktop.css'), 'utf8');
+const accountsCss = fs.readFileSync(path.join(root, 'app-presentation-accounts.css'), 'utf8');
+const formsCss = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
 
 function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
@@ -112,12 +112,12 @@ test('source document contains no legacy application chrome or Memory Card entry
 
 test('canonical desktop styles are part of the first paint', () => {
   [
-    'revamp.css',
-    'revamp-dashboard.css',
-    'revamp-movements.css',
-    'revamp-planning.css',
-    'revamp-accounts.css',
-    'revamp-desktop.css',
+    'app-presentation.css',
+    'app-presentation-dashboard.css',
+    'app-presentation-movements.css',
+    'app-presentation-planning.css',
+    'app-presentation-accounts.css',
+    'app-presentation-desktop.css',
     'storage-ui.css'
   ].forEach(asset => assert.ok(productCss.includes(`@import url('./${asset}')`), `missing canonical CSS import: ${asset}`));
   assert.match(productCss, /body:not\(\.plannke-revamp\) > main/);
@@ -159,12 +159,12 @@ test('revamp and final desktop assets are loaded locally and in deterministic or
   assert.match(shell, /desktopScript\.src = 'app-presentation-desktop\.js'/);
   assert.match(shell, /desktopScript\.async = false/);
   assert.match(shell, /script\.addEventListener\('load', loadDesktopAssets/);
-  assert.match(revamp, /revamp-dashboard\.css/);
-  assert.match(revamp, /revamp-movements\.css/);
-  assert.match(revamp, /revamp-planning\.css/);
-  assert.match(revamp, /revamp-accounts\.css/);
-  assert.match(accountsCss, /@import url\('\.\/revamp-forms\.css'\)/);
-  assert.match(formsCss, /@import url\('\.\/revamp-states\.css'\)/);
+  assert.match(revamp, /app-presentation-dashboard\.css/);
+  assert.match(revamp, /app-presentation-movements\.css/);
+  assert.match(revamp, /app-presentation-planning\.css/);
+  assert.match(revamp, /app-presentation-accounts\.css/);
+  assert.match(accountsCss, /@import url\('\.\/app-presentation-forms\.css'\)/);
+  assert.match(formsCss, /@import url\('\.\/app-presentation-states\.css'\)/);
   assert.doesNotMatch(desktop, /\.innerHTML\s*=/);
   assert.doesNotMatch(desktop, /\beval\s*\(/);
   assert.match(desktopCss, /min-width: 1080px/);
@@ -234,7 +234,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v36'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v37'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -252,9 +252,9 @@ test('installed PWA prefers current local assets and falls back to cache offline
   [
     'app-ui.js', 'app-runtime.js', 'app-shell.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
     'product-core.js', 'product.js', 'insights.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
-    'app-presentation.js', 'revamp.css', 'app-presentation-desktop.js', 'revamp-desktop.css',
-    'revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css',
-    'revamp-accounts.css', 'revamp-forms.css', 'revamp-states.css',
+    'app-presentation.js', 'app-presentation.css', 'app-presentation-desktop.js', 'app-presentation-desktop.css',
+    'app-presentation-dashboard.css', 'app-presentation-movements.css', 'app-presentation-planning.css',
+    'app-presentation-accounts.css', 'app-presentation-forms.css', 'app-presentation-states.css',
     'vendor/bootstrap.min.css', 'vendor/bootstrap.bundle.min.js', 'vendor/phosphor-icons.css',
     'vendor/xlsx.full.min.js', 'vendor/chart.umd.min.js', 'vendor/echarts.min.js'
   ].forEach(asset => assert.ok(sw.includes(asset), `missing PWA asset: ${asset}`));

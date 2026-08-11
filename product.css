@@ -1,9 +1,9 @@
-@import url('./revamp.css');
-@import url('./revamp-dashboard.css');
-@import url('./revamp-movements.css');
-@import url('./revamp-planning.css');
-@import url('./revamp-accounts.css');
-@import url('./revamp-desktop.css');
+@import url('./app-presentation.css');
+@import url('./app-presentation-dashboard.css');
+@import url('./app-presentation-movements.css');
+@import url('./app-presentation-planning.css');
+@import url('./app-presentation-accounts.css');
+@import url('./app-presentation-desktop.css');
 @import url('./storage-ui.css');
 
 /* Canonical desktop boot: legacy shell structure stays available to the

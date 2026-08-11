@@ -5,12 +5,12 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'revamp.css'), 'utf8');
-const desktopCss = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
-const planningCss = fs.readFileSync(path.join(root, 'revamp-planning.css'), 'utf8');
-const accountsCss = fs.readFileSync(path.join(root, 'revamp-accounts.css'), 'utf8');
-const formsCss = fs.readFileSync(path.join(root, 'revamp-forms.css'), 'utf8');
-const statesCss = fs.readFileSync(path.join(root, 'revamp-states.css'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'app-presentation.css'), 'utf8');
+const desktopCss = fs.readFileSync(path.join(root, 'app-presentation-desktop.css'), 'utf8');
+const planningCss = fs.readFileSync(path.join(root, 'app-presentation-planning.css'), 'utf8');
+const accountsCss = fs.readFileSync(path.join(root, 'app-presentation-accounts.css'), 'utf8');
+const formsCss = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
+const statesCss = fs.readFileSync(path.join(root, 'app-presentation-states.css'), 'utf8');
 
 test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
