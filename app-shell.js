@@ -126,7 +126,7 @@
         if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-desktop-style]')) {
             const desktopStyle = document.createElement('link');
             desktopStyle.rel = 'stylesheet';
-            desktopStyle.href = 'revamp-desktop.css';
+            desktopStyle.href = 'app-presentation-desktop.css';
             desktopStyle.dataset.plannkeDesktopStyle = 'true';
             document.head.appendChild(desktopStyle);
         }
@@ -144,7 +144,7 @@
         if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-presentation]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
-            stylesheet.href = 'revamp.css';
+            stylesheet.href = 'app-presentation.css';
             stylesheet.dataset.plannkePresentation = 'desktop';
             document.head.appendChild(stylesheet);
         }

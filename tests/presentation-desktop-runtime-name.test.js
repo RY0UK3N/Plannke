@@ -33,7 +33,7 @@ test('desktop presentation extends the canonical presentation runtime without re
 test('shell PWA and CI load the renamed desktop presentation runtime', () => {
   assert.match(shell, /desktopScript\.src = 'app-presentation-desktop\.js'/);
   assert.doesNotMatch(shell, /['"]revamp-desktop\.js['"]/);
-  assert.match(sw, /plannke-shell-v36/);
+  assert.match(sw, /plannke-shell-v37/);
   assert.match(sw, /'\.\/app-presentation-desktop\.js'/);
   assert.doesNotMatch(sw, /'\.\/revamp-desktop\.js'/);
   assert.match(pkg, /node --check app-presentation-desktop\.js/);
@@ -44,8 +44,8 @@ test('desktop runtime rename leaves desktop CSS and revamp selectors untouched',
   const desktop = read('app-presentation-desktop.js');
   assert.match(desktop, /revamp-dashboard-empty/);
   assert.match(desktop, /revamp-entity-unified/);
-  assert.equal(fs.existsSync(path.join(root, 'revamp-desktop.css')), true);
-  assert.match(sw, /'\.\/revamp-desktop\.css'/);
+  assert.equal(fs.existsSync(path.join(root, 'app-presentation-desktop.css')), true);
+  assert.match(sw, /'\.\/app-presentation-desktop\.css'/);
 });
 
 test('one-time desktop runtime rename artifacts are not shipped', () => {

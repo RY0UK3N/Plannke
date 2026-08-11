@@ -40,7 +40,7 @@
             subtitle: 'Exporte relatórios e importe extratos para revisão sem conectar seu banco.'
         }
     };
-    const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css', 'revamp-accounts.css'];
+    const VIEW_STYLES = ['app-presentation-dashboard.css', 'app-presentation-movements.css', 'app-presentation-planning.css', 'app-presentation-accounts.css'];
     const PLANNING_TABS = [
         { id: 'overview', label: 'Visão geral', icon: 'ph-squares-four' },
         { id: 'recurring', label: 'Compromissos', icon: 'ph-repeat' },

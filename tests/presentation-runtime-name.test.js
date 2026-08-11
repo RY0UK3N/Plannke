@@ -24,7 +24,7 @@ test('shell PWA and CI load the renamed presentation runtime', () => {
   assert.match(shell, /script\.src = 'app-presentation\.js'/);
   assert.match(shell, /root\.PlannkePresentation/);
   assert.doesNotMatch(shell, /['"]revamp\.js['"]|PlannkeRevamp/);
-  assert.match(sw, /plannke-shell-v36/);
+  assert.match(sw, /plannke-shell-v37/);
   assert.match(sw, /'\.\/app-presentation\.js'/);
   assert.doesNotMatch(sw, /'\.\/revamp\.js'/);
   assert.match(pkg, /node --check app-presentation\.js/);
@@ -43,10 +43,10 @@ test('runtime rename leaves visual revamp selectors and CSS assets untouched', (
   const presentation = read('app-presentation.js');
   assert.match(presentation, /revamp-dashboard/);
   assert.match(presentation, /revamp-planning/);
-  assert.equal(fs.existsSync(path.join(root, 'revamp.css')), true);
-  assert.equal(fs.existsSync(path.join(root, 'revamp-desktop.css')), true);
-  assert.match(sw, /'\.\/revamp\.css'/);
-  assert.match(sw, /'\.\/revamp-desktop\.css'/);
+  assert.equal(fs.existsSync(path.join(root, 'app-presentation.css')), true);
+  assert.equal(fs.existsSync(path.join(root, 'app-presentation-desktop.css')), true);
+  assert.match(sw, /'\.\/app-presentation\.css'/);
+  assert.match(sw, /'\.\/app-presentation-desktop\.css'/);
 });
 
 test('one-time runtime rename artifacts are not shipped', () => {

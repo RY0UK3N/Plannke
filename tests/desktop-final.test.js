@@ -5,8 +5,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const js = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'revamp-desktop.css'), 'utf8');
-const statesCss = fs.readFileSync(path.join(root, 'revamp-states.css'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'app-presentation-desktop.css'), 'utf8');
+const statesCss = fs.readFileSync(path.join(root, 'app-presentation-states.css'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
 
 test('final shell explicitly targets desktop app windows', () => {
@@ -20,7 +20,7 @@ test('final shell explicitly targets desktop app windows', () => {
 test('desktop finishing assets load only after the base revamp is ready', () => {
   assert.match(shell, /function loadDesktopAssets\(/);
   assert.match(shell, /script\.addEventListener\('load', loadDesktopAssets/);
-  assert.match(shell, /desktopStyle\.href = 'revamp-desktop\.css'/);
+  assert.match(shell, /desktopStyle\.href = 'app-presentation-desktop\.css'/);
   assert.match(shell, /desktopScript\.src = 'app-presentation-desktop\.js'/);
 });
 
