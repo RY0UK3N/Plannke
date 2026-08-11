@@ -1,5 +1,5 @@
-/* Plannke desktop/tablet visual shell.
-   Keeps finance logic untouched and reorganizes the existing views for larger screens. */
+/* Plannke canonical presentation layer.
+   Keeps finance logic untouched and decorates the shell owned by app-shell.js. */
 (function (root) {
     'use strict';
 
@@ -33,11 +33,11 @@
             subtitle: 'Saldos, limites, faturas e meios de pagamento.'
         },
         backup: {
-            label: 'Backup',
-            icon: 'ph-floppy-disk',
-            eyebrow: 'Memory Card',
-            title: 'Backup e importação',
-            subtitle: 'Leve seus dados com você e importe extratos sem conectar seu banco.'
+            label: 'Dados',
+            icon: 'ph-database',
+            eyebrow: 'Dados locais',
+            title: 'Dados e relatórios',
+            subtitle: 'Exporte relatórios e importe extratos para revisão sem conectar seu banco.'
         }
     };
     const VIEW_STYLES = ['revamp-dashboard.css', 'revamp-movements.css', 'revamp-planning.css', 'revamp-accounts.css'];
@@ -83,111 +83,10 @@
         });
     }
 
-    function findLegacyNavigation(target) {
-        return [...document.querySelectorAll('.planner-pill-nav [data-target]')]
-            .find(link => link.dataset.target === target) || null;
-    }
-
     function navigate(target) {
-        const link = findLegacyNavigation(target);
-        if (link) {
-            link.click();
-            window.setTimeout(syncPage, 0);
-            return;
-        }
-        if (typeof root._navigateTo === 'function') {
-            root._navigateTo(target);
-            window.setTimeout(syncPage, 0);
-        }
-    }
-
-    function createBrand() {
-        const brand = make('div', 'revamp-brand');
-        const mark = make('div', 'revamp-brand-mark', 'P');
-        const copy = make('div', 'revamp-brand-copy');
-        copy.append(
-            make('strong', '', 'Plannke'),
-            make('span', '', 'Finanças pessoais')
-        );
-        brand.append(mark, copy);
-        return brand;
-    }
-
-    function createNavigation() {
-        const nav = make('nav', 'revamp-nav');
-        nav.setAttribute('aria-label', 'Navegação principal');
-        Object.entries(PAGES).forEach(([target, page]) => {
-            const button = make('button', 'revamp-nav-item');
-            button.type = 'button';
-            button.dataset.target = target;
-            button.setAttribute('aria-label', page.label);
-            button.append(makeIcon(page.icon), make('span', 'revamp-nav-label', page.label));
-            button.addEventListener('click', () => navigate(target));
-            nav.appendChild(button);
-        });
-        return nav;
-    }
-
-    function createSidebar() {
-        const aside = make('aside', 'revamp-sidebar');
-        aside.id = 'revamp-sidebar';
-        aside.append(createBrand(), createNavigation());
-
-        const spacer = make('div', 'revamp-sidebar-spacer');
-        const local = make('div', 'revamp-local-status');
-        local.append(makeIcon('ph-shield-check'), make('span', '', 'Dados locais'));
-
-        const settings = make('button', 'revamp-settings');
-        settings.type = 'button';
-        settings.setAttribute('aria-label', 'Configurações');
-        settings.append(makeIcon('ph-gear'), make('span', '', 'Configurações'));
-        settings.addEventListener('click', () => root.openSettingsPanel?.());
-
-        aside.append(spacer, local, settings);
-        return aside;
-    }
-
-    function createTopbar() {
-        const topbar = make('header', 'revamp-topbar');
-        topbar.id = 'revamp-topbar';
-
-        const copy = make('div', 'revamp-topbar-copy');
-        const eyebrow = make('span', 'revamp-page-eyebrow');
-        eyebrow.id = 'revamp-page-eyebrow';
-        const title = make('h1', 'revamp-page-title');
-        title.id = 'revamp-page-title';
-        const subtitle = make('p', 'revamp-page-subtitle');
-        subtitle.id = 'revamp-page-subtitle';
-        copy.append(eyebrow, title, subtitle);
-
-        const actions = make('div', 'revamp-topbar-actions');
-        const add = make('button', 'revamp-primary-action');
-        add.type = 'button';
-        add.append(makeIcon('ph-plus'), make('span', '', 'Nova movimentação'));
-        add.addEventListener('click', () => root.openTxModal?.(null));
-        actions.appendChild(add);
-
-        topbar.append(copy, actions);
-        return topbar;
-    }
-
-    function buildShell() {
-        if (document.getElementById('revamp-shell')) return;
-        const main = document.querySelector('main');
-        if (!main || !main.parentNode) return;
-
-        const shell = make('div', 'revamp-shell');
-        shell.id = 'revamp-shell';
-        const content = make('div', 'revamp-content');
-        content.id = 'revamp-content';
-        const parent = main.parentNode;
-
-        parent.insertBefore(shell, main);
-        shell.appendChild(createSidebar());
-        shell.appendChild(content);
-        content.append(createTopbar(), main);
-        document.body.classList.add('plannke-revamp');
-        document.body.dataset.revampVersion = '1';
+        if (typeof root._navigateTo !== 'function') return;
+        root._navigateTo(target);
+        window.setTimeout(syncPage, 0);
     }
 
     function currentTarget() {
@@ -618,7 +517,6 @@
         if (initialized || typeof document === 'undefined') return;
         initialized = true;
         ensureViewStyles();
-        buildShell();
         decorateViews();
         syncPage();
         observeViews();
