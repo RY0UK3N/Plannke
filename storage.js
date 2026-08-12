@@ -285,9 +285,15 @@ function saveAccount(id, name, balance) {
     const parsed = finiteNumber(balance, 0);
     if (id) {
         const item = data.accounts.find(account => account.id === id);
-        if (item) { item.name = sanitizePlainText(name, 120); item.balance = parsed; }
+        if (item) {
+            const currentBalance = finiteNumber(item.balance, 0);
+            const openingBalance = Number.isFinite(Number(item.openingBalance)) ? finiteNumber(item.openingBalance, currentBalance) : currentBalance;
+            item.name = sanitizePlainText(name, 120);
+            item.openingBalance = openingBalance + (parsed - currentBalance);
+            item.balance = parsed;
+        }
     } else {
-        data.accounts.push({ id: generateId(), name: sanitizePlainText(name, 120), balance: parsed });
+        data.accounts.push({ id: generateId(), name: sanitizePlainText(name, 120), openingBalance: parsed, balance: parsed });
     }
     saveData(data);
 }
