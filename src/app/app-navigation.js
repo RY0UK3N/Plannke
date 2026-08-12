@@ -19,7 +19,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-transactions.js';
+            script.src = 'src/app/app-transactions.js';
             script.async = false;
             script.dataset.plannkeTransactions = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeTransactions || null), { once: true });
@@ -41,7 +41,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-dashboard.js';
+            script.src = 'src/app/app-dashboard.js';
             script.async = false;
             script.dataset.plannkeDashboard = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeDashboard || null), { once: true });
@@ -63,7 +63,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-entities.js';
+            script.src = 'src/app/app-entities.js';
             script.async = false;
             script.dataset.plannkeEntities = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeEntities || null), { once: true });
@@ -85,7 +85,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-settings.js';
+            script.src = 'src/app/app-settings.js';
             script.async = false;
             script.dataset.plannkeSettings = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeSettings || null), { once: true });
@@ -107,7 +107,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-projection.js';
+            script.src = 'src/app/app-projection.js';
             script.async = false;
             script.dataset.plannkeProjection = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeProjection || null), { once: true });
@@ -134,7 +134,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-planning.js';
+            script.src = 'src/app/app-planning.js';
             script.async = false;
             script.dataset.plannkePlanning = 'true';
             script.addEventListener('load', () => settle(resolve, reject), { once: true });
@@ -156,7 +156,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-movements.js';
+            script.src = 'src/app/app-movements.js';
             script.async = false;
             script.dataset.plannkeMovements = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeMovements || null), { once: true });
@@ -264,7 +264,7 @@
         }
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'app-data.js';
+            script.src = 'src/app/app-data.js';
             script.async = false;
             script.dataset.plannkeDataActions = 'true';
             script.addEventListener('load', () => resolve(root.PlannkeDataActions || null), { once: true });

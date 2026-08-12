@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const data = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
+const data = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
 
 function dataMarkup() {
   const start = html.indexOf('<div class="content-view hidden" id="backup-view">');

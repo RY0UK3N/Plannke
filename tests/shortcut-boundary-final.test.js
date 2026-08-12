@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 
 test('shortcut launcher is owned by navigation with no compatibility code', () => {
   assert.match(html, /id="settings-shortcuts"/);

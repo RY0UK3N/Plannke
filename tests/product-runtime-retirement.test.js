@@ -5,12 +5,12 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
-const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
+const planning = fs.readFileSync(path.join(root, 'src', 'app', 'app-planning.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
 
 test('final retirement advances the shipped cache contract', () => {
-  assert.match(sw, /plannke-shell-v39/);
+  assert.match(sw, /plannke-shell-v40/);
 });
 
 test('safe rendering boundary owns financial pulse without HTML strings', () => {

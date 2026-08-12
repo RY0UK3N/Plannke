@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
-const projection = fs.readFileSync(path.join(root, 'app-projection.js'), 'utf8');
-const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'src', 'app', 'app-ui.js'), 'utf8');
+const projection = fs.readFileSync(path.join(root, 'src', 'app', 'app-projection.js'), 'utf8');
+const planning = fs.readFileSync(path.join(root, 'src', 'app', 'app-planning.js'), 'utf8');
 
 test('projection implementation is physically retired from the old app monolith', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);

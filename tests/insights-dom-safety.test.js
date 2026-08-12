@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
+const insights = fs.readFileSync(path.join(root, 'src', 'app', 'insights.js'), 'utf8');
 
 test('Insights render user-derived text with DOM APIs only', () => {
   assert.match(insights, /function make\(tag, className, text\)/);

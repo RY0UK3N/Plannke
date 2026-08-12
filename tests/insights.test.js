@@ -1,9 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const C = require('../product-core.js');
+const C = require('../src/core/product-core.js');
 global.PlannkeCore = C;
-const I = require('../insights.js');
+const I = require('../src/app/insights.js');
 
 function baseData() {
   return {

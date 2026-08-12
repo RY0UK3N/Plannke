@@ -21,7 +21,7 @@ function loadStorage() {
   };
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync('storage.js', 'utf8'), context, { filename: 'storage.js' });
+  vm.runInContext(fs.readFileSync('src/core/storage.js', 'utf8'), context, { filename: 'storage.js' });
   context.__events = events;
   return context;
 }

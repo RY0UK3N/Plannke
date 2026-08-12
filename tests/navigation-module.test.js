@@ -4,9 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const dataActions = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const dataActions = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
@@ -34,32 +34,32 @@ test('canonical navigation module owns desktop navigation only', () => {
 });
 
 test('canonical app runtime loads before navigation shell and boot', () => {
-  const uiAt = index.indexOf('src="app-ui.js"');
-  const runtimeAt = index.indexOf('src="app-runtime.js"');
-  const navigationAt = index.indexOf('src="app-navigation.js"');
-  const shellAt = index.indexOf('src="app-shell.js"');
-  const bootAt = index.indexOf('src="app-boot.js"');
+  const uiAt = index.indexOf('src="src/app/app-ui.js"');
+  const runtimeAt = index.indexOf('src="src/app/app-runtime.js"');
+  const navigationAt = index.indexOf('src="src/app/app-navigation.js"');
+  const shellAt = index.indexOf('src="src/app/app-shell.js"');
+  const bootAt = index.indexOf('src="src/app/app-boot.js"');
   assert.ok(uiAt >= 0 && runtimeAt > uiAt && navigationAt > runtimeAt);
   assert.ok(shellAt > navigationAt && bootAt > shellAt);
   assert.equal(index.indexOf('src="ui-bridge.js"'), -1);
   assert.equal(index.indexOf('src="app-actions.js"'), -1);
   assert.equal(index.indexOf('src="app.js"'), -1);
-  assert.match(sw, /'\.\/app-navigation\.js'/);
+  assert.match(sw, /'\.\/src\/app\/app-navigation\.js'/);
   assert.doesNotMatch(sw, /'\.\/app-actions\.js'/);
-  assert.match(pkg, /node --check app-navigation\.js/);
+  assert.match(pkg, /node --check src\/app\/app-navigation\.js/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
 });
 
 test('canonical data actions are ready before interaction', () => {
   assert.match(navigation, /function loadDataActions\(/);
-  assert.match(navigation, /script\.src = 'app-data\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-data\.js'/);
   assert.match(navigation, /root\.PlannkeDataReady = dataActionsReady/);
   assert.match(navigation, /\['confirmClearData', 'exportToExcel'\]/);
   assert.match(navigation, /dataActionsReady[\s\S]*api\?\.\[action\]/);
   assert.match(dataActions, /root\.confirmClearData = confirmClearData/);
   assert.match(dataActions, /root\.exportToExcel = exportToExcel/);
-  assert.match(sw, /'\.\/app-data\.js'/);
-  assert.match(pkg, /node --check app-data\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-data\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-data\.js/);
 });
 
 test('canonical navigation exposes every primary workspace target', () => {

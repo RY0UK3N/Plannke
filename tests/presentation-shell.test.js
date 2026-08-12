@@ -4,13 +4,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const js = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'app-presentation.css'), 'utf8');
-const desktopCss = fs.readFileSync(path.join(root, 'app-presentation-desktop.css'), 'utf8');
-const planningCss = fs.readFileSync(path.join(root, 'app-presentation-planning.css'), 'utf8');
-const accountsCss = fs.readFileSync(path.join(root, 'app-presentation-accounts.css'), 'utf8');
-const formsCss = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
-const statesCss = fs.readFileSync(path.join(root, 'app-presentation-states.css'), 'utf8');
+const js = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
+const css = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation.css'), 'utf8');
+const desktopCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-desktop.css'), 'utf8');
+const planningCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-planning.css'), 'utf8');
+const accountsCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-accounts.css'), 'utf8');
+const formsCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-forms.css'), 'utf8');
+const statesCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-states.css'), 'utf8');
 
 test('presentation shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
@@ -21,7 +21,7 @@ test('presentation shell stays DOM-safe and does not evaluate dynamic code', () 
 });
 
 test('canonical product stylesheet prevents duplicate presentation links', () => {
-  assert.match(js, /const canonicalBundle = document\.querySelector\('link\[href="product\.css"\], link\[href\$="\/product\.css"\]'\)/);
+  assert.match(js, /const canonicalBundle = document\.querySelector\('link\[href="src\/styles\/product\.css"\], link\[href\$="\/src\/styles\/product\.css"\]'\)/);
   assert.match(js, /if \(canonicalBundle\) return;/);
   assert.match(js, /VIEW_STYLES\.forEach\(asset =>/);
 });

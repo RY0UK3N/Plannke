@@ -4,16 +4,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
-const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const settings = fs.readFileSync(path.join(root, 'src', 'app', 'app-settings.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'src', 'app', 'app-transactions.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
 test('canonical settings runtime is required before app boot', () => {
   assert.match(navigation, /function loadSettingsRuntime\(/);
-  assert.match(navigation, /script\.src = 'app-settings\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-settings\.js'/);
   assert.match(navigation, /root\.PlannkeSettingsReady = settingsReady/);
   assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de configurações não inicializou/);
@@ -61,6 +61,6 @@ test('theme runtime updates dashboard charts and visible movement visualization'
 });
 
 test('settings runtime is syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-settings\.js/);
-  assert.match(sw, /'\.\/app-settings\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-settings\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-settings\.js'/);
 });

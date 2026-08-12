@@ -68,13 +68,18 @@ A proposta é simples: **uma ferramenta poderosa que você realmente controla.**
 
 ```text
 Plannke/
-├── .github/workflows/tests.yml  # CI dos testes de integridade
-├── tests/storage.test.js        # Testes do motor financeiro
-├── index.html                   # Estrutura HTML e views
-├── styles.css                   # Design system e responsividade
-├── app.js                       # UI, gráficos e Excel
-├── storage.js                   # CRUD, faturas e saldos
-└── package.json                 # Comando de testes
+├── assets/icons/                # Ícones web e Windows
+├── electron/main.js             # Entrada do aplicativo desktop
+├── src/
+│   ├── app/                     # Interface, navegação e funcionalidades
+│   ├── core/                    # Domínio financeiro e armazenamento
+│   └── styles/                  # Design system e estilos por tela
+├── tests/                       # Testes automatizados
+├── vendor/                      # Dependências web locais e licenças
+├── index.html                   # Documento de entrada web
+├── manifest.webmanifest         # Instalação PWA
+├── sw.js                        # Cache offline da versão web
+└── package.json                 # Testes e empacotamento desktop
 ```
 
 O projeto não exige servidor de aplicação. Ele pode ser servido como site estático.

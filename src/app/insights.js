@@ -20,7 +20,7 @@
 
         if (!root.PlannkeShell && !document.querySelector('script[data-plannke-shell]')) {
             const shell = document.createElement('script');
-            shell.src = './app-shell.js';
+            shell.src = './src/app/app-shell.js';
             shell.dataset.plannkeShell = 'true';
             shell.defer = true;
             document.head.appendChild(shell);

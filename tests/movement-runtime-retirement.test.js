@@ -4,9 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const movements = fs.readFileSync(path.join(root, 'src', 'app', 'app-movements.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 
 test('movement DOM and chart ownership lives only in the canonical movement runtime', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);

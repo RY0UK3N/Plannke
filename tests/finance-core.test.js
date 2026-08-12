@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.resolve(__dirname, '..', 'storage.js'), 'utf8');
+const source = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'core', 'storage.js'), 'utf8');
 
 function createContext() {
   const events = [];
@@ -36,7 +36,7 @@ test('finance core contains no durable browser persistence or legacy Excel impor
   assert.doesNotMatch(source, /hardenedImportFromExcel/);
   assert.doesNotMatch(source, /FileReader/);
   assert.doesNotMatch(source, /Memory Card Engine/);
-  assert.doesNotMatch(source, /load\('product-core\.js'\)/);
+  assert.doesNotMatch(source, /load\('src\/core\/product-core\.js'\)/);
 });
 
 test('finance core fallback is isolated in memory until StorageAdapter takes ownership', () => {

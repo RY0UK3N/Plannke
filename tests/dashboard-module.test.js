@@ -4,15 +4,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const dashboard = fs.readFileSync(path.join(root, 'app-dashboard.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'src', 'app', 'app-dashboard.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
 test('canonical dashboard runtime is loaded and required before app boot', () => {
   assert.match(navigation, /function loadDashboardRuntime\(/);
-  assert.match(navigation, /script\.src = 'app-dashboard\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-dashboard\.js'/);
   assert.match(navigation, /root\.PlannkeDashboardReady = dashboardReady/);
   assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico do dashboard não inicializou/);
@@ -43,6 +43,6 @@ test('dashboard runtime refreshes charts after theme changes', () => {
 });
 
 test('dashboard runtime is syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-dashboard\.js/);
-  assert.match(sw, /'\.\/app-dashboard\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-dashboard\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-dashboard\.js'/);
 });

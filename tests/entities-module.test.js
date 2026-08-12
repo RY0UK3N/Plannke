@@ -4,16 +4,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
-const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'src', 'app', 'app-transactions.js'), 'utf8');
+const entities = fs.readFileSync(path.join(root, 'src', 'app', 'app-entities.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
 test('canonical account and card runtime is required before app boot', () => {
   assert.match(navigation, /function loadEntityRuntime\(/);
-  assert.match(navigation, /script\.src = 'app-entities\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-entities\.js'/);
   assert.match(navigation, /root\.PlannkeEntitiesReady = entitiesReady/);
   assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de contas e cartões não inicializou/);
@@ -71,6 +71,6 @@ test('safe account and card cards delegate actions to the canonical entity globa
 });
 
 test('entity runtime is syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-entities\.js/);
-  assert.match(sw, /'\.\/app-entities\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-entities\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-entities\.js'/);
 });

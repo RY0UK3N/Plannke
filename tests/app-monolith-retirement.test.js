@@ -7,8 +7,8 @@ const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
-const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'src', 'app', 'app-ui.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
 
 test('app.js is permanently retired from source shell cache and CI', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);

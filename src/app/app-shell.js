@@ -36,7 +36,7 @@
 
     function canonicalStylesPresent() {
         if (typeof document === 'undefined') return false;
-        return !!document.querySelector('link[href="product.css"], link[href$="/product.css"]');
+        return !!document.querySelector('link[href="src/styles/product.css"], link[href$="/src/styles/product.css"]');
     }
 
     function primeCanonicalShell() {
@@ -126,13 +126,13 @@
         if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-desktop-style]')) {
             const desktopStyle = document.createElement('link');
             desktopStyle.rel = 'stylesheet';
-            desktopStyle.href = 'app-presentation-desktop.css';
+            desktopStyle.href = 'src/styles/app-presentation-desktop.css';
             desktopStyle.dataset.plannkeDesktopStyle = 'true';
             document.head.appendChild(desktopStyle);
         }
         if (!document.querySelector('script[data-plannke-desktop]')) {
             const desktopScript = document.createElement('script');
-            desktopScript.src = 'app-presentation-desktop.js';
+            desktopScript.src = 'src/app/app-presentation-desktop.js';
             desktopScript.async = false;
             desktopScript.dataset.plannkeDesktop = 'true';
             document.body.appendChild(desktopScript);
@@ -144,7 +144,7 @@
         if (!canonicalStylesPresent() && !document.querySelector('link[data-plannke-presentation]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
-            stylesheet.href = 'app-presentation.css';
+            stylesheet.href = 'src/styles/app-presentation.css';
             stylesheet.dataset.plannkePresentation = 'desktop';
             document.head.appendChild(stylesheet);
         }
@@ -157,7 +157,7 @@
         }
 
         script = document.createElement('script');
-        script.src = 'app-presentation.js';
+        script.src = 'src/app/app-presentation.js';
         script.async = false;
         script.dataset.plannkePresentation = 'desktop';
         script.addEventListener('load', loadDesktopAssets, { once: true });

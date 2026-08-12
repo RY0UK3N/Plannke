@@ -5,8 +5,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const projection = fs.readFileSync(path.join(root, 'app-projection.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const projection = fs.readFileSync(path.join(root, 'src', 'app', 'app-projection.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
@@ -19,7 +19,7 @@ function runtime() {
 
 test('canonical projection runtime is required before planning and legacy init', () => {
   assert.match(navigation, /function loadProjectionRuntime\(/);
-  assert.match(navigation, /script\.src = 'app-projection\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-projection\.js'/);
   assert.match(navigation, /root\.PlannkeProjectionReady = projectionReady/);
   assert.match(navigation, /projectionReady\.then\(/);
   assert.match(navigation, /Runtime canônico de Projeção não inicializou/);
@@ -98,6 +98,6 @@ test('projection rendering uses DOM APIs and rich-text tooltips', () => {
 });
 
 test('projection runtime is syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-projection\.js/);
-  assert.match(sw, /'\.\/app-projection\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-projection\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-projection\.js'/);
 });

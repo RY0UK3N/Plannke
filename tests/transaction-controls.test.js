@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'src', 'app', 'app-transactions.js'), 'utf8');
 
 function transactionMarkup() {
   const start = html.indexOf('<div class="modal fade" id="transactionModal"');

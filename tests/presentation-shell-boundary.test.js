@@ -4,8 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const presentation = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
+const presentation = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
 
 test('app-shell is the only runtime that constructs the canonical desktop shell', () => {
   assert.match(shell, /function primeCanonicalShell\(/);

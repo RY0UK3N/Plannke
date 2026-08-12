@@ -4,9 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const presentation = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
-const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
+const presentation = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
+const productCss = fs.readFileSync(path.join(root, 'src', 'styles', 'product.css'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 
 const renamed = {
@@ -23,7 +23,7 @@ const renamed = {
 test('presentation stylesheets use canonical filenames and old files are retired', () => {
   for (const [oldName, newName] of Object.entries(renamed)) {
     assert.equal(fs.existsSync(path.join(root, oldName)), false, `${oldName} should be retired`);
-    assert.equal(fs.existsSync(path.join(root, newName)), true, `${newName} should exist`);
+    assert.equal(fs.existsSync(path.join(root, 'src', 'styles', newName)), true, `${newName} should exist`);
   }
 });
 
@@ -34,22 +34,22 @@ test('product shell and presentation runtime point to canonical stylesheet filen
 });
 
 test('stylesheet visual selector namespace follows the isolated selector promotion', () => {
-  const sources = Object.values(renamed).map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
+  const sources = Object.values(renamed).map(file => fs.readFileSync(path.join(root, 'src', 'styles', file), 'utf8')).join('\n');
   assert.match(sources, /\.presentation-/);
   assert.match(sources, /body\.plannke-presentation/);
   assert.match(productCss, /body:not\(\.plannke-presentation\)/);
 });
 
 test('stylesheet dependency imports use canonical filenames without changing selector content', () => {
-  const accounts = fs.readFileSync(path.join(root, 'app-presentation-accounts.css'), 'utf8');
-  const forms = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
+  const accounts = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-accounts.css'), 'utf8');
+  const forms = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-forms.css'), 'utf8');
   assert.match(accounts, /@import url\('\.\/app-presentation-forms\.css'\)/);
   assert.match(forms, /@import url\('\.\/app-presentation-states\.css'\)/);
 });
 
 test('PWA cache advances for canonical presentation stylesheet filenames', () => {
-  assert.match(sw, /plannke-shell-v39/);
-  Object.values(renamed).forEach(file => assert.ok(sw.includes(`'./${file}'`), `missing PWA stylesheet: ${file}`));
+  assert.match(sw, /plannke-shell-v40/);
+  Object.values(renamed).forEach(file => assert.ok(sw.includes(`'./src/styles/${file}'`), `missing PWA stylesheet: ${file}`));
 });
 
 test('one-time stylesheet rename artifacts are not shipped', () => {

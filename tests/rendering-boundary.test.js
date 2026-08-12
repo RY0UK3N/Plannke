@@ -5,8 +5,8 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
@@ -45,11 +45,11 @@ test('dashboard renderer delegates charts while owning user-data DOM', () => {
 });
 
 test('pure product core loads before boot and compatibility product runtime is retired', () => {
-  const coreAt = index.indexOf('src="product-core.js"');
-  const navigationAt = index.indexOf('src="app-navigation.js"');
-  const shellAt = index.indexOf('src="app-shell.js"');
-  const bootAt = index.indexOf('src="app-boot.js"');
-  const renderersAt = index.indexOf('src="safe-renderers.js"');
+  const coreAt = index.indexOf('src="src/core/product-core.js"');
+  const navigationAt = index.indexOf('src="src/app/app-navigation.js"');
+  const shellAt = index.indexOf('src="src/app/app-shell.js"');
+  const bootAt = index.indexOf('src="src/app/app-boot.js"');
+  const renderersAt = index.indexOf('src="src/app/safe-renderers.js"');
   assert.ok(coreAt >= 0 && navigationAt > coreAt && shellAt > navigationAt && bootAt > shellAt);
   assert.ok(renderersAt > bootAt);
   assert.equal(index.indexOf('src="ui-bridge.js"'), -1);

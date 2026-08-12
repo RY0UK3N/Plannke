@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const code = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const code = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 test('critical renderers avoid HTML-string APIs and executable attributes', () => {
@@ -38,10 +38,10 @@ test('card availability uses all outstanding unpaid billings', () => {
 });
 
 test('pure product core loads before boot and safe renderers need no product compatibility runtime', () => {
-  const core = index.indexOf('<script src="product-core.js"></script>');
-  const runtime = index.indexOf('<script src="app-runtime.js"></script>');
-  const boot = index.indexOf('<script src="app-boot.js"></script>');
-  const safe = index.indexOf('<script src="safe-renderers.js"></script>');
+  const core = index.indexOf('<script src="src/core/product-core.js"></script>');
+  const runtime = index.indexOf('<script src="src/app/app-runtime.js"></script>');
+  const boot = index.indexOf('<script src="src/app/app-boot.js"></script>');
+  const safe = index.indexOf('<script src="src/app/safe-renderers.js"></script>');
   assert.ok(core >= 0 && core < runtime, 'product-core.js must load before application orchestration');
   assert.ok(boot > runtime && safe > boot, 'safe-renderers.js must load after canonical boot');
   assert.equal(index.indexOf('<script src="app.js"></script>'), -1);

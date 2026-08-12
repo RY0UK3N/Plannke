@@ -5,34 +5,34 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
-const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'src', 'app', 'app-ui.js'), 'utf8');
+const appData = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const manifest = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8');
-const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
-const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
-const storageAdapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
-const storageUi = fs.readFileSync(path.join(root, 'storage-ui.js'), 'utf8');
-const storageUiCss = fs.readFileSync(path.join(root, 'storage-ui.css'), 'utf8');
-const revamp = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
-const desktop = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8');
-const desktopCss = fs.readFileSync(path.join(root, 'app-presentation-desktop.css'), 'utf8');
-const accountsCss = fs.readFileSync(path.join(root, 'app-presentation-accounts.css'), 'utf8');
-const formsCss = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
+const productCss = fs.readFileSync(path.join(root, 'src', 'styles', 'product.css'), 'utf8');
+const insights = fs.readFileSync(path.join(root, 'src', 'app', 'insights.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
+const boot = fs.readFileSync(path.join(root, 'src', 'app', 'app-boot.js'), 'utf8');
+const storageAdapter = fs.readFileSync(path.join(root, 'src', 'app', 'storage-adapter.js'), 'utf8');
+const storageUi = fs.readFileSync(path.join(root, 'src', 'app', 'storage-ui.js'), 'utf8');
+const storageUiCss = fs.readFileSync(path.join(root, 'src', 'styles', 'storage-ui.css'), 'utf8');
+const revamp = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
+const desktop = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation-desktop.js'), 'utf8');
+const desktopCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-desktop.css'), 'utf8');
+const accountsCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-accounts.css'), 'utf8');
+const formsCss = fs.readFileSync(path.join(root, 'src', 'styles', 'app-presentation-forms.css'), 'utf8');
 
 function externalUrls(html) {
   return [...html.matchAll(/(?:src|href)="(https:\/\/[^\"]+)"/g)].map(match => match[1]);
 }
 
 test('product layer, app shell and safe renderers are loaded in the required order', () => {
-  assert.match(index, /<link rel="stylesheet" href="product\.css">/);
-  assert.match(index, /<script src="app-shell\.js" data-plannke-shell="true"><\/script>/);
-  assert.match(index, /<script src="safe-renderers\.js"><\/script>/);
-  assert.match(index, /<script src="product-core\.js"><\/script>/);
+  assert.match(index, /<link rel="stylesheet" href="src\/styles\/product\.css">/);
+  assert.match(index, /<script src="src\/app\/app-shell\.js" data-plannke-shell="true"><\/script>/);
+  assert.match(index, /<script src="src\/app\/safe-renderers\.js"><\/script>/);
+  assert.match(index, /<script src="src\/core\/product-core\.js"><\/script>/);
   assert.equal(index.indexOf('app.js'), -1);
   assert.ok(index.indexOf('app-runtime.js') < index.indexOf('app-shell.js'));
   assert.equal(index.indexOf('app-actions.js'), -1);
@@ -42,14 +42,14 @@ test('product layer, app shell and safe renderers are loaded in the required ord
   assert.ok(index.indexOf('product-core.js') < index.indexOf('app-boot.js'));
   assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
   assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
-  assert.match(boot, /script\.src = 'insights\.js'/);
+  assert.match(boot, /script\.src = 'src\/app\/insights\.js'/);
   assert.match(boot, /serviceWorker\.register\('.\/sw\.js'\)/);
-  assert.match(insights, /shell\.src = '\.\/app-shell\.js'/);
+  assert.match(insights, /shell\.src = '\.\/src\/app\/app-shell\.js'/);
   assert.doesNotMatch(insights, /app-actions\.js|loadActions|plannkeActions/);
 });
 
 test('canonical app boot owns application start and waits for StorageAdapter', () => {
-  assert.match(boot, /script\.src = 'storage-adapter\.js'/);
+  assert.match(boot, /script\.src = 'src\/app\/storage-adapter\.js'/);
   assert.match(boot, /function waitForStorageReady\(/);
   assert.match(boot, /Promise\.resolve\(api\.ready\)/);
   assert.match(boot, /const applicationInit = root\?\.initApp/);
@@ -72,7 +72,7 @@ test('canonical app boot owns application start and waits for StorageAdapter', (
 });
 
 test('canonical data actions replace the retired browser-storage and Memory Card runtime', () => {
-  assert.match(navigation, /script\.src = 'app-data\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-data\.js'/);
   assert.match(navigation, /root\.PlannkeDataReady = dataActionsReady/);
   assert.match(navigation, /\['confirmClearData', 'exportToExcel'\]/);
   assert.match(appData, /root\.confirmClearData = confirmClearData/);
@@ -128,7 +128,7 @@ test('canonical desktop styles are part of the first paint', () => {
 });
 
 test('storage status and recovery UI are local and DOM-safe', () => {
-  assert.match(boot, /script\.src = 'storage-ui\.js'/);
+  assert.match(boot, /script\.src = 'src\/app\/storage-ui\.js'/);
   assert.match(storageUi, /Salvando…/);
   assert.match(storageUi, /Salvo localmente/);
   assert.match(storageUi, /Recuperação local/);
@@ -156,11 +156,12 @@ test('storage UI observer cannot recursively rewrite its own status DOM', () => 
 });
 
 test('revamp and final desktop assets are loaded locally and in deterministic order', () => {
-  assert.match(shell, /script\.src = 'app-presentation\.js'/);
+  assert.match(shell, /script\.src = 'src\/app\/app-presentation\.js'/);
   assert.match(shell, /script\.async = false/);
-  assert.match(shell, /desktopScript\.src = 'app-presentation-desktop\.js'/);
+  assert.match(shell, /desktopScript\.src = 'src\/app\/app-presentation-desktop\.js'/);
   assert.match(shell, /desktopScript\.async = false/);
   assert.match(shell, /script\.addEventListener\('load', loadDesktopAssets/);
+  assert.match(revamp, /link\.href = `src\/styles\/\$\{asset\}`/);
   assert.match(revamp, /app-presentation-dashboard\.css/);
   assert.match(revamp, /app-presentation-movements\.css/);
   assert.match(revamp, /app-presentation-planning\.css/);
@@ -240,7 +241,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v39'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v40'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));

@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
+const movements = fs.readFileSync(path.join(root, 'src', 'app', 'app-movements.js'), 'utf8');
 
 function movementMarkup() {
   const start = html.indexOf('<div class="content-view hidden" id="movimentacao-view">');
