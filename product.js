@@ -194,11 +194,6 @@
         if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA indisponível:', err));
     }
 
-    function simplifyNavigation() {
-        const names = { dashboard: 'Início', movimentacao: 'Movimentações', projecao: 'Planejamento', accounts: 'Contas', backup: 'Backup' };
-        document.querySelectorAll('.planner-pill-nav [data-target]').forEach(link => { if (names[link.dataset.target]) link.textContent = names[link.dataset.target]; });
-    }
-
     function memberOptions(data, selected = '', includeEmpty = true) {
         const h = householdData(data);
         return `${includeEmpty ? '<option value="">Só eu / não dividir</option>' : ''}${h.members.map(m => `<option value="${escapeAttr(m.id)}" ${m.id === selected ? 'selected' : ''}>${text(m.name)}</option>`).join('')}`;
@@ -317,7 +312,7 @@
     }
 
     function init() {
-        if(initialized)return;initialized=true;injectAssets();installLedgerHooks();simplifyNavigation();injectTransactionFields();patchRenderers();injectBankImport();improveWelcome();maybeShowOnboarding();try{renderAll();}catch(err){console.warn('Atualização visual do produto:',err);}globalThis.addEventListener('plannke:data-changed',()=>setTimeout(()=>{injectBankImport();},0));
+        if(initialized)return;initialized=true;injectAssets();installLedgerHooks();injectTransactionFields();patchRenderers();injectBankImport();improveWelcome();maybeShowOnboarding();try{renderAll();}catch(err){console.warn('Atualização visual do produto:',err);}globalThis.addEventListener('plannke:data-changed',()=>setTimeout(()=>{injectBankImport();},0));
     }
 
     globalThis.PlannkeProduct={init};
