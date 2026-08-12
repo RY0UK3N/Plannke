@@ -44,13 +44,14 @@ test('dashboard renderer delegates charts while owning user-data DOM', () => {
   assert.match(renderers, /upcomingList\.replaceChildren\(\)/);
 });
 
-test('rendering boundary is loaded locally after canonical shell and boot before product runtime', () => {
+test('pure product core loads before boot while rendering boundary precedes compatibility product runtime', () => {
+  const coreAt = index.indexOf('src="product-core.js"');
   const navigationAt = index.indexOf('src="app-navigation.js"');
   const shellAt = index.indexOf('src="app-shell.js"');
   const bootAt = index.indexOf('src="app-boot.js"');
   const renderersAt = index.indexOf('src="safe-renderers.js"');
-  const productAt = index.indexOf('src="product-core.js"');
-  assert.ok(navigationAt >= 0 && shellAt > navigationAt && bootAt > shellAt);
+  const productAt = index.indexOf('src="product.js"');
+  assert.ok(coreAt >= 0 && navigationAt > coreAt && shellAt > navigationAt && bootAt > shellAt);
   assert.ok(renderersAt > bootAt && productAt > renderersAt);
   assert.equal(index.indexOf('src="ui-bridge.js"'), -1);
   assert.equal(index.indexOf('src="app-actions.js"'), -1);
