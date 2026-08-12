@@ -21,10 +21,11 @@ test('movement workspace has no compatibility action attributes', () => {
     .forEach(id => assert.match(markup, new RegExp(`id="${id}"`)));
 });
 
-test('app-movements explicitly binds its static controls once', () => {
+test('app-movements explicitly binds its static controls once while search help remains idempotent', () => {
   assert.match(movements, /let controlsBound = false/);
   assert.match(movements, /function bindMovementControls\(/);
-  assert.match(movements, /if \(controlsBound \|\| typeof document === 'undefined'\) return/);
+  assert.match(movements, /if \(typeof document === 'undefined'\) return/);
+  assert.match(movements, /installSearchHelp\(\);\s*if \(controlsBound\) return;\s*controlsBound = true/);
   assert.match(movements, /byId\('mov-month-prev'\)\?\.addEventListener\('click', \(\) => changeMonth\(-1\)\)/);
   assert.match(movements, /byId\('mov-month-next'\)\?\.addEventListener\('click', \(\) => changeMonth\(1\)\)/);
   assert.match(movements, /byId\('btn-mov-list'\)\?\.addEventListener\('click', \(\) => setMovViewMode\('list'\)\)/);
