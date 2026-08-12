@@ -68,9 +68,10 @@ test('ECharts tooltips use rich text instead of executable HTML', () => {
   assert.doesNotMatch(movements, /\beval\s*\(|new\s+Function\s*\(/);
 });
 
-test('safe transaction renderer reads month state from canonical movements runtime', () => {
-  assert.match(renderers, /root\.renderMonthTabs\?\.\(data\)/);
+test('safe transaction renderer reads month state from canonical movements runtime after structured search', () => {
+  assert.match(renderers, /root\.renderMonthTabs\?\.\(renderData\)/);
   assert.match(renderers, /root\.PlannkeMovements\?\.currentMonth/);
+  assert.ok(renderers.indexOf('movementSearch.searchTransactions(data, searchRaw)') < renderers.indexOf('root.renderMonthTabs?.(renderData)'));
   assert.doesNotMatch(renderers, /_currentMonth/);
 });
 
