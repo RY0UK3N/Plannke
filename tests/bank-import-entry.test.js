@@ -30,6 +30,7 @@ test('product compatibility layer no longer owns bank import UI or direct file i
   assert.doesNotMatch(product, /function accountOptions\(/);
   assert.doesNotMatch(product, /product-bank-import/);
   assert.doesNotMatch(product, /FileReader/);
+  assert.doesNotMatch(product, /parseOfxBank|parseCsvBank|dedupeImported/);
 });
 
 test('desktop presentation keeps reviewed import staging while data owns the entry', () => {
