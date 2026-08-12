@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const source = fs.readFileSync('src/app/app-data.js', 'utf8');
+const Money = require('../src/shared/money.js');
 
 function load(overrides = {}) {
   const saved = [];
@@ -11,7 +12,7 @@ function load(overrides = {}) {
   const written = [];
   const sheets = [];
   const data = {
-    schemaVersion: 2,
+    schemaVersion: 3,
     accounts: [{ id: 'acc', name: 'Principal', balance: 1200, openingBalance: 1000 }],
     cards: [{ id: 'card', name: 'Visa', limit: 4000, closingDay: 10, dueDay: 20 }],
     transactions: [{ id: 'tx', type: 'expense', description: 'Mercado', category: 'Mercado', amount: 100, date: '2026-08-08', accountId: 'acc', status: 'completed' }],
@@ -22,13 +23,14 @@ function load(overrides = {}) {
       recurringRules: [{ id: 'rule', type: 'expense', description: 'Internet', amount: 150, day: 10 }],
       categoryRules: []
     },
-    settings: { schemaVersion: 2, theme: 'light' }
+    settings: { schemaVersion: 3, theme: 'light' }
   };
   const context = {
     console,
     Date,
     Intl,
     JSON,
+    PlannkeMoney: Money,
     confirm: () => true,
     getData: () => JSON.parse(JSON.stringify(data)),
     saveData: value => { saved.push(JSON.parse(JSON.stringify(value))); return value; },

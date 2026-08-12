@@ -7,9 +7,10 @@ const vm = require('node:vm');
 const root = path.resolve(__dirname, '..');
 const movementsSource = fs.readFileSync(path.join(root, 'src', 'app', 'app-movements.js'), 'utf8');
 const rendererSource = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
+const Money = require(path.join(root, 'src', 'shared', 'money.js'));
 
 function loadMovements() {
-  const context = { console, Intl, Math, Date, Set, Map, String, Number, Array, Object, RegExp, JSON };
+  const context = { console, Intl, Math, Date, Set, Map, String, Number, Array, Object, RegExp, JSON, PlannkeMoney: Money };
   context.globalThis = context;
   vm.createContext(context);
   vm.runInContext(fs.readFileSync(path.join(root, 'src', 'core', 'product-core.js'), 'utf8'), context);
@@ -22,9 +23,9 @@ test('smart search combines type, amount and tag filters from canonical movement
   const data = {
     accounts: [{ id: 'acc1', name: 'Nubank' }], cards: [],
     transactions: [
-      { id: '1', type: 'expense', description: 'Hotel', category: 'Viagem', amount: 450, date: '2026-08-01', accountId: 'acc1', status: 'completed', tags: ['viagem'] },
-      { id: '2', type: 'expense', description: 'Café', category: 'Restaurante', amount: 35, date: '2026-08-01', accountId: 'acc1', status: 'completed', tags: ['viagem'] },
-      { id: '3', type: 'income', description: 'Reembolso', category: 'Outros', amount: 500, date: '2026-08-02', accountId: 'acc1', status: 'completed', tags: ['viagem'] }
+      { id: '1', type: 'expense', description: 'Hotel', category: 'Viagem', amount: 45000, date: '2026-08-01', accountId: 'acc1', status: 'completed', tags: ['viagem'] },
+      { id: '2', type: 'expense', description: 'Café', category: 'Restaurante', amount: 3500, date: '2026-08-01', accountId: 'acc1', status: 'completed', tags: ['viagem'] },
+      { id: '3', type: 'income', description: 'Reembolso', category: 'Outros', amount: 50000, date: '2026-08-02', accountId: 'acc1', status: 'completed', tags: ['viagem'] }
     ]
   };
   const result = api.searchTransactions(data, 'gastos >200 #viagem');

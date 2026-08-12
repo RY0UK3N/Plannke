@@ -388,7 +388,7 @@
                 const select = make('select', 'form-select form-select-sm pay-acc-select');
                 select.id = `pay-acc-${cardData.id}`;
                 select.appendChild(option('', 'Debitar de...'));
-                data.accounts.forEach(acc => select.appendChild(option(acc.id, `${acc.name} (${formatCurrency(Number(acc.balance || 0))})`)));
+                data.accounts.filter(acc => acc.status !== 'archived').forEach(acc => select.appendChild(option(acc.id, `${acc.name} (${formatCurrency(Number(acc.balance || 0))})`)));
                 const payButton = make('button', 'btn btn-sm btn-pay'); payButton.type = 'button';
                 payButton.append(icon('ph-check'), document.createTextNode(' Pagar'));
                 payButton.addEventListener('click', () => root.handlePayFatura?.(cardData.id, currentPeriod, currentInvoice));
@@ -477,7 +477,11 @@
             const input = make('input', 'form-control budget-input');
             input.type = 'text'; input.inputMode = 'numeric'; input.placeholder = 'Sem limite'; input.dataset.cat = category;
             const value = Number(budgets[category] || 0);
-            if (value > 0) { input.value = value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); input.dataset.rawValue = String(value); }
+            if (value > 0) {
+                const reais = root.PlannkeMoney.centsToReais(value);
+                input.value = reais.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                input.dataset.rawValue = String(reais);
+            }
             input.addEventListener('input', () => handleBudgetInput(input));
             input.addEventListener('change', () => saveBudgetEntry(category, input.dataset.rawValue || input.value));
             group.append(prefix, input); row.append(name, group); list.appendChild(row);

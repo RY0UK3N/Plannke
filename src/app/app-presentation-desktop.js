@@ -23,7 +23,7 @@
     }
 
     function money(value) {
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+        return root.PlannkeMoney.formatMoney(Number(value || 0));
     }
 
     function formatLocalDate(value) {

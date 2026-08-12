@@ -10,7 +10,7 @@ const planning = fs.readFileSync(path.join(root, 'src', 'app', 'app-planning.js'
 const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
 
 test('final retirement advances the shipped cache contract', () => {
-  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /plannke-shell-v41/);
 });
 
 test('safe rendering boundary owns financial pulse without HTML strings', () => {

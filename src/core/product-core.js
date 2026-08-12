@@ -1,8 +1,9 @@
 (function (root, factory) {
-    const api = factory();
+    const money = root?.PlannkeMoney || (typeof module === 'object' && module.exports ? require('../shared/money.js') : null);
+    const api = factory(money);
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeCore = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (Money) {
     'use strict';
 
     const DAY_MS = 86400000;
@@ -397,14 +398,8 @@
     }
 
     function parseMoney(value) {
-        let s = String(value ?? '').trim().replace(/R\$/gi, '').replace(/\s/g, '');
-        if (!s) return 0;
-        if (s.includes(',') && s.includes('.')) {
-            if (s.lastIndexOf(',') > s.lastIndexOf('.')) s = s.replace(/\./g, '').replace(',', '.');
-            else s = s.replace(/,/g, '');
-        } else if (s.includes(',')) s = s.replace(',', '.');
-        const n = Number(s);
-        return Number.isFinite(n) ? n : 0;
+        try { return Money.parseMoneyInput(value); }
+        catch (_) { return 0; }
     }
 
     function normalizeImportedDate(value) {
@@ -463,7 +458,7 @@
                 groupId: null,
                 recurring: false,
                 status: date > localDateString() ? 'planned' : 'completed',
-                importFingerprint: `csv|${accountId}|${date}|${description.toLowerCase()}|${signed.toFixed(2)}`
+                importFingerprint: `csv|${accountId}|${date}|${description.toLowerCase()}|${signed}`
             });
         });
         return out;
@@ -498,17 +493,17 @@
                 groupId: null,
                 recurring: false,
                 status: date > localDateString() ? 'planned' : 'completed',
-                importFingerprint: `ofx|${accountId}|${fitid || `${date}|${signed.toFixed(2)}|${description.toLowerCase()}`}`
+                importFingerprint: `ofx|${accountId}|${fitid || `${date}|${signed}|${description.toLowerCase()}`}`
             };
         }).filter(Boolean);
     }
 
     function dedupeImported(existing, incoming) {
         const fingerprints = new Set((existing || []).map(tx => tx.importFingerprint).filter(Boolean));
-        const heuristic = new Set((existing || []).map(tx => `${tx.accountId}|${tx.date}|${tx.type}|${Number(tx.amount).toFixed(2)}|${String(tx.description).toLowerCase()}`));
+        const heuristic = new Set((existing || []).map(tx => `${tx.accountId}|${tx.date}|${tx.type}|${Number(tx.amount)}|${String(tx.description).toLowerCase()}`));
         return (incoming || []).filter(tx => {
             if (tx.importFingerprint && fingerprints.has(tx.importFingerprint)) return false;
-            const key = `${tx.accountId}|${tx.date}|${tx.type}|${Number(tx.amount).toFixed(2)}|${String(tx.description).toLowerCase()}`;
+            const key = `${tx.accountId}|${tx.date}|${tx.type}|${Number(tx.amount)}|${String(tx.description).toLowerCase()}`;
             if (heuristic.has(key)) return false;
             if (tx.importFingerprint) fingerprints.add(tx.importFingerprint);
             heuristic.add(key);
@@ -573,7 +568,7 @@
             rule?.type,
             cleanText(rule?.description, 160).toLowerCase(),
             cleanText(rule?.category, 100).toLowerCase(),
-            toNumber(rule?.amount, 0).toFixed(2),
+            String(Math.round(toNumber(rule?.amount, 0))),
             rule?.accountId || ''
         ].join('|');
     }

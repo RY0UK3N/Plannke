@@ -84,7 +84,7 @@ test('CSV bancário brasileiro é reconhecido e deduplicado', () => {
   const parsed = C.parseCsvBank(csv, 'acc', [{ id: 'r', contains: 'uber', category: 'Transporte' }]);
   assert.equal(parsed.length, 2);
   assert.equal(parsed[0].type, 'expense');
-  assert.equal(parsed[0].amount, 25.9);
+  assert.equal(parsed[0].amount, 2590);
   assert.equal(parsed[0].category, 'Transporte');
   assert.equal(parsed[1].type, 'income');
   assert.equal(C.dedupeImported([parsed[0]], parsed).length, 1);
@@ -95,7 +95,7 @@ test('OFX básico é convertido para transações', () => {
   const parsed = C.parseOfxBank(ofx, 'acc', [{ id: 'r', contains: 'ipiranga', category: 'Combustível' }]);
   assert.equal(parsed.length, 1);
   assert.equal(parsed[0].date, '2026-08-07');
-  assert.equal(parsed[0].amount, 42.5);
+  assert.equal(parsed[0].amount, 4250);
   assert.equal(parsed[0].category, 'Combustível');
 });
 

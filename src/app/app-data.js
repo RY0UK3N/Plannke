@@ -16,7 +16,7 @@
         return new Intl.NumberFormat('pt-BR', {
             style: 'currency',
             currency: 'BRL'
-        }).format(Number(value) || 0);
+        }).format(root.PlannkeMoney.centsToReais(Number(value) || 0));
     }
 
     function dateLabel(value) {
@@ -42,7 +42,7 @@
 
     function emptyDataset(theme) {
         const raw = {
-            schemaVersion: 2,
+            schemaVersion: 3,
             accounts: [],
             cards: [],
             transactions: [],
@@ -55,7 +55,7 @@
                 onboardingComplete: false
             },
             settings: {
-                schemaVersion: 2,
+                schemaVersion: 3,
                 theme: theme === 'light' ? 'light' : 'dark',
                 categories: null,
                 budgets: {},
@@ -120,7 +120,7 @@
                 Tipo: transactionType(tx.type),
                 Descrição: tx.description || '',
                 Categoria: tx.category || '',
-                Valor: Number(tx.amount || 0),
+                Valor: root.PlannkeMoney.centsToReais(Number(tx.amount || 0)),
                 'Conta / Cartão': entityName(data, tx.accountId),
                 Destino: tx.destinationId ? entityName(data, tx.destinationId) : '',
                 Situação: tx.status === 'planned' ? 'Prevista' : 'Realizada',
@@ -133,17 +133,17 @@
     function accountRows(data) {
         return (data.accounts || []).map(account => ({
             Conta: account.name || '',
-            Saldo: Number(account.balance || 0),
-            'Saldo inicial': Number(account.openingBalance ?? account.balance ?? 0)
+            Saldo: root.PlannkeMoney.centsToReais(Number(account.balance || 0)),
+            'Saldo inicial': root.PlannkeMoney.centsToReais(Number(account.openingBalance ?? account.balance ?? 0))
         }));
     }
 
     function cardRows(data) {
         return (data.cards || []).map(card => ({
             Cartão: card.name || '',
-            Limite: Number(card.limit || 0),
+            Limite: root.PlannkeMoney.centsToReais(Number(card.limit || 0)),
             'Fatura em aberto': typeof root.getOutstandingCardBalance === 'function'
-                ? root.getOutstandingCardBalance(data, card.id)
+                ? root.PlannkeMoney.centsToReais(root.getOutstandingCardBalance(data, card.id))
                 : 0,
             Fechamento: Number(card.closingDay || 0),
             Vencimento: Number(card.dueDay || 0)
@@ -156,21 +156,21 @@
         (planning.goals || []).forEach(goal => rows.push({
             Tipo: 'Objetivo',
             Nome: goal.name || goal.title || '',
-            Valor: Number(goal.targetAmount || goal.amount || 0),
-            Atual: Number(goal.currentAmount || 0),
+            Valor: root.PlannkeMoney.centsToReais(Number(goal.targetAmount || goal.amount || 0)),
+            Atual: root.PlannkeMoney.centsToReais(Number(goal.currentAmount || 0)),
             Data: dateLabel(goal.targetDate || goal.date || '')
         }));
         (planning.reserves || []).forEach(reserve => rows.push({
             Tipo: 'Reserva',
             Nome: reserve.name || reserve.title || '',
-            Valor: Number(reserve.amount || reserve.currentAmount || 0),
-            Atual: Number(reserve.currentAmount || reserve.amount || 0),
+            Valor: root.PlannkeMoney.centsToReais(Number(reserve.amount || reserve.currentAmount || 0)),
+            Atual: root.PlannkeMoney.centsToReais(Number(reserve.currentAmount || reserve.amount || 0)),
             Data: dateLabel(reserve.targetDate || reserve.date || '')
         }));
         (planning.recurringRules || []).forEach(rule => rows.push({
             Tipo: rule.type === 'income' ? 'Receita recorrente' : 'Despesa recorrente',
             Nome: rule.description || rule.name || '',
-            Valor: Number(rule.amount || 0),
+            Valor: root.PlannkeMoney.centsToReais(Number(rule.amount || 0)),
             Atual: '',
             Data: rule.day ? `Dia ${rule.day}` : ''
         }));
@@ -374,7 +374,7 @@
       placeholder.value = '';
       placeholder.textContent = 'Escolha a conta...';
       const options = [placeholder];
-      (data?.accounts || []).forEach(account => {
+      (data?.accounts || []).filter(account => account.status !== 'archived').forEach(account => {
         const option = document.createElement('option');
         option.value = String(account.id || '');
         option.textContent = `${account.name || 'Conta'} · ${currency(account.balance)}`;

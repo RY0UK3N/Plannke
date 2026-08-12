@@ -24,9 +24,9 @@
             root.updateInstallmentHelper?.();
             return;
         }
-        const reais = parseInt(digits, 10) / 100;
+        const reais = root.PlannkeMoney.centsToReais(parseInt(digits, 10));
         input.value = reais.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        input.dataset.rawValue = String(reais);
+        input.dataset.rawValue = String(parseInt(digits, 10));
         if (input.id === 'tx-amount') root.updateInstallmentHelper?.();
     }
 
@@ -34,20 +34,21 @@
         if (typeof document === 'undefined') return 0;
         const input = document.getElementById(id);
         if (!input) return 0;
-        if (input.dataset.rawValue) return parseFloat(input.dataset.rawValue) || 0;
+        if (input.dataset.rawValue) return Number(input.dataset.rawValue) || 0;
         const digits = String(input.value || '').replace(/\D/g, '');
-        return digits ? parseInt(digits, 10) / 100 : 0;
+        return digits ? parseInt(digits, 10) : 0;
     }
 
     function setCurrencyValue(id, value) {
         if (typeof document === 'undefined') return;
         const input = document.getElementById(id);
         if (!input) return;
-        const number = parseFloat(value) || 0;
-        input.value = number > 0
+        const cents = Number(value) || 0;
+        const number = root.PlannkeMoney.centsToReais(cents);
+        input.value = cents > 0
             ? number.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
             : '';
-        input.dataset.rawValue = String(number);
+        input.dataset.rawValue = String(cents);
     }
 
     function openModal(modalId) {

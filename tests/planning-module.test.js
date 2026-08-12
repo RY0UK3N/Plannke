@@ -8,6 +8,7 @@ const root = path.resolve(__dirname, '..');
 const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 const planning = fs.readFileSync(path.join(root, 'src', 'app', 'app-planning.js'), 'utf8');
 const core = require(path.join(root, 'src', 'core', 'product-core.js'));
+const Money = require(path.join(root, 'src', 'shared', 'money.js'));
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
@@ -16,6 +17,7 @@ function sandboxFor(data = null, projectionRender = () => undefined) {
   const sandbox = {
     console,
     PlannkeCore: core,
+    PlannkeMoney: Money,
     PlannkeProjection: { renderProjection: projectionRender },
     formatCurrency: value => String(value),
     formatDate: value => String(value),
@@ -130,7 +132,7 @@ test('planning actions persist goal updates and item removals through saveData',
 
   const hub = { querySelectorAll: () => [{ dataset: { goalCurrent: 'g1' }, value: '350.50' }] };
   sandbox.PlannkePlanning.handlePlanningAction('save-goal-current', 'g1', hub);
-  assert.equal(saved().planning.goals[0].currentAmount, 350.5);
+  assert.equal(saved().planning.goals[0].currentAmount, 35050);
 
   sandbox.PlannkePlanning.handlePlanningAction('delete-reserve', 'r1', hub);
   assert.equal(saved().planning.reserves.length, 0);

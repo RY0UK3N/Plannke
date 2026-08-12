@@ -6,7 +6,9 @@
  * is the only persistence boundary and will be replaced by SQLite in Tauri.
  */
 
-const DATA_SCHEMA_VERSION = 2;
+const DATA_SCHEMA_VERSION = 3;
+const Money = globalThis.PlannkeMoney;
+if (!Money) throw new Error('PlannkeMoney deve ser carregado antes do núcleo financeiro.');
 
 const defaultData = {
     schemaVersion: DATA_SCHEMA_VERSION,
@@ -116,6 +118,12 @@ function finiteNumber(value, fallback = 0) {
     return Number.isFinite(num) ? num : fallback;
 }
 
+function financialError(code, message) {
+    const error = new Error(message);
+    error.code = code;
+    return error;
+}
+
 function clampDay(value, fallback = 1) {
     const parsed = parseInt(value, 10);
     return Number.isFinite(parsed) ? Math.min(Math.max(parsed, 1), 31) : fallback;
@@ -156,7 +164,8 @@ function normalizeSettings(rawSettings) {
     if (raw.budgets && typeof raw.budgets === 'object') {
         Object.entries(raw.budgets).forEach(([category, value]) => {
             const safeCategory = sanitizePlainText(category, 100);
-            const amount = finiteNumber(value, 0);
+            const amount = Number(value);
+            if (!Number.isSafeInteger(amount)) throw financialError('INVALID_MONEY_VALUE', `Orçamento inválido para ${safeCategory}.`);
             if (safeCategory && amount > 0) settings.budgets[safeCategory] = amount;
         });
     }
@@ -170,7 +179,8 @@ function normalizeSettings(rawSettings) {
 }
 
 function normalizeData(input) {
-    const raw = input && typeof input === 'object' ? input : {};
+    const source = input && typeof input === 'object' ? input : {};
+    const raw = Money.migrateDataToCents(source).data;
     const entityIds = new Set();
     const transactionIds = new Set();
     const entityMap = new Map();
@@ -180,7 +190,7 @@ function normalizeData(input) {
         const oldId = String(account?.id ?? '');
         const id = _uniqueSafeId(oldId, entityIds, `acc${index + 1}`);
         entityMap.set(oldId, id);
-        return { ...account, id, name: sanitizePlainText(account?.name, 120), balance: finiteNumber(account?.balance, 0) };
+        return { ...account, id, name: sanitizePlainText(account?.name, 120), balance: Money.assertCents(Number(account?.balance || 0), `accounts[${index}].balance`), status: account?.status === 'archived' ? 'archived' : 'active' };
     });
 
     const cards = (Array.isArray(raw.cards) ? raw.cards : []).map((card, index) => {
@@ -191,9 +201,10 @@ function normalizeData(input) {
             ...card,
             id,
             name: sanitizePlainText(card?.name, 120),
-            limit: Math.max(finiteNumber(card?.limit, 0), 0),
+            limit: Math.max(Money.assertCents(Number(card?.limit || 0), `cards[${index}].limit`), 0),
             closingDay: clampDay(card?.closingDay, 1),
-            dueDay: clampDay(card?.dueDay, 1)
+            dueDay: clampDay(card?.dueDay, 1),
+            status: card?.status === 'archived' ? 'archived' : 'active'
         };
     });
 
@@ -207,7 +218,7 @@ function normalizeData(input) {
             type: ['income', 'expense', 'transfer'].includes(tx?.type) ? tx.type : 'expense',
             description: sanitizePlainText(tx?.description, 300),
             category: sanitizePlainText(tx?.category || 'Sem Categoria', 100),
-            amount: Math.abs(finiteNumber(tx?.amount, 0)),
+            amount: Math.abs(Money.assertCents(Number(tx?.amount || 0), `transactions[${index}].amount`)),
             date: normalizeDateString(tx?.date, ''),
             accountId: entityMap.get(String(tx?.accountId ?? '')) || sanitizeIdentifier(tx?.accountId),
             destinationId: tx?.destinationId ? (entityMap.get(String(tx.destinationId)) || sanitizeIdentifier(tx.destinationId)) : null,
@@ -225,7 +236,7 @@ function normalizeData(input) {
         cardId: entityMap.get(String(billing?.cardId ?? '')) || sanitizeIdentifier(billing?.cardId),
         period: /^\d{4}-(0[1-9]|1[0-2])$/.test(String(billing?.period || '')) ? String(billing.period) : '',
         isPaid: !!billing?.isPaid,
-        paidAmount: Math.max(finiteNumber(billing?.paidAmount, 0), 0),
+        paidAmount: billing?.paidAmount == null ? null : Math.max(Money.assertCents(Number(billing.paidAmount), 'cardBillings.paidAmount'), 0),
         paidAt: billing?.paidAt ? normalizeDateString(billing.paidAt, null) : null,
         fromAccountId: billing?.fromAccountId ? (entityMap.get(String(billing.fromAccountId)) || sanitizeIdentifier(billing.fromAccountId)) : null,
         paymentTransactionId: billing?.paymentTransactionId ? (txMap.get(String(billing.paymentTransactionId)) || sanitizeIdentifier(billing.paymentTransactionId)) : null
@@ -282,12 +293,12 @@ function generateId() {
 /* ---------- Accounts ---------- */
 function saveAccount(id, name, balance) {
     const data = getData();
-    const parsed = finiteNumber(balance, 0);
+    const parsed = Money.assertCents(Number(balance || 0), 'account.balance');
     if (id) {
         const item = data.accounts.find(account => account.id === id);
         if (item) {
-            const currentBalance = finiteNumber(item.balance, 0);
-            const openingBalance = Number.isFinite(Number(item.openingBalance)) ? finiteNumber(item.openingBalance, currentBalance) : currentBalance;
+            const currentBalance = Money.assertCents(Number(item.balance || 0), 'account.balance');
+            const openingBalance = Number.isSafeInteger(Number(item.openingBalance)) ? Number(item.openingBalance) : currentBalance;
             item.name = sanitizePlainText(name, 120);
             item.openingBalance = openingBalance + (parsed - currentBalance);
             item.balance = parsed;
@@ -300,8 +311,14 @@ function saveAccount(id, name, balance) {
 
 function deleteAccount(id) {
     const data = getData();
-    data.accounts = data.accounts.filter(account => account.id !== id);
+    const account = data.accounts.find(item => item.id === id);
+    if (!account) throw financialError('ACCOUNT_NOT_FOUND', 'Conta não encontrada.');
+    const hasHistory = data.transactions.some(tx => tx.accountId === id || tx.destinationId === id)
+        || (data.cardBillings || []).some(billing => billing.fromAccountId === id);
+    if (hasHistory) account.status = 'archived';
+    else data.accounts = data.accounts.filter(item => item.id !== id);
     saveData(data);
+    return hasHistory ? 'archived' : 'deleted';
 }
 
 /* ---------- Cards ---------- */
@@ -311,7 +328,7 @@ function saveCard(id, name, limit, closingDay, dueDay) {
         const item = data.cards.find(card => card.id === id);
         if (item) {
             item.name = sanitizePlainText(name, 120);
-            item.limit = Math.max(finiteNumber(limit, 0), 0);
+            item.limit = Math.max(Money.assertCents(Number(limit || 0), 'card.limit'), 0);
             item.closingDay = clampDay(closingDay, 1);
             item.dueDay = clampDay(dueDay, 1);
         }
@@ -319,7 +336,7 @@ function saveCard(id, name, limit, closingDay, dueDay) {
         data.cards.push({
             id: generateId(),
             name: sanitizePlainText(name, 120),
-            limit: Math.max(finiteNumber(limit, 0), 0),
+            limit: Math.max(Money.assertCents(Number(limit || 0), 'card.limit'), 0),
             closingDay: clampDay(closingDay, 1),
             dueDay: clampDay(dueDay, 1)
         });
@@ -329,9 +346,14 @@ function saveCard(id, name, limit, closingDay, dueDay) {
 
 function deleteCard(id) {
     const data = getData();
-    data.cards = data.cards.filter(card => card.id !== id);
-    data.cardBillings = (data.cardBillings || []).filter(billing => billing.cardId !== id);
+    const card = data.cards.find(item => item.id === id);
+    if (!card) throw financialError('CARD_NOT_FOUND', 'Cartão não encontrado.');
+    const hasHistory = data.transactions.some(tx => tx.accountId === id || tx.destinationId === id || tx.billingCardId === id)
+        || (data.cardBillings || []).some(billing => billing.cardId === id);
+    if (hasHistory) card.status = 'archived';
+    else data.cards = data.cards.filter(item => item.id !== id);
     saveData(data);
+    return hasHistory ? 'archived' : 'deleted';
 }
 
 /* ---------- Credit-card billing ---------- */
@@ -390,7 +412,7 @@ function getOutstandingCardBalance(data, cardId) {
 
 /* ---------- Balance helpers ---------- */
 function _adjustBalances(data, type, amount, accountId, destinationId, sign) {
-    const parsedAmount = Number(amount || 0);
+    const parsedAmount = Money.assertCents(Number(amount || 0), 'transaction.amount');
     const isCardAccount = data.cards.some(card => card.id === accountId);
     const isCardDestination = data.cards.some(card => card.id === destinationId);
     if (!isCardAccount) {
@@ -414,6 +436,17 @@ function applyTransactionBalances(data, type, amount, accountId, destinationId) 
     _adjustBalances(data, type, amount, accountId, destinationId, 1);
 }
 
+function _validateTransactionReferences(data, type, accountId, destinationId) {
+    const source = [...data.accounts, ...data.cards].find(item => item.id === accountId);
+    if (!source) throw financialError('ACCOUNT_NOT_FOUND', 'Conta ou cartão de origem não encontrado.');
+    if (source.status === 'archived') throw financialError('ENTITY_ARCHIVED', 'Entidade financeira arquivada não aceita novos lançamentos.');
+    if (type !== 'transfer') return;
+    const destination = [...data.accounts, ...data.cards].find(item => item.id === destinationId);
+    if (!destination) throw financialError('ACCOUNT_NOT_FOUND', 'Conta ou cartão de destino não encontrado.');
+    if (destination.status === 'archived') throw financialError('ENTITY_ARCHIVED', 'Entidade financeira arquivada não aceita novos lançamentos.');
+    if (destination.id === source.id) throw financialError('INVALID_TRANSFER', 'Origem e destino da transferência devem ser diferentes.');
+}
+
 function _unlinkBillingPayment(data, tx) {
     if (!tx || tx.type !== 'transfer') return;
     const billing = (data.cardBillings || []).find(item => item.paymentTransactionId === tx.id || (tx.billingCardId && tx.billingPeriod && item.cardId === tx.billingCardId && item.period === tx.billingPeriod));
@@ -428,10 +461,23 @@ function _unlinkBillingPayment(data, tx) {
 function payCardBilling(cardId, period, fromAccountId, amount) {
     const data = getData();
     if (!Array.isArray(data.cardBillings)) data.cardBillings = [];
+    const account = data.accounts.find(item => item.id === fromAccountId);
+    if (!account) throw financialError('ACCOUNT_NOT_FOUND', 'Conta de origem não encontrada.');
+    if (account.status === 'archived') throw financialError('ACCOUNT_ARCHIVED', 'Conta de origem está arquivada.');
+    const card = data.cards.find(item => item.id === cardId);
+    if (!card) throw financialError('CARD_NOT_FOUND', 'Cartão não encontrado.');
+    if (card.status === 'archived') throw financialError('CARD_ARCHIVED', 'Cartão está arquivado.');
     const existing = data.cardBillings.find(billing => billing.cardId === cardId && billing.period === period);
-    if (existing?.isPaid) return null;
+    if (existing?.isPaid) throw financialError('BILLING_ALREADY_PAID', 'Fatura já foi paga.');
     const parsedAmount = Number(amount);
-    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) return null;
+    if (!Number.isSafeInteger(parsedAmount) || parsedAmount <= 0) throw financialError('INVALID_AMOUNT', 'Valor de pagamento inválido.');
+    const currentBilling = getCardBilling(data, cardId, period);
+    if (!currentBilling || !currentBilling.transactions.length || currentBilling.total <= 0) {
+        throw financialError('BILLING_NOT_FOUND', 'Fatura não encontrada.');
+    }
+    if (parsedAmount !== currentBilling.total) {
+        throw financialError('INVALID_AMOUNT', 'O pagamento deve corresponder ao valor integral da fatura.');
+    }
     const today = todayLocal();
     const paymentTransactionId = generateId();
     const payment = existing || { cardId, period };
@@ -443,7 +489,6 @@ function payCardBilling(cardId, period, fromAccountId, amount) {
         paymentTransactionId
     });
     if (!existing) data.cardBillings.push(payment);
-    const card = data.cards.find(item => item.id === cardId);
     const [year, month] = period.split('-').map(Number);
     data.transactions.push({
         id: paymentTransactionId,
@@ -469,8 +514,8 @@ function payCardBilling(cardId, period, fromAccountId, amount) {
 /* ---------- Transactions ---------- */
 function saveTransaction(id, type, description, amount, date, accountId, category, currentInstallment, totalInstallments, groupId, destinationId, recurring) {
     const data = getData();
-    const parsed = Math.abs(parseFloat(amount));
-    if (!Number.isFinite(parsed) || parsed <= 0) throw new Error('Valor de transação inválido.');
+    const parsed = Math.abs(Number(amount));
+    if (!Number.isSafeInteger(parsed) || parsed <= 0) throw financialError('INVALID_AMOUNT', 'Valor de transação inválido.');
     let safeDate = normalizeDateString(date, '');
     if (!safeDate) throw new Error('Data de transação inválida.');
     const installmentNo = Math.max(parseInt(currentInstallment, 10) || 1, 1);
@@ -481,12 +526,13 @@ function saveTransaction(id, type, description, amount, date, accountId, categor
         if (anchor) safeDate = addMonthsClamped(anchor.date, installmentNo - 1);
     }
     const safeType = ['income', 'expense', 'transfer'].includes(type) ? type : 'expense';
+    _validateTransactionReferences(data, safeType, accountId, destinationId);
     if (id) {
         const existing = data.transactions.find(tx => tx.id === id);
-        if (existing) {
-            revertTransactionBalances(data, existing);
-            _unlinkBillingPayment(data, existing);
-            Object.assign(existing, {
+        if (!existing) throw financialError('TRANSACTION_NOT_FOUND', 'Transação não encontrada.');
+        revertTransactionBalances(data, existing);
+        _unlinkBillingPayment(data, existing);
+        Object.assign(existing, {
                 type: safeType,
                 description: sanitizePlainText(description, 300),
                 amount: parsed,
@@ -495,8 +541,7 @@ function saveTransaction(id, type, description, amount, date, accountId, categor
                 category: sanitizePlainText(category || 'Sem Categoria', 100),
                 destinationId: destinationId ? sanitizeIdentifier(destinationId) : null,
                 recurring: !!recurring
-            });
-        }
+        });
     } else {
         data.transactions.push({
             id: generateId(),
@@ -542,7 +587,7 @@ function deleteInstallmentGroup(groupId) {
 const MONTH_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value || 0);
+    return Money.formatMoney(Number(value || 0));
 }
 
 function formatDate(dateStr) {
