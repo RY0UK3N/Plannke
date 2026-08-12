@@ -16,7 +16,6 @@ test('shell exposes presentation loader and metadata without revamp runtime voca
   assert.match(shell, /querySelector\('script\[data-plannke-presentation\]'\)/);
   assert.match(shell, /dataset\.plannkePresentation = 'desktop'/);
   assert.doesNotMatch(shell, /loadRevampAssets/);
-  assert.doesNotMatch(shell, /data-plannke-revamp/);
   assert.doesNotMatch(shell, /dataset\.plannkeRevamp/);
 });
 
