@@ -192,11 +192,95 @@
         showToast('Relatório Excel exportado.');
     }
 
+    function refreshBankAccountOptions(select, data) {
+      if (!select) return;
+      const selected = select.value || '';
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Escolha a conta...';
+      const options = [placeholder];
+      (data?.accounts || []).forEach(account => {
+        const option = document.createElement('option');
+        option.value = String(account.id || '');
+        option.textContent = `${account.name || 'Conta'} · ${currency(account.balance)}`;
+        options.push(option);
+      });
+      select.replaceChildren(...options);
+      select.value = (data?.accounts || []).some(account => String(account.id) === selected) ? selected : '';
+    }
+
+    function ensureBankImportPanel() {
+      if (typeof document === 'undefined') return null;
+      const backup = document.getElementById('backup-view');
+      const row = backup?.querySelector(':scope > .row') || backup?.querySelector('.row');
+      if (!backup || !row) return null;
+    
+      let panel = document.getElementById('product-bank-import');
+      if (!panel) {
+        panel = document.createElement('div');
+        panel.className = 'col-12 col-md-7 col-lg-5 mt-3';
+        panel.id = 'product-bank-import';
+    
+        const card = document.createElement('div');
+        card.className = 'card';
+        const body = document.createElement('div');
+        body.className = 'card-body p-4';
+        const title = document.createElement('div');
+        title.className = 'product-card-title';
+        const titleMain = document.createElement('div');
+        const icon = document.createElement('i');
+        icon.className = 'ph ph-file-arrow-up';
+        const strong = document.createElement('strong');
+        strong.textContent = 'Importar extrato bancário';
+        titleMain.append(icon, strong);
+        const subtitle = document.createElement('small');
+        subtitle.textContent = 'OFX ou CSV — sem conexão com seu banco';
+        title.append(titleMain, subtitle);
+    
+        const copy = document.createElement('p');
+        copy.className = 'small text-muted';
+        copy.textContent = 'O arquivo é lido localmente. Duplicatas são removidas antes da revisão das movimentações.';
+    
+        const account = document.createElement('select');
+        account.id = 'product-bank-account';
+        account.className = 'form-select mb-2';
+    
+        const label = document.createElement('label');
+        label.className = 'btn btn-outline-primary w-100';
+        label.appendChild(document.createTextNode('Selecionar OFX / CSV'));
+        const input = document.createElement('input');
+        input.id = 'product-bank-file';
+        input.className = 'd-none';
+        input.type = 'file';
+        input.accept = '.ofx,.csv,text/csv';
+        label.appendChild(input);
+    
+        const result = document.createElement('div');
+        result.id = 'product-bank-result';
+        result.className = 'tiny text-muted mt-2';
+    
+        body.append(title, copy, account, label, result);
+        card.appendChild(body);
+        panel.appendChild(card);
+        row.appendChild(panel);
+      }
+    
+      const data = typeof root.getData === 'function' ? root.getData() : { accounts: [] };
+      refreshBankAccountOptions(document.getElementById('product-bank-account'), data);
+      root.PlannkePresentationDesktop?.decorateBackup?.();
+      return panel;
+    }
+
     function bindDataControls() {
         if (controlsBound || typeof document === 'undefined') return;
         controlsBound = true;
+        ensureBankImportPanel();
         document.getElementById('data-export-excel')?.addEventListener('click', exportToExcel);
         document.getElementById('settings-clear-data')?.addEventListener('click', confirmClearData);
+        root.addEventListener?.('plannke:data-changed', () => {
+            if (typeof root.setTimeout === 'function') root.setTimeout(ensureBankImportPanel, 0);
+            else ensureBankImportPanel();
+        });
     }
 
     root.confirmClearData = confirmClearData;
@@ -210,6 +294,8 @@
         accountRows,
         cardRows,
         planningRows,
+        ensureBankImportPanel,
+        refreshBankAccountOptions,
         bindDataControls
     };
     bindDataControls();

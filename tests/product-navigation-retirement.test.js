@@ -23,7 +23,7 @@ test('canonical navigation remains the only product workspace navigation boundar
 });
 
 test('product initialization keeps active enhancements without navigation mutation', () => {
-  assert.match(product, /injectAssets\(\);installLedgerHooks\(\);injectTransactionFields\(\);patchRenderers\(\);injectBankImport\(\);improveWelcome\(\);maybeShowOnboarding\(\);/);
+  assert.match(product, /injectAssets\(\);installLedgerHooks\(\);injectTransactionFields\(\);patchRenderers\(\);improveWelcome\(\);maybeShowOnboarding\(\);/);
 });
 
 test('one-time product navigation retirement artifacts are not shipped', () => {
