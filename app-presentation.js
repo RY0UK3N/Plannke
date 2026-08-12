@@ -73,6 +73,9 @@
     }
 
     function ensureViewStyles() {
+        const canonicalBundle = document.querySelector('link[href="product.css"], link[href$="/product.css"]');
+        if (canonicalBundle) return;
+
         VIEW_STYLES.forEach(asset => {
             if (document.querySelector(`link[href="${asset}"]`)) return;
             const link = document.createElement('link');
