@@ -40,6 +40,14 @@ test('presentation renders review state but cannot own or mutate the controller 
   assert.doesNotMatch(desktop, /let pendingBankImport/);
   assert.doesNotMatch(desktop, /function (?:merchantRuleKey|captureBankImport|stageBankFile|confirmBankImport|cancelBankImport)\(/);
   assert.doesNotMatch(desktop, /FileReader|parseOfxBank|parseCsvBank|dedupeImported/);
+  assert.doesNotMatch(desktop, /root\.saveData|PlannkeStorage|data\.transactions\.push/);
+});
+
+test('bank import financial mutation stays behind the canonical data boundary', () => {
+  assert.match(appData, /root\.saveData\?\.\(data\)/);
+  assert.match(appData, /data\.transactions\.push\(transaction\)/);
+  assert.match(appData, /PlannkeStorage\?\.createSnapshot/);
+  assert.doesNotMatch(storageUi, /presentation-import-review|Confirmar selecionadas/);
 });
 
 test('data capture listener remains in the capture phase and review focus stays visual', () => {
