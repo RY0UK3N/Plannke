@@ -12,6 +12,7 @@ test('product layer no longer reaches retired pill navigation markup', () => {
   assert.doesNotMatch(product, /function simplifyNavigation\(/);
   assert.doesNotMatch(product, /planner-pill-nav/);
   assert.doesNotMatch(product, /simplifyNavigation\(\)/);
+  assert.doesNotMatch(product, /const names = \{ dashboard: 'Início'/);
 });
 
 test('canonical navigation remains the only product workspace navigation boundary', () => {
