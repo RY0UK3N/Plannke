@@ -33,11 +33,12 @@ test('product compatibility layer no longer owns bank import UI or direct file i
   assert.doesNotMatch(product, /parseOfxBank|parseCsvBank|dedupeImported/);
 });
 
-test('desktop presentation keeps reviewed import staging while data owns the entry', () => {
-  assert.match(desktop, /function captureBankImport\(/);
-  assert.match(desktop, /function stageBankFile\(/);
+test('data runtime owns bank import staging while presentation only renders the review', () => {
+  assert.match(appData, /function captureBankImport\(/);
+  assert.match(appData, /function stageBankFile\(/);
+  assert.match(appData, /event\.stopImmediatePropagation\(\)/);
   assert.match(desktop, /function renderBankImportReview\(/);
-  assert.match(desktop, /event\.stopImmediatePropagation\(\)/);
+  assert.doesNotMatch(desktop, /function (?:captureBankImport|stageBankFile|confirmBankImport|cancelBankImport)\(/);
 });
 
 test('bank account choices refresh after canonical data changes', () => {

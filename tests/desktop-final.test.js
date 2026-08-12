@@ -8,6 +8,7 @@ const js = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8
 const css = fs.readFileSync(path.join(root, 'app-presentation-desktop.css'), 'utf8');
 const statesCss = fs.readFileSync(path.join(root, 'app-presentation-states.css'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
+const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 
 test('final shell explicitly targets desktop app windows', () => {
   assert.match(css, /body\.plannke-presentation\s*\{[\s\S]*min-width: 1080px/);
@@ -57,15 +58,16 @@ test('data page treats Excel as a report and bank files as reviewed imports', ()
   assert.match(js, /Exportar relatório Excel/);
   assert.match(js, /planilha é somente um relatório externo/i);
   assert.match(js, /importLabel\.hidden = true/);
-  assert.match(js, /function captureBankImport\(/);
-  assert.match(js, /event\.stopImmediatePropagation\(\)/);
-  assert.match(js, /function stageBankFile\(/);
+  assert.match(appData, /function captureBankImport\(/);
+  assert.match(appData, /event\.stopImmediatePropagation\(\)/);
+  assert.match(appData, /function stageBankFile\(/);
   assert.match(js, /function renderBankImportReview\(/);
   assert.match(js, /Revisar movimentações/);
   assert.match(js, /Confirmar selecionadas/);
-  assert.match(js, /merchantRuleKey/);
-  assert.match(js, /windows-1252/);
-  assert.match(js, /'utf-8'/);
+  assert.match(appData, /function merchantRuleKey\(/);
+  assert.match(appData, /windows-1252/);
+  assert.match(appData, /'utf-8'/);
+  assert.doesNotMatch(js, /function (?:captureBankImport|stageBankFile|confirmBankImport|cancelBankImport)\(/);
   assert.match(css, /presentation-import-review/);
   assert.match(css, /presentation-import-table/);
 });

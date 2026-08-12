@@ -3,6 +3,7 @@
     'use strict';
 
     let controlsBound = false;
+    let pendingBankImport = null;
 
     function localDateString(date = new Date()) {
         const year = date.getFullYear();
@@ -192,6 +193,180 @@
         showToast('Relatório Excel exportado.');
     }
 
+    function cloneBankImportState(value) {
+      return value ? JSON.parse(JSON.stringify(value)) : null;
+    }
+
+    function normalizeBankText(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+
+    function merchantRuleKey(description) {
+      const stop = new Set(['compra', 'pagamento', 'debito', 'credito', 'pix', 'transacao', 'cartao', 'online', 'brasil', 'ltda', 'sa']);
+      const words = normalizeBankText(description)
+        .replace(/[^a-z\s]/g, ' ')
+        .split(/\s+/)
+        .filter(word => word.length >= 3 && !stop.has(word));
+      return words.slice(0, 2).join(' ').slice(0, 60);
+    }
+
+    function getPendingBankImport() {
+      return cloneBankImportState(pendingBankImport);
+    }
+
+    function setBankImportResult(message) {
+      if (typeof document === 'undefined') return;
+      const result = document.getElementById('product-bank-result');
+      if (result) result.textContent = String(message || '');
+    }
+
+    function notifyBankImportReview(options = {}) {
+      root.PlannkePresentationDesktop?.renderBankImportReview?.(options);
+    }
+
+    function updateBankImportItem(index, patch = {}) {
+      const item = pendingBankImport?.items?.[Number(index)];
+      if (!item) return false;
+      if (Object.prototype.hasOwnProperty.call(patch, 'include')) item.include = !!patch.include;
+      if (Object.prototype.hasOwnProperty.call(patch, 'category')) {
+        item.category = String(patch.category || 'Outros');
+        item.categoryChanged = item.category !== item.originalCategory;
+      }
+      if (Object.prototype.hasOwnProperty.call(patch, 'remember')) {
+        item.remember = !!patch.remember && !!merchantRuleKey(item.transaction?.description);
+      }
+      return true;
+    }
+
+    function cancelBankImport() {
+      pendingBankImport = null;
+      notifyBankImportReview();
+      setBankImportResult('Importação cancelada; nenhum lançamento foi alterado.');
+    }
+
+    function confirmBankImport() {
+      if (!pendingBankImport) return;
+      const data = typeof root.getData === 'function' ? root.getData() : null;
+      const core = root.PlannkeCore;
+      if (!data || !core) return;
+      const selected = pendingBankImport.items.filter(item => item.include);
+      if (!selected.length) {
+        showToast('Selecione pelo menos uma movimentação.', 'error');
+        return;
+      }
+    
+      if (selected.length < 5) {
+        try { root.PlannkeStorage?.createSnapshot?.('before-bank-import'); }
+        catch (error) { console.warn('Ponto de recuperação da importação indisponível:', error); }
+      }
+    
+      if (typeof core.ensurePlanning === 'function') core.ensurePlanning(data);
+      if (!data.planning || typeof data.planning !== 'object') data.planning = {};
+      if (!Array.isArray(data.planning.categoryRules)) data.planning.categoryRules = [];
+    
+      selected.forEach(item => {
+        const transaction = { ...item.transaction, category: item.category || 'Outros' };
+        data.transactions.push(transaction);
+        if (!item.remember) return;
+        const contains = merchantRuleKey(transaction.description);
+        if (!contains) return;
+        const exists = data.planning.categoryRules.some(rule => normalizeBankText(rule.contains) === contains && rule.category === transaction.category);
+        if (!exists) {
+          data.planning.categoryRules.push({
+            id: typeof core.safeId === 'function' ? core.safeId('', 'catrule') : `catrule-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+            contains,
+            category: transaction.category
+          });
+        }
+      });
+    
+      if (typeof core.sanitizePlanning === 'function') data.planning = core.sanitizePlanning(data.planning);
+      root.saveData?.(data);
+      root.renderAll?.();
+      const imported = selected.length;
+      const learned = selected.filter(item => item.remember).length;
+      pendingBankImport = null;
+      notifyBankImportReview();
+      setBankImportResult(`${imported} movimentação${imported === 1 ? '' : 'ões'} confirmada${imported === 1 ? '' : 's'}${learned ? ` · ${learned} regra${learned === 1 ? '' : 's'} memorizada${learned === 1 ? '' : 's'}` : ''}.`);
+      showToast(`${imported} movimentação${imported === 1 ? '' : 'ões'} importada${imported === 1 ? '' : 's'}.`);
+    }
+
+    async function readBankFileText(file) {
+      if (!file || typeof file.arrayBuffer !== 'function') throw new Error('Arquivo bancário inválido.');
+      const encoding = String(file.name || '').toLowerCase().endsWith('.ofx') ? 'windows-1252' : 'utf-8';
+      const Decoder = root.TextDecoder;
+      if (typeof Decoder !== 'function') throw new Error('TextDecoder indisponível.');
+      return new Decoder(encoding).decode(await file.arrayBuffer());
+    }
+
+    async function stageBankFile(file, accountId) {
+      const core = root.PlannkeCore;
+      const data = typeof root.getData === 'function' ? root.getData() : null;
+      if (!core || !data) return null;
+      try {
+        const source = await readBankFileText(file);
+        const planning = data.planning && typeof data.planning === 'object' ? data.planning : {};
+        const rules = Array.isArray(planning.categoryRules) ? planning.categoryRules : [];
+        const lower = String(file.name || '').toLowerCase();
+        const incoming = lower.endsWith('.ofx')
+          ? core.parseOfxBank(source, accountId, rules)
+          : core.parseCsvBank(source, accountId, rules);
+        const fresh = core.dedupeImported(data.transactions || [], incoming || []);
+        if (!incoming?.length) {
+          showToast('Não consegui identificar movimentações nesse arquivo.', 'error');
+          return null;
+        }
+        if (!fresh.length) {
+          showToast('Nenhuma movimentação nova encontrada.', 'info');
+          return null;
+        }
+        pendingBankImport = {
+          accountId,
+          fileName: file.name,
+          totalFound: incoming.length,
+          items: fresh.map(transaction => {
+            const originalCategory = transaction.category || 'Outros';
+            const suggested = !['Outros', 'Sem Categoria', ''].includes(originalCategory);
+            return {
+              transaction: { ...transaction },
+              originalCategory,
+              category: originalCategory,
+              suggested,
+              categoryChanged: false,
+              include: true,
+              remember: false
+            };
+          })
+        };
+        notifyBankImportReview({ focus: true });
+        setBankImportResult(`${incoming.length} encontradas · ${fresh.length} novas aguardando revisão.`);
+        return getPendingBankImport();
+      } catch (error) {
+        console.error(error);
+        showToast('Erro ao ler o extrato.', 'error');
+        return null;
+      } finally {
+        if (typeof document !== 'undefined') {
+          const input = document.getElementById('product-bank-file');
+          if (input) input.value = '';
+        }
+      }
+    }
+
+    function captureBankImport(event) {
+      if (event.target?.id !== 'product-bank-file') return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const file = event.target.files?.[0];
+      const accountId = document.getElementById('product-bank-account')?.value;
+      if (!file || !accountId) {
+        showToast('Escolha a conta antes de selecionar o extrato.', 'error');
+        event.target.value = '';
+        return;
+      }
+      void stageBankFile(file, accountId);
+    }
+
     function refreshBankAccountOptions(select, data) {
       if (!select) return;
       const selected = select.value || '';
@@ -275,6 +450,7 @@
         if (controlsBound || typeof document === 'undefined') return;
         controlsBound = true;
         ensureBankImportPanel();
+        document.addEventListener('change', captureBankImport, true);
         document.getElementById('data-export-excel')?.addEventListener('click', exportToExcel);
         document.getElementById('settings-clear-data')?.addEventListener('click', confirmClearData);
         root.addEventListener?.('plannke:data-changed', () => {
@@ -294,6 +470,14 @@
         accountRows,
         cardRows,
         planningRows,
+        getPendingBankImport,
+        merchantRuleKey,
+        updateBankImportItem,
+        cancelBankImport,
+        confirmBankImport,
+        readBankFileText,
+        stageBankFile,
+        captureBankImport,
         ensureBankImportPanel,
         refreshBankAccountOptions,
         bindDataControls

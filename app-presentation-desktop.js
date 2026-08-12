@@ -10,7 +10,6 @@
     let planningObserver = null;
     let planningRepairScheduled = false;
     let planningRepairEventPending = false;
-    let pendingBankImport = null;
 
     function make(tag, className, text) {
         const node = document.createElement(tag);
@@ -278,19 +277,6 @@
         renderBankImportReview();
     }
 
-    function normalizeText(value) {
-        return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-    }
-
-    function merchantRuleKey(description) {
-        const stop = new Set(['compra', 'pagamento', 'debito', 'credito', 'pix', 'transacao', 'cartao', 'online', 'brasil', 'ltda', 'sa']);
-        const words = normalizeText(description)
-            .replace(/[^a-z\s]/g, ' ')
-            .split(/\s+/)
-            .filter(word => word.length >= 3 && !stop.has(word));
-        return words.slice(0, 2).join(' ').slice(0, 60);
-    }
-
     function categoryOptions(data, type, selected) {
         const defaults = type === 'income'
             ? ['Salário', 'Freelance', 'Rendimentos', 'Reembolso', 'Outros']
@@ -304,57 +290,9 @@
         return [...new Set([...fromApp, ...used, selected, ...defaults].filter(Boolean))].sort((a, b) => a.localeCompare(b, 'pt-BR'));
     }
 
-    function cancelBankImport() {
-        pendingBankImport = null;
-        document.getElementById('presentation-import-review')?.remove();
-        const result = document.getElementById('product-bank-result');
-        if (result) result.textContent = 'Importação cancelada; nenhum lançamento foi alterado.';
-    }
-
-    function confirmBankImport() {
-        if (!pendingBankImport) return;
-        const data = getDataSafe();
-        const core = root.PlannkeCore;
-        if (!data || !core) return;
-        const selected = pendingBankImport.items.filter(item => item.include);
-        if (!selected.length) {
-            root.showToast?.('Selecione pelo menos uma movimentação.', 'error');
-            return;
-        }
-
-        if (typeof core.ensurePlanning === 'function') core.ensurePlanning(data);
-        if (!data.planning || typeof data.planning !== 'object') data.planning = {};
-        if (!Array.isArray(data.planning.categoryRules)) data.planning.categoryRules = [];
-
-        selected.forEach(item => {
-            const transaction = { ...item.transaction, category: item.category || 'Outros' };
-            data.transactions.push(transaction);
-            if (!item.remember) return;
-            const contains = merchantRuleKey(transaction.description);
-            if (!contains) return;
-            const exists = data.planning.categoryRules.some(rule => normalizeText(rule.contains) === contains && rule.category === transaction.category);
-            if (!exists) {
-                data.planning.categoryRules.push({
-                    id: typeof core.safeId === 'function' ? core.safeId('', 'catrule') : `catrule-${Date.now()}-${Math.random().toString(16).slice(2)}`,
-                    contains,
-                    category: transaction.category
-                });
-            }
-        });
-
-        if (typeof core.sanitizePlanning === 'function') data.planning = core.sanitizePlanning(data.planning);
-        root.saveData?.(data);
-        root.renderAll?.();
-        const imported = selected.length;
-        const learned = selected.filter(item => item.remember).length;
-        pendingBankImport = null;
-        document.getElementById('presentation-import-review')?.remove();
-        const result = document.getElementById('product-bank-result');
-        if (result) result.textContent = `${imported} movimentação${imported === 1 ? '' : 'ões'} confirmada${imported === 1 ? '' : 's'}${learned ? ` · ${learned} regra${learned === 1 ? '' : 's'} memorizada${learned === 1 ? '' : 's'}` : ''}.`;
-        root.showToast?.(`${imported} movimentação${imported === 1 ? '' : 'ões'} importada${imported === 1 ? '' : 's'}.`);
-    }
-
-    function renderBankImportReview() {
+    function renderBankImportReview(options = {}) {
+        const bankImport = root.PlannkeDataActions;
+        const pendingBankImport = bankImport?.getPendingBankImport?.();
         const existing = document.getElementById('presentation-import-review');
         if (!pendingBankImport) {
             existing?.remove();
@@ -388,7 +326,7 @@
             const include = make('input');
             include.type = 'checkbox';
             include.checked = item.include;
-            include.addEventListener('change', () => { item.include = include.checked; row.classList.toggle('excluded', !item.include); });
+            include.addEventListener('change', () => { bankImport?.updateBankImportItem?.(index, { include: include.checked }); row.classList.toggle('excluded', !include.checked); });
             includeCell.append(include, make('span', '', '')); 
 
             const date = make('span', 'presentation-import-date', formatLocalDate(item.transaction.date));
@@ -406,17 +344,16 @@
                 category.appendChild(option);
             });
             category.addEventListener('change', () => {
-                item.category = category.value;
-                item.categoryChanged = item.category !== item.originalCategory;
-                remember.disabled = !merchantRuleKey(item.transaction.description);
+                bankImport?.updateBankImportItem?.(index, { category: category.value });
+                remember.disabled = !bankImport?.merchantRuleKey?.(item.transaction.description);
             });
 
             const rememberCell = make('label', 'presentation-import-remember');
             const remember = make('input');
             remember.type = 'checkbox';
             remember.checked = item.remember;
-            remember.disabled = !merchantRuleKey(item.transaction.description);
-            remember.addEventListener('change', () => { item.remember = remember.checked; });
+            remember.disabled = !bankImport?.merchantRuleKey?.(item.transaction.description);
+            remember.addEventListener('change', () => { bankImport?.updateBankImportItem?.(index, { remember: remember.checked }); });
             rememberCell.append(remember, make('span', '', 'Lembrar'));
 
             row.append(includeCell, date, description, value, category, rememberCell);
@@ -431,85 +368,16 @@
         const actions = make('div', 'presentation-import-actions');
         const cancel = make('button', 'btn btn-outline-secondary', 'Cancelar');
         cancel.type = 'button';
-        cancel.addEventListener('click', cancelBankImport);
+        cancel.addEventListener('click', () => bankImport?.cancelBankImport?.());
         const confirm = make('button', 'btn btn-primary');
         confirm.type = 'button';
         confirm.append(icon('ph-check-circle'), document.createTextNode(' Confirmar selecionadas'));
-        confirm.addEventListener('click', confirmBankImport);
+        confirm.addEventListener('click', () => bankImport?.confirmBankImport?.());
         actions.append(cancel, confirm);
         footer.append(hint, actions);
         review.append(header, tableWrap, footer);
         if (!existing) view.appendChild(review);
-    }
-
-    function stageBankFile(file, accountId) {
-        const core = root.PlannkeCore;
-        const data = getDataSafe();
-        if (!core || !data) return;
-        const reader = new FileReader();
-        reader.onload = () => {
-            try {
-                const planning = data.planning && typeof data.planning === 'object' ? data.planning : {};
-                const rules = Array.isArray(planning.categoryRules) ? planning.categoryRules : [];
-                const lower = file.name.toLowerCase();
-                const incoming = lower.endsWith('.ofx')
-                    ? core.parseOfxBank(reader.result, accountId, rules)
-                    : core.parseCsvBank(reader.result, accountId, rules);
-                const fresh = core.dedupeImported(data.transactions || [], incoming || []);
-                if (!incoming?.length) {
-                    root.showToast?.('Não consegui identificar movimentações nesse arquivo.', 'error');
-                    return;
-                }
-                if (!fresh.length) {
-                    root.showToast?.('Nenhuma movimentação nova encontrada.', 'info');
-                    return;
-                }
-                pendingBankImport = {
-                    accountId,
-                    fileName: file.name,
-                    totalFound: incoming.length,
-                    items: fresh.map(transaction => {
-                        const originalCategory = transaction.category || 'Outros';
-                        const suggested = !['Outros', 'Sem Categoria', ''].includes(originalCategory);
-                        return {
-                            transaction: { ...transaction },
-                            originalCategory,
-                            category: originalCategory,
-                            suggested,
-                            categoryChanged: false,
-                            include: true,
-                            remember: false
-                        };
-                    })
-                };
-                renderBankImportReview();
-                document.getElementById('presentation-import-review')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                const result = document.getElementById('product-bank-result');
-                if (result) result.textContent = `${incoming.length} encontradas · ${fresh.length} novas aguardando revisão.`;
-            } catch (error) {
-                console.error(error);
-                root.showToast?.('Erro ao ler o extrato.', 'error');
-            } finally {
-                const input = document.getElementById('product-bank-file');
-                if (input) input.value = '';
-            }
-        };
-        const encoding = file.name.toLowerCase().endsWith('.ofx') ? 'windows-1252' : 'utf-8';
-        reader.readAsText(file, encoding);
-    }
-
-    function captureBankImport(event) {
-        if (event.target?.id !== 'product-bank-file') return;
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const file = event.target.files?.[0];
-        const accountId = document.getElementById('product-bank-account')?.value;
-        if (!file || !accountId) {
-            root.showToast?.('Escolha a conta antes de selecionar o extrato.', 'error');
-            event.target.value = '';
-            return;
-        }
-        stageBankFile(file, accountId);
+        if (options.focus) review.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function updateDesktopCopy() {
@@ -616,7 +484,6 @@
     function init() {
         if (initialized || typeof document === 'undefined') return;
         initialized = true;
-        document.addEventListener('change', captureBankImport, true);
         document.getElementById('entityDetailModal')?.addEventListener('show.bs.modal', () => window.setTimeout(decorateDetailWorkspace, 0));
 
         markAutosaveAsPrimary();
