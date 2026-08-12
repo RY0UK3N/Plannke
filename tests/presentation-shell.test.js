@@ -12,7 +12,7 @@ const accountsCss = fs.readFileSync(path.join(root, 'app-presentation-accounts.c
 const formsCss = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
 const statesCss = fs.readFileSync(path.join(root, 'app-presentation-states.css'), 'utf8');
 
-test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
+test('presentation shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
   assert.doesNotMatch(js, /\.outerHTML\s*=/);
   assert.doesNotMatch(js, /insertAdjacentHTML\s*\(/);
