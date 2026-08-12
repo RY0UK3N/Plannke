@@ -1,0 +1,40 @@
+name: Promote bank import workflow once
+
+on:
+  push:
+    branches:
+      - refactor/data-bank-import-workflow
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate migration script
+        run: node --check scripts/promote-bank-import-workflow-once.js
+
+      - name: Promote bank import workflow
+        run: node scripts/promote-bank-import-workflow-once.js
+
+      - name: Run full test suite
+        run: npm test
+
+      - name: Commit validated extraction
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "refactor: move bank import workflow into data runtime"
+          git push
