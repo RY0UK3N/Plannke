@@ -516,6 +516,125 @@
         });
     }
 
+    function normalizeHousehold(data) {
+        if (!data || typeof data !== 'object') return { enabled: false, members: [] };
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        const raw = data.settings.household && typeof data.settings.household === 'object' ? data.settings.household : {};
+        const ids = new Set();
+        const members = (Array.isArray(raw.members) ? raw.members : []).map((member, index) => {
+            let id = safeId(member?.id, `member${index + 1}`);
+            while (ids.has(id)) id = safeId('', 'member');
+            ids.add(id);
+            return { id, name: cleanText(member?.name || `Pessoa ${index + 1}`, 80) };
+        }).filter(member => member.name);
+        data.settings.household = { enabled: !!raw.enabled || members.length > 0, members };
+        return data.settings.household;
+    }
+
+    function sharedTransactionMeta(data) {
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        if (!data.settings.sharedTransactionMeta || typeof data.settings.sharedTransactionMeta !== 'object') data.settings.sharedTransactionMeta = {};
+        return data.settings.sharedTransactionMeta;
+    }
+
+    function restoreSharedTransactionMeta(data) {
+        const meta = sharedTransactionMeta(data);
+        let changed = false;
+        (data.transactions || []).forEach(tx => {
+            const saved = meta[tx.id];
+            if (!saved || typeof saved !== 'object') return;
+            if (!tx.paidByMemberId && saved.paidByMemberId) {
+                tx.paidByMemberId = saved.paidByMemberId;
+                changed = true;
+            }
+            if ((!Array.isArray(tx.sharedWithMemberIds) || !tx.sharedWithMemberIds.length) && Array.isArray(saved.sharedWithMemberIds)) {
+                tx.sharedWithMemberIds = saved.sharedWithMemberIds.slice(0, 12);
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
+    function snapshotSharedTransactionMeta(data) {
+        if (!data.settings || typeof data.settings !== 'object') data.settings = {};
+        const meta = {};
+        (data.transactions || []).forEach(tx => {
+            const shared = Array.isArray(tx.sharedWithMemberIds) ? tx.sharedWithMemberIds.slice(0, 12) : [];
+            if (!tx.paidByMemberId && !shared.length) return;
+            meta[tx.id] = { paidByMemberId: tx.paidByMemberId || null, sharedWithMemberIds: shared };
+        });
+        data.settings.sharedTransactionMeta = meta;
+        normalizeHousehold(data);
+        return data;
+    }
+
+    function recurringRuleSignature(rule) {
+        return [
+            rule?.type,
+            cleanText(rule?.description, 160).toLowerCase(),
+            cleanText(rule?.category, 100).toLowerCase(),
+            toNumber(rule?.amount, 0).toFixed(2),
+            rule?.accountId || ''
+        ].join('|');
+    }
+
+    function migrateLegacyRecurring(data) {
+        const planning = sanitizePlanning(ensurePlanning(data));
+        const signatures = new Set(planning.recurringRules.map(recurringRuleSignature));
+        let changed = false;
+        (data.transactions || []).forEach(tx => {
+            if (!tx.recurring || tx.type === 'transfer') return;
+            const rule = {
+                id: safeId('', 'rule'),
+                type: tx.type,
+                description: tx.description,
+                category: tx.category || 'Outros',
+                amount: toNumber(tx.amount, 0),
+                dayOfMonth: Number(String(tx.date || '').slice(8, 10)) || 1,
+                accountId: tx.accountId,
+                startDate: tx.date,
+                endDate: '',
+                active: true
+            };
+            const signature = recurringRuleSignature(rule);
+            if (!signatures.has(signature)) {
+                planning.recurringRules.push(rule);
+                signatures.add(signature);
+            }
+            tx.recurring = false;
+            changed = true;
+        });
+        if (changed) data.planning = sanitizePlanning(planning);
+        return changed;
+    }
+
+    function applyCategoryRulesToGenericTransactions(data) {
+        const planning = sanitizePlanning(ensurePlanning(data));
+        let changed = false;
+        (data.transactions || []).forEach(tx => {
+            if (tx.type === 'transfer' || !['Outros', 'Sem Categoria', '', null, undefined].includes(tx.category)) return;
+            const next = applyCategoryRules(tx.description, tx.category || 'Outros', planning.categoryRules);
+            if (next && next !== tx.category) {
+                tx.category = next;
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
+    function prepareProductData(data, today = localDateString()) {
+        if (!data || typeof data !== 'object') return { data, changed: false };
+        ensurePlanning(data);
+        normalizeHousehold(data);
+        const sharedChanged = restoreSharedTransactionMeta(data);
+        const recurringChanged = migrateLegacyRecurring(data);
+        const categoryChanged = applyCategoryRulesToGenericTransactions(data);
+        const ledger = migrateLedger(data, today);
+        data.planning = sanitizePlanning(data.planning);
+        snapshotSharedTransactionMeta(data);
+        return { data, changed: !!(sharedChanged || recurringChanged || categoryChanged || ledger.changed) };
+    }
+
     return {
         DAY_MS,
         toNumber,
@@ -528,6 +647,14 @@
         daysBetween,
         ensurePlanning,
         sanitizePlanning,
+        normalizeHousehold,
+        sharedTransactionMeta,
+        restoreSharedTransactionMeta,
+        snapshotSharedTransactionMeta,
+        recurringRuleSignature,
+        migrateLegacyRecurring,
+        applyCategoryRulesToGenericTransactions,
+        prepareProductData,
         transactionEffect,
         normalizeStatuses,
         recomputeAccountBalances,

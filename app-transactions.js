@@ -49,6 +49,182 @@
         return option;
     }
 
+    function cleanProductText(value, max = 160) {
+        const core = root.PlannkeCore;
+        return core?.cleanText ? core.cleanText(value, max) : String(value ?? '').trim().slice(0, max);
+    }
+
+    function getHouseholdMembers() {
+        const data = root.getData();
+        const core = root.PlannkeCore;
+        if (core?.normalizeHousehold) return core.normalizeHousehold(data).members || [];
+        return Array.isArray(data.settings?.household?.members) ? data.settings.household.members : [];
+    }
+
+    function ensureTransactionMetadataFields() {
+        if (typeof document === 'undefined' || byId('tx-status')) return;
+        const dateGroup = byId('tx-date')?.closest('.mb-3');
+        if (!dateGroup) return;
+    
+        const box = document.createElement('div');
+        box.className = 'product-tx-extra';
+    
+        const row = document.createElement('div');
+        row.className = 'row g-2 mb-3';
+    
+        const statusCol = document.createElement('div');
+        statusCol.className = 'col-12 col-sm-5';
+        const statusLabel = document.createElement('label');
+        statusLabel.className = 'form-label text-muted small fw-semibold text-uppercase';
+        statusLabel.textContent = 'Situação';
+        const status = document.createElement('select');
+        status.id = 'tx-status';
+        status.className = 'form-select';
+        appendOption(status, 'auto', 'Automático pela data');
+        appendOption(status, 'completed', 'Realizada');
+        appendOption(status, 'planned', 'Prevista');
+        statusCol.append(statusLabel, status);
+    
+        const tagsCol = document.createElement('div');
+        tagsCol.className = 'col-12 col-sm-7';
+        const tagsLabel = document.createElement('label');
+        tagsLabel.className = 'form-label text-muted small fw-semibold text-uppercase';
+        tagsLabel.textContent = 'Tags';
+        const tags = document.createElement('input');
+        tags.id = 'tx-tags';
+        tags.className = 'form-control';
+        tags.placeholder = 'viagem, trabalho, férias';
+        tags.autocomplete = 'off';
+        tagsCol.append(tagsLabel, tags);
+        row.append(statusCol, tagsCol);
+    
+        const details = document.createElement('details');
+        details.id = 'tx-sharing-details';
+        details.className = 'product-sharing-details mb-3';
+        const summary = document.createElement('summary');
+        const usersIcon = document.createElement('i');
+        usersIcon.className = 'ph ph-users-three me-1';
+        summary.append(usersIcon, document.createTextNode('Dividir este gasto'));
+    
+        const sharingRow = document.createElement('div');
+        sharingRow.className = 'row g-2 mt-1';
+        const paidCol = document.createElement('div');
+        paidCol.className = 'col-12 col-sm-5';
+        const paidLabel = document.createElement('label');
+        paidLabel.className = 'form-label small text-muted';
+        paidLabel.textContent = 'Pago por';
+        const paid = document.createElement('select');
+        paid.id = 'tx-paid-by';
+        paid.className = 'form-select';
+        paidCol.append(paidLabel, paid);
+    
+        const sharedCol = document.createElement('div');
+        sharedCol.className = 'col-12 col-sm-7';
+        const sharedLabel = document.createElement('label');
+        sharedLabel.className = 'form-label small text-muted';
+        sharedLabel.textContent = 'Dividir igualmente com';
+        const shared = document.createElement('select');
+        shared.id = 'tx-shared-with';
+        shared.className = 'form-select';
+        shared.multiple = true;
+        shared.size = 3;
+        sharedCol.append(sharedLabel, shared);
+        sharingRow.append(paidCol, sharedCol);
+        details.append(summary, sharingRow);
+    
+        box.append(row, details);
+        dateGroup.after(box);
+    }
+
+    function refreshTransactionMemberFields(transaction = null, mode = 'new') {
+        ensureTransactionMetadataFields();
+        const paid = byId('tx-paid-by');
+        const shared = byId('tx-shared-with');
+        if (!paid || !shared) return;
+        const members = getHouseholdMembers();
+        paid.replaceChildren();
+        shared.replaceChildren();
+        appendOption(paid, '', 'Só eu / não dividir');
+        members.forEach(member => {
+            appendOption(paid, member.id, member.name);
+            appendOption(shared, member.id, member.name);
+        });
+        const details = byId('tx-sharing-details');
+        details?.classList.toggle('d-none', members.length < 2);
+        if (mode === 'edit' && transaction) {
+            paid.value = transaction.paidByMemberId || '';
+            const selected = new Set(Array.isArray(transaction.sharedWithMemberIds) ? transaction.sharedWithMemberIds : []);
+            [...shared.options].forEach(option => { option.selected = selected.has(option.value); });
+        } else {
+            paid.value = '';
+            [...shared.options].forEach(option => { option.selected = false; });
+        }
+    }
+
+    function resetTransactionMetadataFields() {
+        ensureTransactionMetadataFields();
+        if (byId('tx-status')) byId('tx-status').value = 'auto';
+        if (byId('tx-tags')) byId('tx-tags').value = '';
+        refreshTransactionMemberFields();
+    }
+
+    function populateTransactionMetadataFields(transaction, mode) {
+        ensureTransactionMetadataFields();
+        if (byId('tx-status')) byId('tx-status').value = mode === 'edit' ? (transaction?.status || 'auto') : 'auto';
+        if (byId('tx-tags')) byId('tx-tags').value = Array.isArray(transaction?.tags) ? transaction.tags.join(', ') : '';
+        refreshTransactionMemberFields(transaction, mode);
+    }
+
+    function applyCategorySuggestion() {
+        const description = byId('tx-desc')?.value || '';
+        const select = byId('tx-category');
+        const core = root.PlannkeCore;
+        if (!description || !select || !core?.applyCategoryRules) return;
+        const data = root.getData();
+        const planning = core.ensurePlanning(data);
+        const suggested = core.applyCategoryRules(description, select.value || 'Outros', planning.categoryRules);
+        if ([...select.options].some(option => option.value === suggested)) select.value = suggested;
+    }
+
+    function readTransactionMetadata() {
+        ensureTransactionMetadataFields();
+        return {
+            status: byId('tx-status')?.value || 'auto',
+            tags: String(byId('tx-tags')?.value || '').split(',').map(tag => cleanProductText(tag, 40)).filter(Boolean).slice(0, 10),
+            paidByMemberId: byId('tx-paid-by')?.value || null,
+            sharedWithMemberIds: [...(byId('tx-shared-with')?.selectedOptions || [])].map(option => option.value).filter(Boolean).slice(0, 12)
+        };
+    }
+
+    function findSavedTransaction(data, args) {
+        const [id, type, description, amount, , accountId, , currentInstallment, , groupId] = args;
+        if (id) return data.transactions.find(transaction => transaction.id === id) || null;
+        const core = root.PlannkeCore;
+        const safeDescription = core?.cleanText ? core.cleanText(description, 300) : String(description || '').trim();
+        return [...data.transactions].reverse().find(transaction =>
+            transaction.type === type && transaction.description === safeDescription &&
+            Math.abs(Number(transaction.amount) - Number(amount)) < 0.005 && transaction.accountId === accountId &&
+            (!groupId || transaction.groupId === groupId) &&
+            (!currentInstallment || Number(transaction.currentInstallment) === Number(currentInstallment))
+        ) || null;
+    }
+
+    function applySavedTransactionMetadata(args, metadata) {
+        const data = root.getData();
+        const transaction = findSavedTransaction(data, args);
+        if (!transaction) return;
+        const core = root.PlannkeCore;
+        const today = core?.localDateString ? core.localDateString() : todayLocal();
+        transaction.status = ['completed', 'planned'].includes(metadata.status)
+            ? metadata.status
+            : (String(transaction.date || '') > today ? 'planned' : 'completed');
+        transaction.tags = metadata.tags.slice(0, 10);
+        transaction.paidByMemberId = metadata.paidByMemberId;
+        transaction.sharedWithMemberIds = metadata.sharedWithMemberIds.slice(0, 12);
+        if (args[11] && args[1] !== 'transfer') core?.migrateLegacyRecurring?.(data);
+        root.saveData(data);
+    }
+
     function populateEntitySelect(select, data, selectedValue = '') {
         if (!select) return;
         select.replaceChildren();
@@ -140,6 +316,7 @@
         if (!checked) return;
 
         const type = checked.value;
+        ensureTransactionMetadataFields();
         const installmentMark = byId('tx-is-installment-group');
         const installments = byId('tx-installments-group');
         const categoryGroup = byId('tx-category-group');
@@ -182,6 +359,7 @@
     function openTxModal(preType) {
         if (byId('tx-id')) byId('tx-id').value = '';
         populateAccountDropdowns();
+        resetTransactionMetadataFields();
         if (byId('tx-date')) byId('tx-date').value = todayLocal();
 
         if (preType) {
@@ -206,12 +384,15 @@
         if (byId('tx-modal-title')) byId('tx-modal-title').textContent = 'Nova Transação';
         byId('tx-fields-wrapper')?.classList.add('hidden');
         byId('tx-installment-helper')?.replaceChildren();
+        resetTransactionMetadataFields();
         root.clearFormError?.();
     }
 
     function bindTransactionControls() {
         if (controlsBound || typeof document === 'undefined') return;
         controlsBound = true;
+        ensureTransactionMetadataFields();
+        refreshTransactionMemberFields();
 
         ['type-income', 'type-expense', 'type-transfer', 'tx-is-installment', 'tx-account'].forEach(id => {
             byId(id)?.addEventListener('change', toggleInstallmentField);
@@ -221,11 +402,13 @@
         byId('tx-date')?.addEventListener('click', event => {
             try { event.currentTarget?.showPicker?.(); } catch (_) {}
         });
+        byId('tx-desc')?.addEventListener('blur', applyCategorySuggestion);
     }
 
     function setupModalEvents() {
         if (modalEventsBound) return;
         modalEventsBound = true;
+        byId('transactionModal')?.addEventListener('show.bs.modal', () => refreshTransactionMemberFields());
         byId('transactionModal')?.addEventListener('hidden.bs.modal', resetTransactionModal);
     }
 
@@ -254,15 +437,21 @@
         if (type === 'transfer' && !destination) { root.showFormError('Selecione a conta de destino.'); return; }
         if (type === 'transfer' && account === destination) { root.showFormError('Origem e destino iguais.'); return; }
 
+        const metadata = readTransactionMetadata();
+        const persistTransaction = (...args) => {
+            root.saveTransaction(...args);
+            applySavedTransactionMetadata(args, metadata);
+        };
+
         try {
             if (id) {
-                root.saveTransaction(id, type, description, amount, date, account, category, 1, 1, null, destination, isRecurring);
+                persistTransaction(id, type, description, amount, date, account, category, 1, 1, null, destination, isRecurring);
                 root.showToast('Transação atualizada ✓');
             } else if (installments > 1 && type === 'expense') {
                 const groupId = root.generateId();
                 const partValue = amount / installments;
                 buildInstallmentDates(date, installments).forEach((installmentDate, index) => {
-                    root.saveTransaction(
+                    persistTransaction(
                         null,
                         type,
                         description,
@@ -279,7 +468,7 @@
                 });
                 root.showToast(`${installments}x de ${root.formatCurrency(partValue)} salvas! 📅`);
             } else {
-                root.saveTransaction(null, type, description, amount, date, account, category, 1, 1, null, destination, isRecurring);
+                persistTransaction(null, type, description, amount, date, account, category, 1, 1, null, destination, isRecurring);
                 const verb = type === 'income' ? '✅ Entrada' : (type === 'transfer' ? '🔀 Transferência' : '💸 Gasto');
                 root.showToast(`${verb} de ${root.formatCurrency(amount)} salvo!${isRecurring ? ' 🔁' : ''}`);
             }
@@ -323,6 +512,7 @@
             byId('tx-category').value = transaction.category;
         }
         if (byId('tx-is-recurring')) byId('tx-is-recurring').checked = !!transaction.recurring;
+        populateTransactionMetadataFields(transaction, mode);
         if (byId('tx-modal-title')) byId('tx-modal-title').textContent = mode === 'edit' ? 'Editar Transação' : 'Duplicar Transação';
 
         byId('tx-installments-group')?.classList.add('hidden');
@@ -363,6 +553,10 @@
         toggleInstallmentField,
         updateInstallmentHelper,
         saveTransactionForm,
+        ensureTransactionMetadataFields,
+        refreshTransactionMemberFields,
+        readTransactionMetadata,
+        applySavedTransactionMetadata,
         buildInstallmentDates,
         dupTx,
         edTx,

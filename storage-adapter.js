@@ -29,8 +29,14 @@
     }
 
     function normalize(value) {
-        if (typeof root.normalizeData === 'function') return root.normalizeData(value);
-        return value && typeof value === 'object' ? clone(value) : null;
+        const normalized = typeof root.normalizeData === 'function'
+            ? root.normalizeData(value)
+            : (value && typeof value === 'object' ? clone(value) : null);
+        if (!normalized) return null;
+        const prepare = root.PlannkeCore?.prepareProductData;
+        if (typeof prepare !== 'function') return normalized;
+        const prepared = prepare(normalized);
+        return prepared?.data || normalized;
     }
 
     function collectionSize(value) {
