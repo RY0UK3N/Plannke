@@ -21,6 +21,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Fix dashboard migration anchor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/retire-product-runtime-once.js')
+          s = p.read_text()
+          old = "  '    function safeRenderDashboard(data) {\\n        const month = localToday().slice(0, 7);\\n        const monthly = (data.transactions || []).filter(tx => String(tx.date || \\\'\\\').startsWith(month));\\n',"
+          new = '''  "    function safeRenderDashboard(data) {\\n        const month = localToday().slice(0, 7);\\n        const monthly = (data.transactions || []).filter(tx => String(tx.date || '').startsWith(month));\\n",'''
+          if s.count(old) != 1:
+              raise SystemExit(f'expected one escaped dashboard anchor, found {s.count(old)}')
+          p.write_text(s.replace(old, new))
+          PY
       - name: Validate migration script
         run: node --check scripts/retire-product-runtime-once.js
       - name: Retire final product runtime
