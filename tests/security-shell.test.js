@@ -43,7 +43,8 @@ test('product layer, app shell and safe renderers are loaded in the required ord
   assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
   assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('product.js'));
-  assert.match(product, /script\.src = 'insights\.js'/);
+  assert.match(boot, /script\.src = 'insights\.js'/);
+  assert.match(boot, /serviceWorker\.register\('.\/sw\.js'\)/);
   assert.match(insights, /shell\.src = '\.\/app-shell\.js'/);
   assert.doesNotMatch(insights, /app-actions\.js|loadActions|plannkeActions/);
 });

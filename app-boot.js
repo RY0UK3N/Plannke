@@ -67,6 +67,20 @@
         }
     }
 
+    function loadProductEnhancements() {
+        if (!root || typeof document === 'undefined') return;
+        if (!document.querySelector('script[data-plannke-insights]')) {
+            const script = document.createElement('script');
+            script.src = 'insights.js';
+            script.async = false;
+            script.dataset.plannkeInsights = 'true';
+            document.body.appendChild(script);
+        }
+        if ('serviceWorker' in root.navigator && root.location?.protocol !== 'file:') {
+            root.navigator.serviceWorker.register('./sw.js').catch(error => console.warn('PWA indisponível:', error));
+        }
+    }
+
     const applicationInit = root?.initApp;
     const storageReady = loadStorageAdapter();
     storageReady.then(loadStorageUiAssets).catch(error => {
@@ -82,7 +96,8 @@
                 console.error('StorageAdapter indisponível; iniciando com o cache em memória.', error);
                 return null;
             })
-            .then(() => applicationInit.call(root));
+            .then(() => applicationInit.call(root))
+            .then(() => { loadProductEnhancements(); });
     }
 
     return {
@@ -90,6 +105,7 @@
         waitForStorageReady,
         loadStorageAdapter,
         loadStorageUiAssets,
+        loadProductEnhancements,
         startApplication
     };
 });
