@@ -26,9 +26,9 @@ test('body and view metadata use presentation names while visual selectors stay 
   assert.match(presentation, /dataset\.plannkePresentationView = asset/);
   assert.doesNotMatch(presentation, /dataset\.revampView|dataset\.plannkeRevampView/);
 
-  assert.match(shell, /classList\.add\('plannke-revamp'\)/);
-  assert.match(shell, /shell\.id = 'revamp-shell'/);
-  assert.match(presentation, /revamp-nav-item/);
+  assert.match(shell, /classList\.add\('plannke-presentation'\)/);
+  assert.match(shell, /shell\.id = 'presentation-shell'/);
+  assert.match(presentation, /presentation-nav-item/);
 });
 
 test('presentation metadata names do not rename the visual stylesheet boundary', () => {
@@ -38,7 +38,7 @@ test('presentation metadata names do not rename the visual stylesheet boundary',
 });
 
 test('PWA cache advances for presentation metadata update without renaming visual assets', () => {
-  assert.match(sw, /plannke-shell-v37/);
+  assert.match(sw, /plannke-shell-v38/);
   assert.match(sw, /'\.\/app-presentation\.css'/);
   assert.match(sw, /'\.\/app-presentation-desktop\.css'/);
 });

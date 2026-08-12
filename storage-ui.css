@@ -1,15 +1,15 @@
 /* Storage status + recovery workspace for the desktop app preview. */
 @media (min-width: 1080px) {
-    .revamp-local-status[data-storage-state="saving"] i {
+    .presentation-local-status[data-storage-state="saving"] i {
         color: var(--rv-accent);
         animation: plannke-storage-spin 850ms linear infinite;
     }
 
-    .revamp-local-status[data-storage-state="error"] {
+    .presentation-local-status[data-storage-state="error"] {
         color: var(--rv-danger);
     }
 
-    .revamp-local-status[data-storage-state="error"] i {
+    .presentation-local-status[data-storage-state="error"] i {
         color: var(--rv-danger);
     }
 
@@ -131,7 +131,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .revamp-local-status[data-storage-state="saving"] i {
+    .presentation-local-status[data-storage-state="saving"] i {
         animation: none;
     }
 }

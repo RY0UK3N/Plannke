@@ -89,7 +89,7 @@ test('canonical data actions replace the retired browser-storage and Memory Card
 test('canonical desktop shell is primed synchronously before DOMContentLoaded', () => {
   assert.match(shell, /function primeCanonicalShell\(/);
   assert.match(shell, /api\.primeCanonicalShell\(\);\s*api\.loadPresentationAssets\(\);/);
-  assert.match(shell, /document\.body\.classList\.add\('plannke-revamp'\)/);
+  assert.match(shell, /document\.body\.classList\.add\('plannke-presentation'\)/);
   assert.match(shell, /document\.body\.dataset\.plannkeCanonical = 'desktop'/);
   assert.match(shell, /Central financeira/);
   assert.match(shell, /CANONICAL_PAGES/);
@@ -120,7 +120,7 @@ test('canonical desktop styles are part of the first paint', () => {
     'app-presentation-desktop.css',
     'storage-ui.css'
   ].forEach(asset => assert.ok(productCss.includes(`@import url('./${asset}')`), `missing canonical CSS import: ${asset}`));
-  assert.match(productCss, /body:not\(\.plannke-revamp\) > main/);
+  assert.match(productCss, /body:not\(\.plannke-presentation\) > main/);
   assert.match(productCss, /visibility: hidden !important/);
   assert.match(shell, /function canonicalStylesPresent\(/);
   assert.match(shell, /!canonicalStylesPresent\(\) && !document\.querySelector\('link\[data-plannke-presentation\]'\)/);
@@ -234,7 +234,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v37'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v38'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));

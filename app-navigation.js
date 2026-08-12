@@ -282,7 +282,7 @@
     });
 
     function setActiveNavigation(target) {
-        document.querySelectorAll('.revamp-nav-item[data-target]').forEach(button => {
+        document.querySelectorAll('.presentation-nav-item[data-target]').forEach(button => {
             const active = button.dataset.target === target;
             button.classList.toggle('active', active);
             button.setAttribute('aria-current', active ? 'page' : 'false');
@@ -293,7 +293,7 @@
         if (navigationBound) return;
         navigationBound = true;
         document.addEventListener('click', event => {
-            const item = event.target.closest?.('.revamp-nav-item[data-target]');
+            const item = event.target.closest?.('.presentation-nav-item[data-target]');
             if (!item) return;
             event.preventDefault();
             navigateTo(item.dataset.target);

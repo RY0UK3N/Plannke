@@ -39,19 +39,19 @@
 }
 
 @media (min-width: 768px) {
-    body.plannke-revamp {
+    body.plannke-presentation {
         min-height: 100vh;
         background: var(--rv-bg);
         color: var(--rv-text);
     }
 
-    body.plannke-revamp > .planner-nav,
-    body.plannke-revamp > .mobile-tab-bar,
-    body.plannke-revamp > .fab-btn {
+    body.plannke-presentation > .planner-nav,
+    body.plannke-presentation > .mobile-tab-bar,
+    body.plannke-presentation > .fab-btn {
         display: none !important;
     }
 
-    .revamp-shell {
+    .presentation-shell {
         min-height: 100vh;
         display: grid;
         grid-template-columns: var(--rv-sidebar) minmax(0, 1fr);
@@ -60,7 +60,7 @@
             var(--rv-bg);
     }
 
-    .revamp-sidebar {
+    .presentation-sidebar {
         position: sticky;
         top: 0;
         height: 100vh;
@@ -73,18 +73,18 @@
         backdrop-filter: blur(24px);
     }
 
-    [data-bs-theme="light"] .revamp-sidebar {
+    [data-bs-theme="light"] .presentation-sidebar {
         background: rgba(248, 249, 252, 0.9);
     }
 
-    .revamp-brand {
+    .presentation-brand {
         display: flex;
         align-items: center;
         gap: 12px;
         padding: 0 8px 28px;
     }
 
-    .revamp-brand-mark {
+    .presentation-brand-mark {
         width: 38px;
         height: 38px;
         flex: 0 0 38px;
@@ -99,20 +99,20 @@
         box-shadow: 0 8px 24px rgba(111, 97, 232, 0.3);
     }
 
-    .revamp-brand-copy {
+    .presentation-brand-copy {
         min-width: 0;
         display: flex;
         flex-direction: column;
         line-height: 1.12;
     }
 
-    .revamp-brand-copy strong {
+    .presentation-brand-copy strong {
         color: var(--rv-text);
         font-size: 1.08rem;
         letter-spacing: -0.025em;
     }
 
-    .revamp-brand-copy span {
+    .presentation-brand-copy span {
         margin-top: 4px;
         color: var(--rv-muted);
         font-size: 0.69rem;
@@ -121,14 +121,14 @@
         text-transform: uppercase;
     }
 
-    .revamp-nav {
+    .presentation-nav {
         display: flex;
         flex-direction: column;
         gap: 5px;
     }
 
-    .revamp-nav-item,
-    .revamp-settings {
+    .presentation-nav-item,
+    .presentation-settings {
         width: 100%;
         min-height: 46px;
         display: flex;
@@ -145,39 +145,39 @@
         transition: background 150ms ease, color 150ms ease, transform 150ms ease;
     }
 
-    .revamp-nav-item i,
-    .revamp-settings i {
+    .presentation-nav-item i,
+    .presentation-settings i {
         flex: 0 0 20px;
         font-size: 1.15rem;
     }
 
-    .revamp-nav-item:hover,
-    .revamp-settings:hover {
+    .presentation-nav-item:hover,
+    .presentation-settings:hover {
         color: var(--rv-text);
         background: var(--rv-panel-hover);
     }
 
-    .revamp-nav-item.active {
+    .presentation-nav-item.active {
         color: var(--rv-text);
         background: var(--rv-accent-soft);
     }
 
-    .revamp-nav-item.active i {
+    .presentation-nav-item.active i {
         color: var(--rv-accent);
     }
 
-    .revamp-nav-item:focus-visible,
-    .revamp-settings:focus-visible,
-    .revamp-primary-action:focus-visible {
+    .presentation-nav-item:focus-visible,
+    .presentation-settings:focus-visible,
+    .presentation-primary-action:focus-visible {
         outline: 2px solid var(--rv-accent);
         outline-offset: 2px;
     }
 
-    .revamp-sidebar-spacer {
+    .presentation-sidebar-spacer {
         flex: 1;
     }
 
-    .revamp-local-status {
+    .presentation-local-status {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -187,17 +187,17 @@
         font-weight: 600;
     }
 
-    .revamp-local-status i {
+    .presentation-local-status i {
         color: var(--rv-success);
         font-size: 1rem;
     }
 
-    .revamp-content {
+    .presentation-content {
         min-width: 0;
         width: 100%;
     }
 
-    .revamp-topbar {
+    .presentation-topbar {
         min-height: 104px;
         display: flex;
         align-items: center;
@@ -210,15 +210,15 @@
         background: linear-gradient(to bottom, var(--rv-bg) 70%, rgba(11, 13, 18, 0));
     }
 
-    [data-bs-theme="light"] .revamp-topbar {
+    [data-bs-theme="light"] .presentation-topbar {
         background: linear-gradient(to bottom, var(--rv-bg) 70%, rgba(245, 246, 248, 0));
     }
 
-    .revamp-topbar-copy {
+    .presentation-topbar-copy {
         min-width: 0;
     }
 
-    .revamp-page-eyebrow {
+    .presentation-page-eyebrow {
         display: block;
         margin-bottom: 5px;
         color: var(--rv-accent);
@@ -228,7 +228,7 @@
         text-transform: uppercase;
     }
 
-    .revamp-page-title {
+    .presentation-page-title {
         margin: 0;
         color: var(--rv-text);
         font-size: clamp(1.55rem, 2.2vw, 2.05rem);
@@ -236,21 +236,21 @@
         letter-spacing: -0.045em;
     }
 
-    .revamp-page-subtitle {
+    .presentation-page-subtitle {
         margin: 5px 0 0;
         color: var(--rv-muted);
         font-size: 0.82rem;
         line-height: 1.45;
     }
 
-    .revamp-topbar-actions {
+    .presentation-topbar-actions {
         flex: 0 0 auto;
         display: flex;
         align-items: center;
         gap: 10px;
     }
 
-    .revamp-primary-action {
+    .presentation-primary-action {
         min-height: 42px;
         display: inline-flex;
         align-items: center;
@@ -266,35 +266,35 @@
         transition: transform 150ms ease, box-shadow 150ms ease;
     }
 
-    .revamp-primary-action:hover {
+    .presentation-primary-action:hover {
         transform: translateY(-1px);
         box-shadow: 0 13px 30px rgba(105, 89, 225, 0.28);
     }
 
-    .revamp-content > main.container-xl {
+    .presentation-content > main.container-xl {
         width: 100%;
         max-width: 1600px;
         margin: 0 auto;
         padding: 4px 34px 52px !important;
     }
 
-    .plannke-revamp .card,
-    .plannke-revamp .bg-glass {
+    .plannke-presentation .card,
+    .plannke-presentation .bg-glass {
         border: 1px solid var(--rv-border) !important;
         border-radius: var(--rv-radius-lg) !important;
         background: var(--rv-panel) !important;
         box-shadow: none;
     }
 
-    .plannke-revamp .card:hover {
+    .plannke-presentation .card:hover {
         border-color: var(--rv-border-strong) !important;
     }
 
-    .plannke-revamp .card-body {
+    .plannke-presentation .card-body {
         padding: 20px;
     }
 
-    .plannke-revamp .balance-card {
+    .plannke-presentation .balance-card {
         overflow: hidden;
         position: relative;
         border: 1px solid rgba(139, 124, 246, 0.22);
@@ -306,13 +306,13 @@
         box-shadow: var(--rv-shadow);
     }
 
-    [data-bs-theme="light"] .plannke-revamp .balance-card {
+    [data-bs-theme="light"] .plannke-presentation .balance-card {
         background:
             radial-gradient(circle at 100% 0%, rgba(101, 87, 223, 0.14), transparent 42%),
             #ffffff;
     }
 
-    .plannke-revamp .balance-label {
+    .plannke-presentation .balance-label {
         color: var(--rv-muted);
         font-size: 0.72rem;
         font-weight: 700;
@@ -320,7 +320,7 @@
         text-transform: uppercase;
     }
 
-    .plannke-revamp .balance-amount {
+    .plannke-presentation .balance-amount {
         margin-top: 10px;
         color: var(--rv-text);
         font-size: clamp(1.8rem, 3vw, 2.45rem);
@@ -328,7 +328,7 @@
         letter-spacing: -0.045em;
     }
 
-    .revamp-financial-pulse {
+    .presentation-financial-pulse {
         border: 1px solid var(--rv-border) !important;
         border-radius: var(--rv-radius-xl) !important;
         padding: 22px !important;
@@ -336,15 +336,15 @@
         box-shadow: none !important;
     }
 
-    .revamp-financial-pulse .product-section-heading {
+    .presentation-financial-pulse .product-section-heading {
         margin-bottom: 16px;
     }
 
-    .revamp-financial-pulse .product-pulse-grid {
+    .presentation-financial-pulse .product-pulse-grid {
         gap: 10px;
     }
 
-    .revamp-financial-pulse .product-metric {
+    .presentation-financial-pulse .product-metric {
         min-height: 112px;
         border: 1px solid var(--rv-border);
         border-radius: var(--rv-radius-md);
@@ -352,46 +352,46 @@
         background: var(--rv-bg-soft);
     }
 
-    .revamp-financial-pulse .product-metric strong {
+    .presentation-financial-pulse .product-metric strong {
         color: var(--rv-text);
         font-size: 1.24rem;
         letter-spacing: -0.03em;
     }
 
-    .revamp-financial-pulse .product-insight {
+    .presentation-financial-pulse .product-insight {
         margin-top: 14px;
         border: 0;
         border-radius: var(--rv-radius-md);
         background: var(--rv-accent-soft);
     }
 
-    .plannke-revamp .qa-item,
-    .plannke-revamp .tx-item {
+    .plannke-presentation .qa-item,
+    .plannke-presentation .tx-item {
         border-color: var(--rv-border) !important;
     }
 
-    .plannke-revamp .qa-item:last-child,
-    .plannke-revamp .tx-item:last-child {
+    .plannke-presentation .qa-item:last-child,
+    .plannke-presentation .tx-item:last-child {
         border-bottom-color: transparent !important;
     }
 
-    .revamp-dashboard > .row,
-    .revamp-movements,
-    .revamp-planning,
-    .revamp-accounts,
-    .revamp-backup {
-        animation: revamp-enter 180ms ease-out;
+    .presentation-dashboard > .row,
+    .presentation-movements,
+    .presentation-planning,
+    .presentation-accounts,
+    .presentation-backup {
+        animation: presentation-enter 180ms ease-out;
     }
 
-    .revamp-dashboard-analysis .chart-donut-wrap {
+    .presentation-dashboard-analysis .chart-donut-wrap {
         min-height: 230px;
     }
 
-    .revamp-dashboard-comparison .card-body {
+    .presentation-dashboard-comparison .card-body {
         padding: 22px 24px;
     }
 
-    .revamp-movements .mov-toolbar-container {
+    .presentation-movements .mov-toolbar-container {
         margin-bottom: 14px;
         border: 1px solid var(--rv-border);
         border-radius: var(--rv-radius-lg);
@@ -399,123 +399,123 @@
         background: var(--rv-panel);
     }
 
-    .revamp-movements #mov-list-container .card-body {
+    .presentation-movements #mov-list-container .card-body {
         padding: 22px;
     }
 
-    .revamp-movements .mov-search-wrap {
+    .presentation-movements .mov-search-wrap {
         margin-top: 10px;
     }
 
-    .revamp-movements .table {
+    .presentation-movements .table {
         --bs-table-bg: transparent;
         --bs-table-hover-bg: var(--rv-panel-hover);
     }
 
-    .revamp-movements .table > :not(caption) > * > * {
+    .presentation-movements .table > :not(caption) > * > * {
         padding-top: 14px;
         padding-bottom: 14px;
         border-color: var(--rv-border);
     }
 
-    .revamp-accounts #accounts-grid,
-    .revamp-accounts #cards-grid {
+    .presentation-accounts #accounts-grid,
+    .presentation-accounts #cards-grid {
         --bs-gutter-x: 14px;
         --bs-gutter-y: 14px;
     }
 
-    .revamp-accounts .entity-card {
+    .presentation-accounts .entity-card {
         transition: transform 160ms ease, border-color 160ms ease;
     }
 
-    .revamp-accounts .entity-card:hover {
+    .presentation-accounts .entity-card:hover {
         transform: translateY(-2px);
     }
 
-    .revamp-backup > .row {
+    .presentation-backup > .row {
         justify-content: flex-start !important;
     }
 
-    .revamp-backup > .row > [class*="col-"] {
+    .presentation-backup > .row > [class*="col-"] {
         width: min(100%, 560px);
     }
 
-    .plannke-revamp .modal-content,
-    .plannke-revamp .offcanvas {
+    .plannke-presentation .modal-content,
+    .plannke-presentation .offcanvas {
         border: 1px solid var(--rv-border) !important;
         background: var(--rv-panel-strong) !important;
     }
 
-    @keyframes revamp-enter {
+    @keyframes presentation-enter {
         from { opacity: 0; transform: translateY(4px); }
         to { opacity: 1; transform: translateY(0); }
     }
 }
 
 @media (min-width: 1180px) {
-    .revamp-financial-pulse .product-pulse-grid {
+    .presentation-financial-pulse .product-pulse-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 768px) and (max-width: 1179.98px) {
-    .revamp-shell {
+    .presentation-shell {
         grid-template-columns: var(--rv-sidebar-tablet) minmax(0, 1fr);
     }
 
-    .revamp-sidebar {
+    .presentation-sidebar {
         padding-left: 12px;
         padding-right: 12px;
     }
 
-    .revamp-brand {
+    .presentation-brand {
         justify-content: center;
         padding-left: 0;
         padding-right: 0;
     }
 
-    .revamp-brand-copy,
-    .revamp-nav-label,
-    .revamp-local-status span,
-    .revamp-settings span {
+    .presentation-brand-copy,
+    .presentation-nav-label,
+    .presentation-local-status span,
+    .presentation-settings span {
         display: none;
     }
 
-    .revamp-nav-item,
-    .revamp-settings {
+    .presentation-nav-item,
+    .presentation-settings {
         justify-content: center;
         padding: 0;
     }
 
-    .revamp-local-status {
+    .presentation-local-status {
         justify-content: center;
         margin-left: 0;
         margin-right: 0;
     }
 
-    .revamp-topbar {
+    .presentation-topbar {
         min-height: 94px;
         padding: 20px 24px 16px;
     }
 
-    .revamp-content > main.container-xl {
+    .presentation-content > main.container-xl {
         padding-left: 24px !important;
         padding-right: 24px !important;
     }
 
-    .revamp-page-subtitle {
+    .presentation-page-subtitle {
         max-width: 480px;
     }
 
-    .revamp-financial-pulse .product-pulse-grid {
+    .presentation-financial-pulse .product-pulse-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .revamp-primary-action span {
+    .presentation-primary-action span {
         display: none;
     }
 
-    .revamp-primary-action {
+    .presentation-primary-action {
         width: 42px;
         padding: 0;
         justify-content: center;
@@ -523,22 +523,22 @@
 }
 
 @media (max-width: 767.98px) {
-    .revamp-shell {
+    .presentation-shell {
         display: block;
     }
 
-    .revamp-sidebar,
-    .revamp-topbar {
+    .presentation-sidebar,
+    .presentation-topbar {
         display: none !important;
     }
 
-    .revamp-content {
+    .presentation-content {
         display: contents;
     }
 
-    .plannke-revamp > .planner-nav,
-    .plannke-revamp > .mobile-tab-bar,
-    .plannke-revamp > .fab-btn {
+    .plannke-presentation > .planner-nav,
+    .plannke-presentation > .mobile-tab-bar,
+    .plannke-presentation > .fab-btn {
         display: initial;
     }
 }

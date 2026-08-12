@@ -42,9 +42,9 @@
     function primeCanonicalShell() {
         if (typeof document === 'undefined' || !document.body) return null;
 
-        const existing = document.getElementById('revamp-shell');
+        const existing = document.getElementById('presentation-shell');
         if (existing) {
-            document.body.classList.add('plannke-revamp');
+            document.body.classList.add('plannke-presentation');
             document.body.dataset.presentationVersion = '2';
             document.body.dataset.plannkeCanonical = 'desktop';
             return existing;
@@ -53,57 +53,57 @@
         const main = document.querySelector('body > main');
         if (!main || !main.parentNode) return null;
 
-        const shell = make('div', 'revamp-shell');
-        shell.id = 'revamp-shell';
+        const shell = make('div', 'presentation-shell');
+        shell.id = 'presentation-shell';
 
-        const sidebar = make('aside', 'revamp-sidebar');
-        sidebar.id = 'revamp-sidebar';
+        const sidebar = make('aside', 'presentation-sidebar');
+        sidebar.id = 'presentation-sidebar';
 
-        const brand = make('div', 'revamp-brand');
-        const brandCopy = make('div', 'revamp-brand-copy');
+        const brand = make('div', 'presentation-brand');
+        const brandCopy = make('div', 'presentation-brand-copy');
         brandCopy.append(make('strong', '', 'Plannke'), make('span', '', 'Central financeira'));
-        brand.append(make('div', 'revamp-brand-mark', 'P'), brandCopy);
+        brand.append(make('div', 'presentation-brand-mark', 'P'), brandCopy);
 
-        const nav = make('nav', 'revamp-nav');
+        const nav = make('nav', 'presentation-nav');
         nav.setAttribute('aria-label', 'Navegação principal');
         CANONICAL_PAGES.forEach(([target, iconName, label], index) => {
-            const button = make('button', `revamp-nav-item${index === 0 ? ' active' : ''}`);
+            const button = make('button', `presentation-nav-item${index === 0 ? ' active' : ''}`);
             button.type = 'button';
             button.dataset.target = target;
             button.setAttribute('aria-label', label);
             button.setAttribute('aria-current', index === 0 ? 'page' : 'false');
-            button.append(icon(iconName), make('span', 'revamp-nav-label', label));
+            button.append(icon(iconName), make('span', 'presentation-nav-label', label));
             nav.appendChild(button);
         });
 
-        const spacer = make('div', 'revamp-sidebar-spacer');
-        const localStatus = make('div', 'revamp-local-status');
+        const spacer = make('div', 'presentation-sidebar-spacer');
+        const localStatus = make('div', 'presentation-local-status');
         localStatus.title = 'As alterações são salvas automaticamente neste dispositivo.';
         localStatus.append(icon('ph-shield-check'), make('span', '', 'Salvo localmente'));
 
-        const settings = make('button', 'revamp-settings');
+        const settings = make('button', 'presentation-settings');
         settings.type = 'button';
         settings.addEventListener('click', () => root.openSettingsPanel?.());
         settings.setAttribute('aria-label', 'Configurações');
         settings.append(icon('ph-gear'), make('span', '', 'Configurações'));
         sidebar.append(brand, nav, spacer, localStatus, settings);
 
-        const content = make('div', 'revamp-content');
-        content.id = 'revamp-content';
-        const topbar = make('header', 'revamp-topbar');
-        topbar.id = 'revamp-topbar';
+        const content = make('div', 'presentation-content');
+        content.id = 'presentation-content';
+        const topbar = make('header', 'presentation-topbar');
+        topbar.id = 'presentation-topbar';
 
-        const topbarCopy = make('div', 'revamp-topbar-copy');
-        const eyebrow = make('span', 'revamp-page-eyebrow', 'Visão financeira');
-        eyebrow.id = 'revamp-page-eyebrow';
-        const title = make('h1', 'revamp-page-title', 'Seu dinheiro, com contexto');
-        title.id = 'revamp-page-title';
-        const subtitle = make('p', 'revamp-page-subtitle', 'Saldo, compromissos e próximos passos em uma única visão.');
-        subtitle.id = 'revamp-page-subtitle';
+        const topbarCopy = make('div', 'presentation-topbar-copy');
+        const eyebrow = make('span', 'presentation-page-eyebrow', 'Visão financeira');
+        eyebrow.id = 'presentation-page-eyebrow';
+        const title = make('h1', 'presentation-page-title', 'Seu dinheiro, com contexto');
+        title.id = 'presentation-page-title';
+        const subtitle = make('p', 'presentation-page-subtitle', 'Saldo, compromissos e próximos passos em uma única visão.');
+        subtitle.id = 'presentation-page-subtitle';
         topbarCopy.append(eyebrow, title, subtitle);
 
-        const actions = make('div', 'revamp-topbar-actions');
-        const add = make('button', 'revamp-primary-action');
+        const actions = make('div', 'presentation-topbar-actions');
+        const add = make('button', 'presentation-primary-action');
         add.type = 'button';
         add.addEventListener('click', () => root.openTxModal?.(null));
         add.append(icon('ph-plus'), make('span', '', 'Nova movimentação'));
@@ -115,7 +115,7 @@
         shell.append(sidebar, content);
         content.append(topbar, main);
 
-        document.body.classList.add('plannke-revamp');
+        document.body.classList.add('plannke-presentation');
         document.body.dataset.presentationVersion = '2';
         document.body.dataset.plannkeCanonical = 'desktop';
         return shell;
