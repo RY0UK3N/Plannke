@@ -1,0 +1,37 @@
+name: Windows desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm audit --audit-level=high
+      - run: npm run dist:win
+      - name: Verify installer
+        shell: pwsh
+        run: |
+          $installer = Get-Item 'release/Plannke-Setup-*.exe'
+          if ($installer.Length -lt 1MB) { throw 'Installer ausente ou inválido.' }
+          Get-FileHash $installer.FullName -Algorithm SHA256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plannke-windows-installer
+          path: |
+            release/Plannke-Setup-*.exe
+            release/Plannke-Setup-*.exe.blockmap
+          if-no-files-found: error

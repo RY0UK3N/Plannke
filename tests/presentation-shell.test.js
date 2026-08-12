@@ -86,7 +86,7 @@ test('planning retains the dedicated large-screen composition used by the deskto
 });
 
 test('page observer cannot recursively redecorate planning or accounts', () => {
-  const syncPageBody = js.match(/function syncPage\(\) \{([\s\S]*?)\n    \}\n\n    function arrangeDashboardPrimary/);
+  const syncPageBody = js.match(/function syncPage\(\) \{([\s\S]*?)\r?\n    \}\r?\n\r?\n    function arrangeDashboardPrimary/);
   assert.ok(syncPageBody, 'syncPage function should be detectable');
   assert.doesNotMatch(syncPageBody[1], /decoratePlanning\s*\(/);
   assert.doesNotMatch(syncPageBody[1], /decorateAccounts\s*\(/);

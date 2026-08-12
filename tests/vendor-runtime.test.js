@@ -21,14 +21,18 @@ test('vendored runtime versions are the reviewed pinned releases', () => {
 });
 
 test('vendor manifest matches the committed runtime and license files', () => {
-  const manifest = fs.readFileSync(path.join(vendor, 'manifest.sha384'), 'utf8').trim().split(/\n+/);
+  const manifest = fs.readFileSync(path.join(vendor, 'manifest.sha384'), 'utf8').trim().split(/\r?\n+/);
   assert.ok(manifest.length >= 10);
   manifest.forEach(line => {
     const match = line.match(/^([a-f0-9]{96})\s+(.+)$/);
     assert.ok(match, `invalid manifest line: ${line}`);
     const relative = match[2].replace(/^\.\//, '');
     const bytes = fs.readFileSync(path.join(vendor, relative));
-    const actual = crypto.createHash('sha384').update(bytes).digest('hex');
+    let actual = crypto.createHash('sha384').update(bytes).digest('hex');
+    if (actual !== match[1] && bytes.includes(Buffer.from('\r\n'))) {
+      const normalized = Buffer.from(bytes.toString('utf8').replace(/\r\n/g, '\n'));
+      actual = crypto.createHash('sha384').update(normalized).digest('hex');
+    }
     assert.equal(actual, match[1], `hash mismatch for ${relative}`);
   });
 });

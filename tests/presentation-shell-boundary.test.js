@@ -15,7 +15,7 @@ test('app-shell is the only runtime that constructs the canonical desktop shell'
   assert.doesNotMatch(presentation, /function createNavigation\(/);
   assert.doesNotMatch(presentation, /function createTopbar\(/);
   assert.doesNotMatch(presentation, /function createBrand\(/);
-  const initBody = presentation.match(/function init\(\) \{([\s\S]*?)\n    \}\n\n    root\.PlannkePresentation/);
+  const initBody = presentation.match(/function init\(\) \{([\s\S]*?)\r?\n    \}\r?\n\r?\n    root\.PlannkePresentation/);
   assert.ok(initBody, 'presentation init should stay detectable');
   assert.doesNotMatch(initBody[1], /buildShell\s*\(/);
 });
