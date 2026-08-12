@@ -5,6 +5,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const source = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'core', 'storage.js'), 'utf8');
+const moneySource = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'shared', 'money.js'), 'utf8');
 
 function createContext() {
   const events = [];
@@ -24,6 +25,7 @@ function createContext() {
   };
   context.globalThis = context;
   vm.createContext(context);
+  vm.runInContext(moneySource, context);
   vm.runInContext(source, context);
   return { context, events };
 }

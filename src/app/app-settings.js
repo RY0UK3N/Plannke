@@ -357,7 +357,7 @@
             input.dataset.rawValue = '';
             return;
         }
-        const amount = parseInt(digits, 10) / 100;
+        const amount = root.PlannkeMoney.centsToReais(parseInt(digits, 10));
         input.value = amount.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         input.dataset.rawValue = String(amount);
     }
@@ -366,11 +366,11 @@
         const budgets = loadBudgets();
         const value = parseFloat(rawValue);
         if (!rawValue || !Number.isFinite(value) || value <= 0) delete budgets[category];
-        else budgets[category] = value;
+        else budgets[category] = root.PlannkeMoney.reaisToCents(value);
         saveBudgets(budgets);
         root.renderDashboard?.(root.getData?.());
         root.showToast?.(
-            value > 0 ? `Orçamento de ${root.formatCurrency(value)} definido para ${category}` : `Orçamento de ${category} removido`,
+            value > 0 ? `Orçamento de ${root.formatCurrency(root.PlannkeMoney.reaisToCents(value))} definido para ${category}` : `Orçamento de ${category} removido`,
             value > 0 ? 'success' : 'info'
         );
     }

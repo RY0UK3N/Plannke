@@ -231,7 +231,10 @@
                         ticks: {
                             color: '#64748b',
                             font: { size: 10 },
-                            callback: value => Math.abs(value) >= 1000 ? `R$${(value / 1000).toFixed(0)}k` : `R$${Number(value).toFixed(0)}`
+                            callback: value => {
+                                const reais = root.PlannkeMoney.centsToReais(Math.round(Number(value)));
+                                return Math.abs(reais) >= 1000 ? `R$${(reais / 1000).toFixed(0)}k` : `R$${reais.toFixed(0)}`;
+                            }
                         }
                     }
                 }

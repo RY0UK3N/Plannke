@@ -68,7 +68,7 @@
 
     function money(value) {
         if (typeof root.formatCurrency === 'function') return root.formatCurrency(Number(value || 0));
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+        return root.PlannkeMoney.formatMoney(Number(value || 0));
     }
 
     function dateLabel(value) {
@@ -191,7 +191,7 @@
         account.name = 'accountId';
         account.required = true;
         appendOption(account, '', 'Conta...');
-        (data.accounts || []).forEach(item => appendOption(account, item.id, `${item.name} · ${money(item.balance)}`));
+        (data.accounts || []).filter(item => item.status !== 'archived').forEach(item => appendOption(account, item.id, `${item.name} · ${money(item.balance)}`));
         form.append(type, input('description', 'text', 'Ex.: Aluguel', { required: true }), input('amount', 'number', 'Valor', { required: true, min: 0.01, step: 0.01 }), input('day', 'number', 'Dia', { required: true, min: 1, max: 31 }), account, input('category', 'text', 'Categoria', { value: 'Outros' }));
         const submit = button('Adicionar', 'btn btn-primary');
         submit.type = 'submit';
@@ -203,7 +203,7 @@
                 id: C.safeId('', 'rule'),
                 type: values.get('type'),
                 description: clean(values.get('description')),
-                amount: Number(values.get('amount')),
+                amount: root.PlannkeMoney.reaisToCents(Number(values.get('amount'))),
                 dayOfMonth: Number(values.get('day')),
                 accountId: String(values.get('accountId') || ''),
                 category: clean(values.get('category') || 'Outros'),
@@ -230,7 +230,7 @@
             fill.style.width = `${Math.max(0, Math.min(100, goal.targetAmount ? goal.currentAmount / goal.targetAmount * 100 : 0))}%`;
             progress.appendChild(fill);
             const update = make('div', 'd-flex align-items-center gap-2');
-            const current = input('', 'number', '', { className: 'form-control form-control-sm', min: 0, step: 0.01, value: Number(goal.currentAmount).toFixed(2) });
+            const current = input('', 'number', '', { className: 'form-control form-control-sm', min: 0, step: 0.01, value: root.PlannkeMoney.centsToReais(Number(goal.currentAmount)).toFixed(2) });
             current.dataset.goalCurrent = goal.id;
             const updateButton = button('Atualizar', 'btn btn-sm btn-outline-primary');
             updateButton.dataset.action = 'save-goal-current';
@@ -254,7 +254,7 @@
         form.addEventListener('submit', event => {
             event.preventDefault();
             const values = new FormData(form);
-            saveMutation(planning => planning.goals.push({ id: C.safeId('', 'goal'), name: clean(values.get('name')), targetAmount: Number(values.get('targetAmount')), currentAmount: Number(values.get('currentAmount') || 0), targetDate: String(values.get('targetDate') || '') }), 'Meta criada.');
+            saveMutation(planning => planning.goals.push({ id: C.safeId('', 'goal'), name: clean(values.get('name')), targetAmount: root.PlannkeMoney.reaisToCents(Number(values.get('targetAmount'))), currentAmount: root.PlannkeMoney.reaisToCents(Number(values.get('currentAmount') || 0)), targetDate: String(values.get('targetDate') || '') }), 'Meta criada.');
         });
         details.appendChild(form);
         return details;
@@ -285,7 +285,7 @@
         form.addEventListener('submit', event => {
             event.preventDefault();
             const values = new FormData(form);
-            saveMutation(planning => planning.reserves.push({ id: C.safeId('', 'reserve'), name: clean(values.get('name')), amount: Number(values.get('amount')) }), 'Reserva criada.');
+            saveMutation(planning => planning.reserves.push({ id: C.safeId('', 'reserve'), name: clean(values.get('name')), amount: root.PlannkeMoney.reaisToCents(Number(values.get('amount'))) }), 'Reserva criada.');
         });
         return form;
     }
@@ -380,7 +380,7 @@
             else if (action === 'save-goal-current') {
                 const goal = planning.goals.find(item => item.id === id);
                 const current = [...hub.querySelectorAll('[data-goal-current]')].find(node => node.dataset.goalCurrent === id);
-                if (goal && current) goal.currentAmount = Math.max(0, Number(current.value || 0));
+                if (goal && current) goal.currentAmount = Math.max(0, root.PlannkeMoney.reaisToCents(Number(current.value || 0)));
             } else if (action === 'delete-member') {
                 const household = householdData(data);
                 household.members = household.members.filter(member => member.id !== id);
@@ -536,7 +536,7 @@
             const data = root.getData();
             const planning = planningData(data);
             const accountId = root.generateId?.() || C.safeId('', 'account');
-            const balance = Number(values.get('balance') || 0);
+            const balance = root.PlannkeMoney.reaisToCents(Number(values.get('balance') || 0));
             data.accounts.push({
                 id: accountId,
                 name: clean(values.get('accountName') || 'Conta principal', 120),
@@ -544,7 +544,7 @@
                 balance
             });
 
-            const salary = Number(values.get('salary') || 0);
+            const salary = root.PlannkeMoney.reaisToCents(Number(values.get('salary') || 0));
             const salaryDay = Math.min(31, Math.max(1, Number(values.get('salaryDay') || 1)));
             if (salary > 0) {
                 planning.recurringRules.push({
@@ -562,7 +562,7 @@
             }
 
             const cardName = clean(values.get('cardName'), 120);
-            const limit = Number(values.get('cardLimit') || 0);
+            const limit = root.PlannkeMoney.reaisToCents(Number(values.get('cardLimit') || 0));
             if (cardName && limit > 0) {
                 data.cards.push({
                     id: root.generateId?.() || C.safeId('', 'card'),

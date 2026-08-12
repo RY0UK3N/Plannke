@@ -1,5 +1,6 @@
 (function (root, factory) {
-    const api = factory(root?.PlannkeCore);
+    const moneyApi = root?.PlannkeMoney || (typeof module === 'object' && module.exports ? require('../shared/money.js') : null);
+    const api = factory(root?.PlannkeCore, moneyApi);
     if (typeof module === 'object' && module.exports) module.exports = api;
     if (root) root.PlannkeInsights = api;
 
@@ -26,10 +27,10 @@
             document.head.appendChild(shell);
         }
     }
-})(typeof globalThis !== 'undefined' ? globalThis : this, function (C) {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function (C, Money) {
     'use strict';
 
-    const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+    const money = value => Money.formatMoney(Math.round(Number(value || 0)));
     const pct = value => `${Math.round(Math.abs(Number(value || 0)))}%`;
 
     function localDateString(date = new Date()) {

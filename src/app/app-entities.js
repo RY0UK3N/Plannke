@@ -137,10 +137,21 @@
         if (!select) return null;
         select.disabled = false;
         select.replaceChildren(option('', 'Debitar de...'));
-        data.accounts.forEach(account => {
+        data.accounts.filter(account => account.status !== 'archived').forEach(account => {
             select.appendChild(option(account.id, `${account.name} (${root.formatCurrency(account.balance)})`));
         });
         return select;
+    }
+
+    function payBillingFromUi(cardId, period, fromId, amount) {
+        try {
+            root.payCardBilling(cardId, period, fromId, amount);
+            root.showToast?.('Fatura paga com sucesso!');
+            return true;
+        } catch (error) {
+            root.showToast?.(error?.message || 'Não foi possível pagar a fatura.', 'error');
+            return false;
+        }
     }
 
     function configureInvoiceFooter(data, card, billing, period) {
@@ -168,8 +179,7 @@
                     `Pagar fatura de ${root.formatCurrency(billing.total)} com ${account?.name || 'esta conta'}?`
                 );
                 if (!approved) return;
-                root.payCardBilling(card.id, period, fromId, billing.total);
-                root.showToast?.('Fatura paga com sucesso!');
+                if (!payBillingFromUi(card.id, period, fromId, billing.total)) return;
                 viewCardInvoice(card.id, period, true);
                 root.renderAll?.();
             });
@@ -235,8 +245,7 @@
             `Pagar fatura de ${root.formatCurrency(total)} com ${account?.name || 'esta conta'}?`
         );
         if (!approved) return;
-        root.payCardBilling(cardId, period, fromId, total);
-        root.showToast?.('Fatura paga com sucesso!');
+        if (!payBillingFromUi(cardId, period, fromId, total)) return;
         root.renderAll?.();
     }
 
@@ -320,9 +329,9 @@
             account.name,
             `Saldo: ${root.formatCurrency(account.balance)}`,
             () => {
-                root.deleteAccount(id);
+                const result = root.deleteAccount(id);
                 root.renderAll?.();
-                root.showToast?.('Conta removida', 'error');
+                root.showToast?.(result === 'archived' ? 'Conta arquivada; histórico preservado.' : 'Conta removida', result === 'archived' ? 'info' : 'error');
             }
         );
     }
@@ -335,9 +344,9 @@
             card.name,
             `Limite: ${root.formatCurrency(card.limit)}`,
             () => {
-                root.deleteCard(id);
+                const result = root.deleteCard(id);
                 root.renderAll?.();
-                root.showToast?.('Cartão removido', 'error');
+                root.showToast?.(result === 'archived' ? 'Cartão arquivado; histórico preservado.' : 'Cartão removido', result === 'archived' ? 'info' : 'error');
             }
         );
     }

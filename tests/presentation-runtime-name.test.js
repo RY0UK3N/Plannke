@@ -24,7 +24,7 @@ test('shell PWA and CI load the renamed presentation runtime', () => {
   assert.match(shell, /script\.src = 'src\/app\/app-presentation\.js'/);
   assert.match(shell, /root\.PlannkePresentation/);
   assert.doesNotMatch(shell, /['"]revamp\.js['"]|PlannkeRevamp/);
-  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /plannke-shell-v41/);
   assert.match(sw, /'\.\/src\/app\/app-presentation\.js'/);
   assert.doesNotMatch(sw, /'\.\/revamp\.js'/);
   assert.match(pkg, /node --check src\/app\/app-presentation\.js/);

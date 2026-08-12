@@ -88,7 +88,7 @@
         }
         const amount = token.match(/^(>=|<=|>|<)(\d+(?:[.,]\d+)?)$/);
         if (amount) {
-          const value = Number(amount[2].replace(',', '.'));
+          const value = root.PlannkeMoney.reaisToCents(Number(amount[2].replace(',', '.')));
           items = items.filter(tx => amount[1] === '>' ? Number(tx.amount) > value
             : amount[1] === '<' ? Number(tx.amount) < value
               : amount[1] === '>=' ? Number(tx.amount) >= value
@@ -172,7 +172,7 @@
     function formatCurrency(value) {
         return typeof root.formatCurrency === 'function'
             ? root.formatCurrency(Number(value || 0))
-            : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
+            : root.PlannkeMoney.formatMoney(Number(value || 0));
     }
 
     function appendOption(parent, value, label, selected = false) {

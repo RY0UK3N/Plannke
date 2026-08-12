@@ -232,21 +232,24 @@
         const placeholder = appendOption(select, '', 'Selecione...', !selectedValue);
         placeholder.disabled = true;
 
-        if (data.accounts.length) {
+        const availableAccounts = data.accounts.filter(account => account.status !== 'archived' || account.id === selectedValue);
+        const availableCards = data.cards.filter(card => card.status !== 'archived' || card.id === selectedValue);
+
+        if (availableAccounts.length) {
             const accounts = document.createElement('optgroup');
             accounts.label = 'Contas Bancárias';
-            data.accounts.forEach(account => appendOption(accounts, account.id, account.name, account.id === selectedValue));
+            availableAccounts.forEach(account => appendOption(accounts, account.id, account.name, account.id === selectedValue));
             select.appendChild(accounts);
         }
 
-        if (data.cards.length) {
+        if (availableCards.length) {
             const cards = document.createElement('optgroup');
             cards.label = 'Cartões de Crédito';
-            data.cards.forEach(card => appendOption(cards, card.id, card.name, card.id === selectedValue));
+            availableCards.forEach(card => appendOption(cards, card.id, card.name, card.id === selectedValue));
             select.appendChild(cards);
         }
 
-        if (!data.accounts.length && !data.cards.length) {
+        if (!availableAccounts.length && !availableCards.length) {
             select.replaceChildren();
             const empty = appendOption(select, '', 'Crie uma conta primeiro', true);
             empty.disabled = true;
@@ -301,7 +304,11 @@
         icon.className = 'ph ph-info';
         const copy = document.createElement('div');
         const strong = document.createElement('strong');
-        strong.textContent = `${installments}x de ${root.formatCurrency(amount / installments)}`;
+        const allocation = root.PlannkeMoney.allocateMoney(amount, installments);
+        const distinct = [...new Set(allocation)];
+        strong.textContent = distinct.length === 1
+            ? `${installments}x de ${root.formatCurrency(distinct[0])}`
+            : `${root.formatCurrency(allocation[0])} + ${installments - 1}x de ${root.formatCurrency(allocation.at(-1))}`;
         const total = document.createElement('span');
         total.className = 'text-muted small';
         total.textContent = ` · Total: ${root.formatCurrency(amount)}`;
@@ -449,13 +456,13 @@
                 root.showToast('Transação atualizada ✓');
             } else if (installments > 1 && type === 'expense') {
                 const groupId = root.generateId();
-                const partValue = amount / installments;
+                const partValues = root.PlannkeMoney.allocateMoney(amount, installments);
                 buildInstallmentDates(date, installments).forEach((installmentDate, index) => {
                     persistTransaction(
                         null,
                         type,
                         description,
-                        partValue,
+                        partValues[index],
                         installmentDate,
                         account,
                         category,
@@ -466,7 +473,7 @@
                         false
                     );
                 });
-                root.showToast(`${installments}x de ${root.formatCurrency(partValue)} salvas! 📅`);
+                root.showToast(`${installments} parcelas somando ${root.formatCurrency(amount)} salvas! 📅`);
             } else {
                 persistTransaction(null, type, description, amount, date, account, category, 1, 1, null, destination, isRecurring);
                 const verb = type === 'income' ? '✅ Entrada' : (type === 'transfer' ? '🔀 Transferência' : '💸 Gasto');

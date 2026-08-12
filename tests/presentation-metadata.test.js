@@ -39,7 +39,7 @@ test('presentation metadata names do not rename the visual stylesheet boundary',
 });
 
 test('PWA cache advances for presentation metadata update without renaming visual assets', () => {
-  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /plannke-shell-v41/);
   assert.match(sw, /'\.\/src\/styles\/app-presentation\.css'/);
   assert.match(sw, /'\.\/src\/styles\/app-presentation-desktop\.css'/);
 });

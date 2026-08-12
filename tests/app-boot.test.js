@@ -44,7 +44,7 @@ test('canonical boot and shell are syntax-checked and available offline', () => 
   assert.match(pkg, /node --check src\/app\/app-shell\.js/);
   assert.match(pkg, /node --check src\/app\/app-boot\.js/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
-  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /plannke-shell-v41/);
   assert.match(sw, /'\.\/src\/app\/app-shell\.js'/);
   assert.match(sw, /'\.\/src\/app\/app-boot\.js'/);
   assert.doesNotMatch(sw, /'\.\/(?:ui-bridge|app-actions)\.js'/);

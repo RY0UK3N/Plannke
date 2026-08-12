@@ -35,7 +35,7 @@
 
     function money(value) {
         if (typeof root.formatCurrency === 'function') return root.formatCurrency(number(value));
-        return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(number(value));
+        return root.PlannkeMoney.formatMoney(number(value));
     }
 
     function projectionMonths(today, count = 12) {
@@ -112,10 +112,10 @@
             const baseExpense = index === 0 || hasPlannedRecurring ? 0 : baselineExpense;
             const projectedIncome = baseIncome + future[month].income;
             const projectedExpense = baseExpense + future[month].expense;
-            incomes.push(Number(projectedIncome.toFixed(2)));
-            expenses.push(Number(projectedExpense.toFixed(2)));
-            runningBalance += projectedIncome - projectedExpense;
-            balances.push(Number(runningBalance.toFixed(2)));
+            incomes.push(Math.round(projectedIncome));
+            expenses.push(Math.round(projectedExpense));
+            runningBalance = Math.round(runningBalance + projectedIncome - projectedExpense);
+            balances.push(runningBalance);
         });
 
         const finalBalance = balances.at(-1) ?? initialBalance;
@@ -179,7 +179,10 @@
             },
             yAxis: {
                 type: 'value',
-                axisLabel: { color: '#94a3b8', fontSize: 10, formatter: value => Math.abs(value) >= 1000 ? 'BRL ' + (value / 1000).toFixed(0) + 'k' : 'BRL ' + value.toFixed(0) },
+                axisLabel: { color: '#94a3b8', fontSize: 10, formatter: value => {
+                    const reais = root.PlannkeMoney.centsToReais(Math.round(Number(value)));
+                    return Math.abs(reais) >= 1000 ? 'BRL ' + (reais / 1000).toFixed(0) + 'k' : 'BRL ' + reais.toFixed(0);
+                } },
                 splitLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } }
             },
             series: [

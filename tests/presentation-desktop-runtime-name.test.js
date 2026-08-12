@@ -33,7 +33,7 @@ test('desktop presentation extends the canonical presentation runtime without re
 test('shell PWA and CI load the renamed desktop presentation runtime', () => {
   assert.match(shell, /desktopScript\.src = 'src\/app\/app-presentation-desktop\.js'/);
   assert.doesNotMatch(shell, /['"]presentation-desktop\.js['"]/);
-  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /plannke-shell-v41/);
   assert.match(sw, /'\.\/src\/app\/app-presentation-desktop\.js'/);
   assert.doesNotMatch(sw, /'\.\/presentation-desktop\.js'/);
   assert.match(pkg, /node --check src\/app\/app-presentation-desktop\.js/);
