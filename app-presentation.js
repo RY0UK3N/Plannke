@@ -99,14 +99,14 @@
         const target = currentTarget();
         const page = PAGES[target] || PAGES.dashboard;
         document.body.dataset.presentationView = target;
-        const eyebrow = document.getElementById('revamp-page-eyebrow');
-        const title = document.getElementById('revamp-page-title');
-        const subtitle = document.getElementById('revamp-page-subtitle');
+        const eyebrow = document.getElementById('presentation-page-eyebrow');
+        const title = document.getElementById('presentation-page-title');
+        const subtitle = document.getElementById('presentation-page-subtitle');
         if (eyebrow) eyebrow.textContent = page.eyebrow;
         if (title) title.textContent = page.title;
         if (subtitle) subtitle.textContent = page.subtitle;
 
-        document.querySelectorAll('.revamp-nav-item').forEach(button => {
+        document.querySelectorAll('.presentation-nav-item').forEach(button => {
             const active = button.dataset.target === target;
             button.classList.toggle('active', active);
             button.setAttribute('aria-current', active ? 'page' : 'false');
@@ -114,10 +114,10 @@
     }
 
     function arrangeDashboardPrimary(dashboard) {
-        let primary = document.getElementById('revamp-dashboard-primary');
+        let primary = document.getElementById('presentation-dashboard-primary');
         if (!primary) {
-            primary = make('div', 'revamp-dashboard-primary');
-            primary.id = 'revamp-dashboard-primary';
+            primary = make('div', 'presentation-dashboard-primary');
+            primary.id = 'presentation-dashboard-primary';
             dashboard.prepend(primary);
         }
 
@@ -125,22 +125,22 @@
         const insights = document.getElementById('product-smart-insights');
         if (pulse && pulse.parentElement !== primary) primary.appendChild(pulse);
         if (insights && insights.parentElement !== primary) primary.appendChild(insights);
-        addClassOnce(pulse, 'revamp-financial-pulse');
-        addClassOnce(insights, 'revamp-smart-insights');
+        addClassOnce(pulse, 'presentation-financial-pulse');
+        addClassOnce(insights, 'presentation-smart-insights');
     }
 
     function decorateDashboard() {
         const dashboard = document.getElementById('dashboard-view');
         if (!dashboard) return;
-        addClassOnce(dashboard, 'revamp-dashboard');
+        addClassOnce(dashboard, 'presentation-dashboard');
         arrangeDashboardPrimary(dashboard);
 
         const rows = [...dashboard.children].filter(node => node.classList?.contains('row'));
         const names = [
-            'revamp-dashboard-accounts',
-            'revamp-dashboard-analysis',
-            'revamp-dashboard-activity',
-            'revamp-dashboard-comparison'
+            'presentation-dashboard-accounts',
+            'presentation-dashboard-analysis',
+            'presentation-dashboard-activity',
+            'presentation-dashboard-comparison'
         ];
         rows.forEach((row, index) => {
             if (names[index]) addClassOnce(row, names[index]);
@@ -199,9 +199,9 @@
     }
 
     function planningMetric(label, value, note, iconName) {
-        const card = make('article', 'revamp-planning-metric');
-        const head = make('div', 'revamp-planning-metric-head');
-        const iconWrap = make('span', 'revamp-planning-metric-icon');
+        const card = make('article', 'presentation-planning-metric');
+        const head = make('div', 'presentation-planning-metric-head');
+        const iconWrap = make('span', 'presentation-planning-metric-icon');
         iconWrap.appendChild(makeIcon(iconName));
         head.append(make('span', '', label), iconWrap);
         const copy = make('div');
@@ -211,26 +211,26 @@
     }
 
     function planningTabButton(tab, count) {
-        const button = make('button', 'revamp-planning-tab');
+        const button = make('button', 'presentation-planning-tab');
         button.type = 'button';
         button.role = 'tab';
         button.dataset.planningTab = tab.id;
         button.setAttribute('aria-selected', tab.id === activePlanningTab ? 'true' : 'false');
         button.append(makeIcon(tab.icon), make('span', '', tab.label));
-        if (Number.isFinite(count)) button.appendChild(make('span', 'revamp-planning-tab-count', count));
+        if (Number.isFinite(count)) button.appendChild(make('span', 'presentation-planning-tab-count', count));
         button.addEventListener('click', () => applyPlanningTab(document.getElementById('projecao-view'), tab.id));
         return button;
     }
 
     function ensurePlanningControls(view, hub) {
-        let controls = document.getElementById('revamp-planning-overview');
+        let controls = document.getElementById('presentation-planning-overview');
         if (!controls) {
-            controls = make('section', 'revamp-planning-overview');
-            controls.id = 'revamp-planning-overview';
-            const summary = make('div', 'revamp-planning-summary');
-            summary.id = 'revamp-planning-summary';
-            const tabs = make('div', 'revamp-planning-tabs');
-            tabs.id = 'revamp-planning-tabs';
+            controls = make('section', 'presentation-planning-overview');
+            controls.id = 'presentation-planning-overview';
+            const summary = make('div', 'presentation-planning-summary');
+            summary.id = 'presentation-planning-summary';
+            const tabs = make('div', 'presentation-planning-tabs');
+            tabs.id = 'presentation-planning-tabs';
             tabs.role = 'tablist';
             tabs.setAttribute('aria-label', 'Áreas do planejamento');
             controls.append(summary, tabs);
@@ -238,7 +238,7 @@
         }
 
         const snapshot = planningSnapshot();
-        const summary = document.getElementById('revamp-planning-summary');
+        const summary = document.getElementById('presentation-planning-summary');
         if (summary) {
             summary.replaceChildren();
             const state = snapshot || {
@@ -256,7 +256,7 @@
             );
         }
 
-        const tabs = document.getElementById('revamp-planning-tabs');
+        const tabs = document.getElementById('presentation-planning-tabs');
         if (tabs) {
             tabs.replaceChildren();
             const counts = {
@@ -282,27 +282,27 @@
 
     function classifyPlanningPanels(view, hub) {
         const grid = hub.querySelector(':scope > .row');
-        addClassOnce(grid, 'revamp-planning-grid');
+        addClassOnce(grid, 'presentation-planning-grid');
 
-        markPlanningPanel(hub, '#product-recurring-form', 'recurring', 'revamp-planning-panel-recurring');
-        markPlanningPanel(hub, '#product-goal-form', 'goals', 'revamp-planning-panel-goals');
-        markPlanningPanel(hub, '#product-reserve-form', 'goals', 'revamp-planning-panel-goals');
-        markPlanningPanel(hub, '#product-category-rule-form', 'household', 'revamp-planning-panel-household');
-        markPlanningPanel(hub, '#product-member-form', 'household', 'revamp-planning-panel-household');
+        markPlanningPanel(hub, '#product-recurring-form', 'recurring', 'presentation-planning-panel-recurring');
+        markPlanningPanel(hub, '#product-goal-form', 'goals', 'presentation-planning-panel-goals');
+        markPlanningPanel(hub, '#product-reserve-form', 'goals', 'presentation-planning-panel-goals');
+        markPlanningPanel(hub, '#product-category-rule-form', 'household', 'presentation-planning-panel-household');
+        markPlanningPanel(hub, '#product-member-form', 'household', 'presentation-planning-panel-household');
 
         const calendarCard = hub.querySelector('.product-calendar')?.closest('.card');
         if (calendarCard) {
             if (calendarCard.dataset.revampPlanningSection !== 'overview') calendarCard.dataset.revampPlanningSection = 'overview';
-            addClassOnce(calendarCard, 'revamp-planning-calendar');
+            addClassOnce(calendarCard, 'presentation-planning-calendar');
         }
 
         const directChildren = [...view.children];
         const projectionIntro = directChildren.find(node => node !== hub && node.classList?.contains('card') && node.classList.contains('bg-glass'));
-        addClassOnce(projectionIntro, 'revamp-projection-intro');
+        addClassOnce(projectionIntro, 'presentation-projection-intro');
         const projectionRow = directChildren.find(node => node.classList?.contains('row') && node.querySelector?.('#projectionChart'));
         if (projectionRow) {
             if (projectionRow.dataset.revampPlanningSection !== 'overview') projectionRow.dataset.revampPlanningSection = 'overview';
-            addClassOnce(projectionRow, 'revamp-projection-row');
+            addClassOnce(projectionRow, 'presentation-projection-row');
         }
     }
 
@@ -313,16 +313,16 @@
         if (view.dataset.planningTab !== valid) view.dataset.planningTab = valid;
         const wideLayout = typeof root.matchMedia === 'function' ? root.matchMedia('(min-width: 768px)').matches : true;
 
-        view.querySelectorAll('.revamp-planning-tab').forEach(button => {
+        view.querySelectorAll('.presentation-planning-tab').forEach(button => {
             const selected = button.dataset.planningTab === valid ? 'true' : 'false';
             if (button.getAttribute('aria-selected') !== selected) button.setAttribute('aria-selected', selected);
         });
-        view.querySelectorAll('[data-revamp-planning-section]').forEach(panel => {
+        view.querySelectorAll('[data-presentation-planning-section]').forEach(panel => {
             const shouldHide = wideLayout ? panel.dataset.revampPlanningSection !== valid : false;
             if (panel.hidden !== shouldHide) panel.hidden = shouldHide;
         });
 
-        const grid = view.querySelector('#product-planning-hub > .revamp-planning-grid');
+        const grid = view.querySelector('#product-planning-hub > .presentation-planning-grid');
         if (grid) {
             const shouldHideGrid = wideLayout ? valid === 'overview' : false;
             if (grid.hidden !== shouldHideGrid) grid.hidden = shouldHideGrid;
@@ -333,7 +333,7 @@
         const view = document.getElementById('projecao-view');
         const hub = document.getElementById('product-planning-hub');
         if (!view) return;
-        addClassOnce(view, 'revamp-planning');
+        addClassOnce(view, 'presentation-planning');
         if (!hub) return;
         ensurePlanningControls(view, hub);
         classifyPlanningPanels(view, hub);
@@ -383,26 +383,26 @@
     }
 
     function accountsMetric(label, value, note, iconName, tone = '') {
-        const card = make('article', `revamp-accounts-metric${tone ? ` ${tone}` : ''}`);
-        const head = make('div', 'revamp-accounts-metric-head');
-        const iconWrap = make('span', 'revamp-accounts-metric-icon');
+        const card = make('article', `presentation-accounts-metric${tone ? ` ${tone}` : ''}`);
+        const head = make('div', 'presentation-accounts-metric-head');
+        const iconWrap = make('span', 'presentation-accounts-metric-icon');
         iconWrap.appendChild(makeIcon(iconName));
         head.append(make('span', '', label), iconWrap);
         const copy = make('div');
-        copy.append(make('strong', 'revamp-accounts-metric-value', value), make('small', '', note));
+        copy.append(make('strong', 'presentation-accounts-metric-value', value), make('small', '', note));
         card.append(head, copy);
         return card;
     }
 
     function ensureAccountsOverview(view) {
-        let overview = document.getElementById('revamp-accounts-overview');
+        let overview = document.getElementById('presentation-accounts-overview');
         if (!overview) {
-            overview = make('section', 'revamp-accounts-overview');
-            overview.id = 'revamp-accounts-overview';
-            const summary = make('div', 'revamp-accounts-summary');
-            summary.id = 'revamp-accounts-summary';
-            const context = make('div', 'revamp-accounts-context');
-            context.id = 'revamp-accounts-context';
+            overview = make('section', 'presentation-accounts-overview');
+            overview.id = 'presentation-accounts-overview';
+            const summary = make('div', 'presentation-accounts-summary');
+            summary.id = 'presentation-accounts-summary';
+            const context = make('div', 'presentation-accounts-context');
+            context.id = 'presentation-accounts-context';
             overview.append(summary, context);
             view.prepend(overview);
         }
@@ -417,7 +417,7 @@
             accountCount: 0,
             cardCount: 0
         };
-        const summary = document.getElementById('revamp-accounts-summary');
+        const summary = document.getElementById('presentation-accounts-summary');
         if (summary) {
             summary.replaceChildren(
                 accountsMetric('Saldo nas contas', money(snapshot.accountBalance), `${snapshot.accountCount} conta${snapshot.accountCount === 1 ? '' : 's'} bancária${snapshot.accountCount === 1 ? '' : 's'}`, 'ph-bank', 'primary'),
@@ -427,7 +427,7 @@
             );
         }
 
-        const context = document.getElementById('revamp-accounts-context');
+        const context = document.getElementById('presentation-accounts-context');
         if (context) {
             context.replaceChildren();
             const warning = snapshot.afterCards < 0 && snapshot.cardOutstanding > 0;
@@ -448,7 +448,7 @@
     function decorateAccounts() {
         const view = document.getElementById('accounts-view');
         if (!view) return;
-        addClassOnce(view, 'revamp-accounts');
+        addClassOnce(view, 'presentation-accounts');
         ensureAccountsOverview(view);
 
         const accountsGrid = document.getElementById('accounts-grid');
@@ -457,12 +457,12 @@
         const cardHead = cardsGrid?.previousElementSibling;
         [accountHead, cardHead].forEach(head => {
             if (!head) return;
-            addClassOnce(head, 'revamp-entity-section-head');
+            addClassOnce(head, 'presentation-entity-section-head');
             const button = head.querySelector('button');
-            addClassOnce(button, 'revamp-add-entity');
+            addClassOnce(button, 'presentation-add-entity');
         });
-        addClassOnce(accountsGrid, 'revamp-account-grid');
-        addClassOnce(cardsGrid, 'revamp-card-grid');
+        addClassOnce(accountsGrid, 'presentation-account-grid');
+        addClassOnce(cardsGrid, 'presentation-card-grid');
     }
 
     function scheduleAccountsDecoration() {
@@ -476,10 +476,10 @@
 
     function decorateViews() {
         decorateDashboard();
-        addClassOnce(document.getElementById('movimentacao-view'), 'revamp-movements');
+        addClassOnce(document.getElementById('movimentacao-view'), 'presentation-movements');
         decoratePlanning();
         decorateAccounts();
-        addClassOnce(document.getElementById('backup-view'), 'revamp-backup');
+        addClassOnce(document.getElementById('backup-view'), 'presentation-backup');
     }
 
     function observeViews() {

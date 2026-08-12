@@ -12,7 +12,7 @@ const accountsCss = fs.readFileSync(path.join(root, 'app-presentation-accounts.c
 const formsCss = fs.readFileSync(path.join(root, 'app-presentation-forms.css'), 'utf8');
 const statesCss = fs.readFileSync(path.join(root, 'app-presentation-states.css'), 'utf8');
 
-test('revamp shell stays DOM-safe and does not evaluate dynamic code', () => {
+test('presentation shell stays DOM-safe and does not evaluate dynamic code', () => {
   assert.doesNotMatch(js, /\.innerHTML\s*=/);
   assert.doesNotMatch(js, /\.outerHTML\s*=/);
   assert.doesNotMatch(js, /insertAdjacentHTML\s*\(/);
@@ -31,15 +31,15 @@ test('presentation navigation covers product views through the canonical navigat
 });
 
 test('final product direction is desktop-only while retaining the responsive base as fallback code', () => {
-  assert.match(css, /\.revamp-sidebar/);
-  assert.match(css, /\.revamp-topbar/);
-  assert.match(desktopCss, /body\.plannke-revamp/);
+  assert.match(css, /\.presentation-sidebar/);
+  assert.match(css, /\.presentation-topbar/);
+  assert.match(desktopCss, /body\.plannke-presentation/);
   assert.match(desktopCss, /min-width: 1080px/);
   assert.match(desktopCss, /grid-template-columns: 236px minmax\(0, 1fr\)/);
   assert.match(desktopCss, /mobile-tab-bar/);
   assert.match(desktopCss, /display: none !important/);
-  assert.match(desktopCss, /revamp-brand-copy/);
-  assert.match(desktopCss, /revamp-nav-label/);
+  assert.match(desktopCss, /presentation-brand-copy/);
+  assert.match(desktopCss, /presentation-nav-label/);
 });
 
 test('new shell preserves accessibility hooks for navigation and actions', () => {
@@ -47,7 +47,7 @@ test('new shell preserves accessibility hooks for navigation and actions', () =>
   assert.match(js, /aria-current/);
   assert.match(js, /aria-selected/);
   assert.match(css, /:focus-visible/);
-  assert.match(planningCss, /\.revamp-planning-tab:focus-visible/);
+  assert.match(planningCss, /\.presentation-planning-tab:focus-visible/);
   assert.match(accountsCss, /:focus-visible/);
   assert.match(formsCss, /:focus-visible/);
   assert.match(statesCss, /:focus-visible/);
@@ -79,10 +79,10 @@ test('planning summary exposes reserved, recurring income, recurring expenses an
 });
 
 test('planning retains the dedicated large-screen composition used by the desktop shell', () => {
-  assert.match(planningCss, /\.revamp-planning-summary/);
-  assert.match(planningCss, /\.revamp-planning-tabs/);
+  assert.match(planningCss, /\.presentation-planning-summary/);
+  assert.match(planningCss, /\.presentation-planning-tabs/);
   assert.match(planningCss, /\.product-calendar/);
-  assert.match(desktopCss, /#revamp-shell/);
+  assert.match(desktopCss, /#presentation-shell/);
 });
 
 test('page observer cannot recursively redecorate planning or accounts', () => {
@@ -111,14 +111,14 @@ test('accounts overview uses the existing outstanding-card calculation', () => {
 });
 
 test('accounts and cards keep their dedicated workspace and share the final two-column desktop grid', () => {
-  assert.match(accountsCss, /\.revamp-accounts-summary/);
+  assert.match(accountsCss, /\.presentation-accounts-summary/);
   assert.match(accountsCss, /#accounts-grid/);
   assert.match(accountsCss, /#cards-grid/);
   assert.match(accountsCss, /\.billing-history/);
   assert.match(accountsCss, /\.pay-fatura-section/);
-  assert.match(desktopCss, /revamp-accounts #accounts-grid,[\s\S]*revamp-accounts #cards-grid/);
+  assert.match(desktopCss, /presentation-accounts #accounts-grid,[\s\S]*presentation-accounts #cards-grid/);
   assert.match(desktopCss, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/);
-  assert.match(desktopCss, /revamp-entity-unified/);
+  assert.match(desktopCss, /presentation-entity-unified/);
 });
 
 test('forms use the consistent base language plus final compact desktop workspace sizing', () => {

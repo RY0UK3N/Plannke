@@ -1,123 +1,123 @@
 /* Final desktop-only composition for the Plannke app.
    Loaded after the responsive revamp and intentionally supersedes tablet/mobile fallbacks. */
 
-body.plannke-revamp {
+body.plannke-presentation {
     min-width: 1080px;
     overflow-x: auto;
 }
 
-body.plannke-revamp > .planner-nav,
-body.plannke-revamp > .mobile-tab-bar,
-body.plannke-revamp > .fab-btn {
+body.plannke-presentation > .planner-nav,
+body.plannke-presentation > .mobile-tab-bar,
+body.plannke-presentation > .fab-btn {
     display: none !important;
 }
 
-.plannke-revamp #revamp-shell {
+.plannke-presentation #presentation-shell {
     display: grid !important;
     min-width: 1080px;
     min-height: 100vh;
     grid-template-columns: 236px minmax(0, 1fr) !important;
 }
 
-.plannke-revamp .revamp-sidebar {
+.plannke-presentation .presentation-sidebar {
     display: flex !important;
     width: auto !important;
     padding: 26px 18px 20px !important;
 }
 
-.plannke-revamp .revamp-brand-copy,
-.plannke-revamp .revamp-nav-label,
-.plannke-revamp .revamp-settings span,
-.plannke-revamp .revamp-local-status span {
+.plannke-presentation .presentation-brand-copy,
+.plannke-presentation .presentation-nav-label,
+.plannke-presentation .presentation-settings span,
+.plannke-presentation .presentation-local-status span {
     display: initial !important;
 }
 
-.plannke-revamp .revamp-nav-item,
-.plannke-revamp .revamp-settings {
+.plannke-presentation .presentation-nav-item,
+.plannke-presentation .presentation-settings {
     justify-content: flex-start !important;
     padding-inline: 13px !important;
 }
 
-.plannke-revamp .revamp-topbar {
+.plannke-presentation .presentation-topbar {
     display: flex !important;
     min-height: 104px;
     padding: 24px 38px 18px !important;
 }
 
-.plannke-revamp .revamp-content > main.container-xl {
+.plannke-presentation .presentation-content > main.container-xl {
     width: 100% !important;
     max-width: 1740px !important;
     margin: 0 auto !important;
     padding: 4px 38px 56px !important;
 }
 
-.plannke-revamp .revamp-page-subtitle {
+.plannke-presentation .presentation-page-subtitle {
     max-width: 760px;
 }
 
 /* -------------------- Dashboard: collision-proof content -------------------- */
-.plannke-revamp .revamp-smart-insights .product-insight-row,
-.plannke-revamp .revamp-smart-insights .product-insight-row > *,
-.plannke-revamp .qa-item > *,
-.plannke-revamp .tx-item > *,
-.plannke-revamp .tx-item-body,
-.plannke-revamp .tx-item-top,
-.plannke-revamp .tx-item-bottom,
-.plannke-revamp .upcoming-item > * {
+.plannke-presentation .presentation-smart-insights .product-insight-row,
+.plannke-presentation .presentation-smart-insights .product-insight-row > *,
+.plannke-presentation .qa-item > *,
+.plannke-presentation .tx-item > *,
+.plannke-presentation .tx-item-body,
+.plannke-presentation .tx-item-top,
+.plannke-presentation .tx-item-bottom,
+.plannke-presentation .upcoming-item > * {
     min-width: 0;
 }
 
-.plannke-revamp .revamp-smart-insights .product-insight-row strong,
-.plannke-revamp .revamp-smart-insights .product-insight-row small {
+.plannke-presentation .presentation-smart-insights .product-insight-row strong,
+.plannke-presentation .presentation-smart-insights .product-insight-row small {
     overflow-wrap: anywhere;
 }
 
-.plannke-revamp .revamp-smart-insights .product-insights-list {
+.plannke-presentation .presentation-smart-insights .product-insights-list {
     max-height: none !important;
     overflow: visible !important;
 }
 
-.plannke-revamp .revamp-dashboard-primary {
+.plannke-presentation .presentation-dashboard-primary {
     grid-template-columns: minmax(0, 1.65fr) minmax(360px, 0.95fr) !important;
     gap: 16px !important;
 }
 
-.plannke-revamp .revamp-dashboard-analysis > .col-lg-5 { width: 46% !important; }
-.plannke-revamp .revamp-dashboard-analysis > .col-lg-3 { width: 24% !important; }
-.plannke-revamp .revamp-dashboard-analysis > .col-lg-4 { width: 30% !important; }
-.plannke-revamp .revamp-dashboard-activity > .col-12 { width: 50% !important; }
+.plannke-presentation .presentation-dashboard-analysis > .col-lg-5 { width: 46% !important; }
+.plannke-presentation .presentation-dashboard-analysis > .col-lg-3 { width: 24% !important; }
+.plannke-presentation .presentation-dashboard-analysis > .col-lg-4 { width: 30% !important; }
+.plannke-presentation .presentation-dashboard-activity > .col-12 { width: 50% !important; }
 
-.plannke-revamp .revamp-dashboard-accounts .qa-item {
+.plannke-presentation .presentation-dashboard-accounts .qa-item {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     gap: 16px;
 }
 
-.plannke-revamp .revamp-dashboard-accounts .qa-item > .d-flex {
+.plannke-presentation .presentation-dashboard-accounts .qa-item > .d-flex {
     min-width: 0;
 }
 
-.plannke-revamp .revamp-dashboard-accounts .qa-item > .d-flex > div:last-child,
-.plannke-revamp .revamp-dashboard-accounts .qa-item > .d-flex > span:last-child {
+.plannke-presentation .presentation-dashboard-accounts .qa-item > .d-flex > div:last-child,
+.plannke-presentation .presentation-dashboard-accounts .qa-item > .d-flex > span:last-child {
     min-width: 0;
     overflow: hidden;
 }
 
-.plannke-revamp .revamp-dashboard-accounts .qa-item .small,
-.plannke-revamp .revamp-dashboard-accounts .qa-item .tiny {
+.plannke-presentation .presentation-dashboard-accounts .qa-item .small,
+.plannke-presentation .presentation-dashboard-accounts .qa-item .tiny {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-dashboard-accounts .qa-item > span:last-child {
+.plannke-presentation .presentation-dashboard-accounts .qa-item > span:last-child {
     flex: 0 0 auto;
     white-space: nowrap;
     text-align: right;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item {
+.plannke-presentation .presentation-dashboard-activity .tx-item {
     display: grid !important;
     grid-template-columns: 38px minmax(0, 1fr);
     gap: 12px;
@@ -125,52 +125,52 @@ body.plannke-revamp > .fab-btn {
     padding: 11px 0 !important;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-body {
+.plannke-presentation .presentation-dashboard-activity .tx-item-body {
     width: 100%;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-top {
+.plannke-presentation .presentation-dashboard-activity .tx-item-top {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 14px;
     align-items: baseline;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-desc {
+.plannke-presentation .presentation-dashboard-activity .tx-item-desc {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-amount {
+.plannke-presentation .presentation-dashboard-activity .tx-item-amount {
     white-space: nowrap;
     text-align: right;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-bottom {
+.plannke-presentation .presentation-dashboard-activity .tx-item-bottom {
     display: flex !important;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-tags {
+.plannke-presentation .presentation-dashboard-activity .tx-item-tags {
     min-width: 0;
     overflow: hidden;
     display: flex;
     gap: 4px;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-meta {
+.plannke-presentation .presentation-dashboard-activity .tx-item-meta {
     flex: 0 0 auto;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-dashboard-activity .tx-item-actions {
+.plannke-presentation .presentation-dashboard-activity .tx-item-actions {
     display: none;
 }
 
-.plannke-revamp .revamp-dashboard-activity .upcoming-item {
+.plannke-presentation .presentation-dashboard-activity .upcoming-item {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 18px;
@@ -178,21 +178,21 @@ body.plannke-revamp > .fab-btn {
     padding: 12px 0 !important;
 }
 
-.plannke-revamp .revamp-dashboard-activity .upcoming-item > div:first-child,
-.plannke-revamp .revamp-dashboard-activity .upcoming-item > div:first-child > .small {
+.plannke-presentation .presentation-dashboard-activity .upcoming-item > div:first-child,
+.plannke-presentation .presentation-dashboard-activity .upcoming-item > div:first-child > .small {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-dashboard-activity .upcoming-item > span:last-child {
+.plannke-presentation .presentation-dashboard-activity .upcoming-item > span:last-child {
     white-space: nowrap;
     text-align: right;
 }
 
 /* Real empty states replace the legacy tx-item placeholder that occupied the icon column. */
-.plannke-revamp .revamp-dashboard-empty {
+.plannke-presentation .presentation-dashboard-empty {
     min-height: 118px;
     width: 100%;
     display: flex !important;
@@ -207,7 +207,7 @@ body.plannke-revamp > .fab-btn {
     text-align: left;
 }
 
-.plannke-revamp .revamp-dashboard-empty-icon {
+.plannke-presentation .presentation-dashboard-empty-icon {
     width: 38px;
     height: 38px;
     flex: 0 0 38px;
@@ -219,23 +219,23 @@ body.plannke-revamp > .fab-btn {
     font-size: 1.05rem;
 }
 
-.plannke-revamp .revamp-dashboard-empty-copy {
+.plannke-presentation .presentation-dashboard-empty-copy {
     min-width: 0;
     max-width: 360px;
 }
 
-.plannke-revamp .revamp-dashboard-empty-copy strong,
-.plannke-revamp .revamp-dashboard-empty-copy span {
+.plannke-presentation .presentation-dashboard-empty-copy strong,
+.plannke-presentation .presentation-dashboard-empty-copy span {
     display: block;
 }
 
-.plannke-revamp .revamp-dashboard-empty-copy strong {
+.plannke-presentation .presentation-dashboard-empty-copy strong {
     color: var(--rv-text);
     font-size: 0.82rem;
     line-height: 1.3;
 }
 
-.plannke-revamp .revamp-dashboard-empty-copy span {
+.plannke-presentation .presentation-dashboard-empty-copy span {
     margin-top: 4px;
     color: var(--rv-muted);
     font-size: 0.72rem;
@@ -243,30 +243,30 @@ body.plannke-revamp > .fab-btn {
 }
 
 /* -------------------- Accounts and cards: one visual system -------------------- */
-.plannke-revamp .revamp-accounts-summary {
+.plannke-presentation .presentation-accounts-summary {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
 }
 
-.plannke-revamp .revamp-accounts-overview {
+.plannke-presentation .presentation-accounts-overview {
     display: grid !important;
 }
 
-.plannke-revamp .revamp-accounts #accounts-grid,
-.plannke-revamp .revamp-accounts #cards-grid {
+.plannke-presentation .presentation-accounts #accounts-grid,
+.plannke-presentation .presentation-accounts #cards-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px !important;
     margin-bottom: 30px !important;
 }
 
-.plannke-revamp .revamp-accounts #accounts-grid > [class*="col-"],
-.plannke-revamp .revamp-accounts #cards-grid > [class*="col-"] {
+.plannke-presentation .presentation-accounts #accounts-grid > [class*="col-"],
+.plannke-presentation .presentation-accounts #cards-grid > [class*="col-"] {
     width: auto !important;
     max-width: none !important;
     padding: 0 !important;
 }
 
-.plannke-revamp .revamp-entity-unified {
+.plannke-presentation .presentation-entity-unified {
     position: relative;
     overflow: hidden;
     min-height: 360px !important;
@@ -279,11 +279,11 @@ body.plannke-revamp > .fab-btn {
     box-shadow: 0 12px 36px rgba(0, 0, 0, 0.07) !important;
 }
 
-[data-bs-theme="light"] .plannke-revamp .revamp-entity-unified {
+[data-bs-theme="light"] .plannke-presentation .presentation-entity-unified {
     box-shadow: 0 12px 30px rgba(31, 38, 55, 0.06) !important;
 }
 
-.plannke-revamp .revamp-entity-unified::before {
+.plannke-presentation .presentation-entity-unified::before {
     content: '';
     position: absolute;
     inset: 0 0 auto;
@@ -291,24 +291,24 @@ body.plannke-revamp > .fab-btn {
     background: linear-gradient(90deg, var(--rv-accent), rgba(139, 124, 246, 0.18));
 }
 
-.plannke-revamp .revamp-credit-card::before {
+.plannke-presentation .presentation-credit-card::before {
     background: linear-gradient(90deg, #70b7ff, #8b7cf6 62%, rgba(139, 124, 246, 0.12));
 }
 
-.plannke-revamp .revamp-entity-unified .card-body {
+.plannke-presentation .presentation-entity-unified .card-body {
     min-height: 360px;
     padding: 22px 22px 20px !important;
 }
 
-.plannke-revamp .revamp-entity-header {
+.plannke-presentation .presentation-entity-header {
     padding-right: 80px;
 }
 
-.plannke-revamp .revamp-credit-card .revamp-entity-header {
+.plannke-presentation .presentation-credit-card .presentation-entity-header {
     padding-right: 0;
 }
 
-.plannke-revamp .revamp-entity-actions {
+.plannke-presentation .presentation-entity-actions {
     position: absolute;
     top: 22px;
     right: 20px;
@@ -316,13 +316,13 @@ body.plannke-revamp > .fab-btn {
     margin: 0 !important;
 }
 
-.plannke-revamp .revamp-account-card .fs-4 {
+.plannke-presentation .presentation-account-card .fs-4 {
     margin-top: 6px !important;
     font-size: clamp(1.8rem, 2vw, 2.15rem) !important;
     letter-spacing: -0.045em;
 }
 
-.plannke-revamp .revamp-account-meta {
+.plannke-presentation .presentation-account-meta {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 10px;
@@ -333,13 +333,13 @@ body.plannke-revamp > .fab-btn {
     background: var(--rv-bg-soft);
 }
 
-.plannke-revamp .revamp-account-meta-item span,
-.plannke-revamp .revamp-account-meta-item strong {
+.plannke-presentation .presentation-account-meta-item span,
+.plannke-presentation .presentation-account-meta-item strong {
     display: block;
     min-width: 0;
 }
 
-.plannke-revamp .revamp-account-meta-item span {
+.plannke-presentation .presentation-account-meta-item span {
     color: var(--rv-muted);
     font-size: 0.66rem;
     font-weight: 700;
@@ -347,7 +347,7 @@ body.plannke-revamp > .fab-btn {
     text-transform: uppercase;
 }
 
-.plannke-revamp .revamp-account-meta-item strong {
+.plannke-presentation .presentation-account-meta-item strong {
     margin-top: 4px;
     overflow: hidden;
     color: var(--rv-text);
@@ -356,25 +356,25 @@ body.plannke-revamp > .fab-btn {
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-entity-footer {
+.plannke-presentation .presentation-entity-footer {
     margin-top: auto !important;
     padding-top: 15px !important;
     border-color: var(--rv-border) !important;
 }
 
-.plannke-revamp .revamp-entity-footer .btn,
-.plannke-revamp .revamp-account-card .btn-outline-primary.rounded-pill {
+.plannke-presentation .presentation-entity-footer .btn,
+.plannke-presentation .presentation-account-card .btn-outline-primary.rounded-pill {
     min-height: 36px;
     border-radius: 10px !important;
     padding-inline: 14px !important;
 }
 
-.plannke-revamp .revamp-credit-card .card-body > .d-flex.justify-content-between.mb-1 {
+.plannke-presentation .presentation-credit-card .card-body > .d-flex.justify-content-between.mb-1 {
     margin-top: 6px;
     align-items: end;
 }
 
-.plannke-revamp .revamp-credit-card .card-body > .d-flex.justify-content-between.mb-1 > span:first-child {
+.plannke-presentation .presentation-credit-card .card-body > .d-flex.justify-content-between.mb-1 > span:first-child {
     color: var(--rv-muted) !important;
     font-size: 0.68rem !important;
     font-weight: 750;
@@ -382,17 +382,17 @@ body.plannke-revamp > .fab-btn {
     text-transform: uppercase;
 }
 
-.plannke-revamp .revamp-credit-card .card-body > .d-flex.justify-content-between.mb-1 > span:last-child {
+.plannke-presentation .presentation-credit-card .card-body > .d-flex.justify-content-between.mb-1 > span:last-child {
     font-size: 1.35rem !important;
     letter-spacing: -0.035em;
 }
 
-.plannke-revamp .revamp-credit-card .progress {
+.plannke-presentation .presentation-credit-card .progress {
     height: 7px !important;
     margin-top: 6px;
 }
 
-.plannke-revamp .revamp-card-history {
+.plannke-presentation .presentation-card-history {
     margin: 12px 0 0 !important;
     padding: 10px 12px !important;
     border: 0 !important;
@@ -400,34 +400,34 @@ body.plannke-revamp > .fab-btn {
     background: var(--rv-bg-soft) !important;
 }
 
-.plannke-revamp .revamp-card-history .billing-row {
+.plannke-presentation .presentation-card-history .billing-row {
     min-height: 30px;
 }
 
-.plannke-revamp .revamp-card-payment {
+.plannke-presentation .presentation-card-payment {
     margin-top: 10px !important;
     padding: 10px 12px !important;
 }
 
 /* -------------------- Transaction editor: compact desktop workflow -------------------- */
-.plannke-revamp #transactionModal .modal-dialog {
+.plannke-presentation #transactionModal .modal-dialog {
     max-width: 980px !important;
 }
 
-.plannke-revamp #transactionModal .modal-content {
+.plannke-presentation #transactionModal .modal-content {
     max-height: calc(100vh - 32px);
 }
 
-.plannke-revamp #transactionModal .modal-header {
+.plannke-presentation #transactionModal .modal-header {
     min-height: 58px !important;
     padding: 13px 20px !important;
 }
 
-.plannke-revamp #transactionModal .modal-body {
+.plannke-presentation #transactionModal .modal-body {
     padding: 17px 20px 19px !important;
 }
 
-.plannke-revamp #transactionModal #transactionForm > .mb-4:first-of-type {
+.plannke-presentation #transactionModal #transactionForm > .mb-4:first-of-type {
     display: grid;
     grid-template-columns: 70px minmax(0, 1fr);
     gap: 12px;
@@ -435,27 +435,27 @@ body.plannke-revamp > .fab-btn {
     margin-bottom: 12px !important;
 }
 
-.plannke-revamp #transactionModal #transactionForm > .mb-4:first-of-type > .form-label {
+.plannke-presentation #transactionModal #transactionForm > .mb-4:first-of-type > .form-label {
     margin: 0 !important;
 }
 
-.plannke-revamp #transactionModal .tx-type-group {
+.plannke-presentation #transactionModal .tx-type-group {
     gap: 7px !important;
 }
 
-.plannke-revamp #transactionModal .tx-type-group > .btn-type {
+.plannke-presentation #transactionModal .tx-type-group > .btn-type {
     min-height: 46px !important;
     flex-direction: row !important;
     gap: 7px !important;
     border-radius: 10px !important;
 }
 
-.plannke-revamp #transactionModal .tx-type-group > .btn-type i {
+.plannke-presentation #transactionModal .tx-type-group > .btn-type i {
     margin: 0 !important;
     font-size: 1rem !important;
 }
 
-.plannke-revamp #transactionModal #tx-fields-wrapper:not(.hidden) {
+.plannke-presentation #transactionModal #tx-fields-wrapper:not(.hidden) {
     display: grid !important;
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-auto-flow: row dense;
@@ -464,73 +464,73 @@ body.plannke-revamp > .fab-btn {
     padding-top: 0 !important;
 }
 
-.plannke-revamp #transactionModal #tx-fields-wrapper > * {
+.plannke-presentation #transactionModal #tx-fields-wrapper > * {
     min-width: 0;
 }
 
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3,
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-4 {
+.plannke-presentation #transactionModal #tx-fields-wrapper > .mb-3,
+.plannke-presentation #transactionModal #tx-fields-wrapper > .mb-4 {
     margin-bottom: 0 !important;
 }
 
-.plannke-revamp #transactionModal .form-label {
+.plannke-presentation #transactionModal .form-label {
     margin-bottom: 5px !important;
     font-size: 0.64rem !important;
 }
 
-.plannke-revamp #transactionModal .form-control,
-.plannke-revamp #transactionModal .form-select,
-.plannke-revamp #transactionModal .input-group-text {
+.plannke-presentation #transactionModal .form-control,
+.plannke-presentation #transactionModal .form-select,
+.plannke-presentation #transactionModal .input-group-text {
     min-height: 40px !important;
     padding-top: 7px !important;
     padding-bottom: 7px !important;
 }
 
-.plannke-revamp #transactionModal #tx-form-error {
+.plannke-presentation #transactionModal #tx-form-error {
     grid-column: 1 / -1;
 }
 
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-desc) { grid-column: span 6; }
-.plannke-revamp #transactionModal #tx-category-group { grid-column: span 6; }
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-amount) { grid-column: span 3; }
-.plannke-revamp #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-date) { grid-column: span 3; }
-.plannke-revamp #transactionModal #tx-account-group { grid-column: span 6; }
-.plannke-revamp #transactionModal #tx-destination-group { grid-column: span 6; }
-.plannke-revamp #transactionModal #tx-is-installment-group { grid-column: span 6; }
-.plannke-revamp #transactionModal #tx-installments-group { grid-column: span 3; }
+.plannke-presentation #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-desc) { grid-column: span 6; }
+.plannke-presentation #transactionModal #tx-category-group { grid-column: span 6; }
+.plannke-presentation #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-amount) { grid-column: span 3; }
+.plannke-presentation #transactionModal #tx-fields-wrapper > .mb-3:has(#tx-date) { grid-column: span 3; }
+.plannke-presentation #transactionModal #tx-account-group { grid-column: span 6; }
+.plannke-presentation #transactionModal #tx-destination-group { grid-column: span 6; }
+.plannke-presentation #transactionModal #tx-is-installment-group { grid-column: span 6; }
+.plannke-presentation #transactionModal #tx-installments-group { grid-column: span 3; }
 
-.plannke-revamp #transactionModal #tx-is-installment-group .form-switch {
+.plannke-presentation #transactionModal #tx-is-installment-group .form-switch {
     min-height: 40px;
     padding-top: 5px !important;
     padding-bottom: 5px !important;
 }
 
-.plannke-revamp #transactionModal .product-tx-extra,
-.plannke-revamp #transactionModal .product-tx-extra > .row {
+.plannke-presentation #transactionModal .product-tx-extra,
+.plannke-presentation #transactionModal .product-tx-extra > .row {
     display: contents;
 }
 
-.plannke-revamp #transactionModal .product-tx-extra > .row > [class*="col-"] {
+.plannke-presentation #transactionModal .product-tx-extra > .row > [class*="col-"] {
     width: auto !important;
     max-width: none !important;
     padding: 0 !important;
 }
 
-.plannke-revamp #transactionModal .product-tx-extra > .row > .col-sm-5 { grid-column: span 3; }
-.plannke-revamp #transactionModal .product-tx-extra > .row > .col-sm-7 { grid-column: span 5; }
-.plannke-revamp #transactionModal .product-sharing-details { grid-column: span 4; margin: 0 !important; align-self: end; }
+.plannke-presentation #transactionModal .product-tx-extra > .row > .col-sm-5 { grid-column: span 3; }
+.plannke-presentation #transactionModal .product-tx-extra > .row > .col-sm-7 { grid-column: span 5; }
+.plannke-presentation #transactionModal .product-sharing-details { grid-column: span 4; margin: 0 !important; align-self: end; }
 
-.plannke-revamp #transactionModal .product-sharing-details > summary {
+.plannke-presentation #transactionModal .product-sharing-details > summary {
     min-height: 40px;
     border-radius: 10px;
 }
 
-.plannke-revamp #transactionModal #tx-installment-helper {
+.plannke-presentation #transactionModal #tx-installment-helper {
     margin-top: 4px !important;
     font-size: 0.66rem;
 }
 
-.plannke-revamp #transactionModal #tx-fields-wrapper > button[type="submit"] {
+.plannke-presentation #transactionModal #tx-fields-wrapper > button[type="submit"] {
     grid-column: 10 / -1;
     width: 100% !important;
     min-width: 0;
@@ -542,36 +542,36 @@ body.plannke-revamp > .fab-btn {
 }
 
 /* -------------------- Account/card registration -------------------- */
-.plannke-revamp #accountModal .modal-dialog { max-width: 640px !important; }
-.plannke-revamp #cardModal .modal-dialog { max-width: 720px !important; }
+.plannke-presentation #accountModal .modal-dialog { max-width: 640px !important; }
+.plannke-presentation #cardModal .modal-dialog { max-width: 720px !important; }
 
-.plannke-revamp #accountForm,
-.plannke-revamp #cardForm {
+.plannke-presentation #accountForm,
+.plannke-presentation #cardForm {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px 16px;
 }
 
-.plannke-revamp #accountForm > input[type="hidden"],
-.plannke-revamp #cardForm > input[type="hidden"] {
+.plannke-presentation #accountForm > input[type="hidden"],
+.plannke-presentation #cardForm > input[type="hidden"] {
     display: none;
 }
 
-.plannke-revamp #accountForm > .mb-3,
-.plannke-revamp #accountForm > .mb-4,
-.plannke-revamp #cardForm > .mb-3,
-.plannke-revamp #cardForm > .mb-4 {
+.plannke-presentation #accountForm > .mb-3,
+.plannke-presentation #accountForm > .mb-4,
+.plannke-presentation #cardForm > .mb-3,
+.plannke-presentation #cardForm > .mb-4 {
     margin-bottom: 0 !important;
 }
 
-.plannke-revamp #accountForm > button,
-.plannke-revamp #cardForm > button,
-.plannke-revamp #cardForm > .row {
+.plannke-presentation #accountForm > button,
+.plannke-presentation #cardForm > button,
+.plannke-presentation #cardForm > .row {
     grid-column: 1 / -1;
 }
 
-.plannke-revamp #accountForm > button,
-.plannke-revamp #cardForm > button {
+.plannke-presentation #accountForm > button,
+.plannke-presentation #cardForm > button {
     width: auto !important;
     min-width: 180px;
     justify-self: end;
@@ -579,11 +579,11 @@ body.plannke-revamp > .fab-btn {
     border-radius: 10px !important;
 }
 
-.plannke-revamp .revamp-modal-heading {
+.plannke-presentation .presentation-modal-heading {
     min-width: 0;
 }
 
-.plannke-revamp .revamp-modal-subtitle {
+.plannke-presentation .presentation-modal-subtitle {
     margin: 3px 0 0;
     color: var(--rv-muted);
     font-size: 0.7rem;
@@ -591,23 +591,23 @@ body.plannke-revamp > .fab-btn {
 }
 
 /* -------------------- Statement/invoice as a review workspace -------------------- */
-.plannke-revamp #entityDetailModal .modal-dialog {
+.plannke-presentation #entityDetailModal .modal-dialog {
     max-width: 1180px !important;
 }
 
-.plannke-revamp #entityDetailModal .modal-content {
+.plannke-presentation #entityDetailModal .modal-content {
     max-height: min(88vh, 860px);
     border-radius: 16px !important;
     box-shadow: 0 30px 90px rgba(0, 0, 0, 0.28) !important;
 }
 
-.plannke-revamp #entityDetailModal .modal-header {
+.plannke-presentation #entityDetailModal .modal-header {
     min-height: 74px;
     padding: 16px 24px !important;
     background: var(--rv-panel-strong);
 }
 
-.plannke-revamp #entityDetailModal .revamp-detail-kicker {
+.plannke-presentation #entityDetailModal .presentation-detail-kicker {
     display: block;
     margin-bottom: 3px;
     color: var(--rv-accent);
@@ -617,41 +617,41 @@ body.plannke-revamp > .fab-btn {
     text-transform: uppercase;
 }
 
-.plannke-revamp #entityDetailModal .detail-summary-header {
+.plannke-presentation #entityDetailModal .detail-summary-header {
     margin: 0 !important;
     padding: 20px 26px !important;
     border-bottom: 1px solid var(--rv-border);
     background: var(--rv-bg-soft);
 }
 
-.plannke-revamp #entityDetailModal .detail-summary-header > .row {
+.plannke-presentation #entityDetailModal .detail-summary-header > .row {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 24px;
     align-items: end;
 }
 
-.plannke-revamp #entityDetailModal .detail-summary-header > .row > [class*="col-"] {
+.plannke-presentation #entityDetailModal .detail-summary-header > .row > [class*="col-"] {
     width: auto !important;
     max-width: none !important;
     margin: 0 !important;
 }
 
-.plannke-revamp #entityDetailModal #summary-amount {
+.plannke-presentation #entityDetailModal #summary-amount {
     font-size: clamp(2rem, 3vw, 2.6rem) !important;
     letter-spacing: -0.05em;
 }
 
-.plannke-revamp #entityDetailModal #detail-period-select {
+.plannke-presentation #entityDetailModal #detail-period-select {
     min-width: 210px;
     min-height: 40px;
 }
 
-.plannke-revamp #entityDetailModal .modal-body > .px-4.pb-4 {
+.plannke-presentation #entityDetailModal .modal-body > .px-4.pb-4 {
     padding: 20px 26px 26px !important;
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list {
+.plannke-presentation #entityDetailModal #detail-tx-list {
     max-height: min(48vh, 470px) !important;
     display: flex;
     flex-direction: column;
@@ -660,7 +660,7 @@ body.plannke-revamp > .fab-btn {
     padding-right: 4px;
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item {
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item {
     display: grid !important;
     grid-template-columns: 40px minmax(0, 1fr);
     gap: 12px;
@@ -672,35 +672,35 @@ body.plannke-revamp > .fab-btn {
     background: transparent;
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item:hover {
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item:hover {
     border-color: var(--rv-border) !important;
     background: var(--rv-bg-soft);
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-body,
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-top,
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-bottom {
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-body,
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-top,
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-bottom {
     min-width: 0;
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-top {
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-top {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 16px;
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-desc {
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-desc {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-amount,
-.plannke-revamp #entityDetailModal #detail-tx-list .tx-item-date {
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-amount,
+.plannke-presentation #entityDetailModal #detail-tx-list .tx-item-date {
     white-space: nowrap;
 }
 
-.plannke-revamp #entityDetailModal #detail-footer-pay {
+.plannke-presentation #entityDetailModal #detail-footer-pay {
     position: sticky;
     bottom: 0;
     z-index: 2;
@@ -709,7 +709,7 @@ body.plannke-revamp > .fab-btn {
     backdrop-filter: blur(18px);
 }
 
-.plannke-revamp #entityDetailModal #detail-footer-pay .pay-fatura-section {
+.plannke-presentation #entityDetailModal #detail-footer-pay .pay-fatura-section {
     display: grid;
     grid-template-columns: minmax(220px, 1fr) minmax(360px, auto);
     gap: 18px;
@@ -720,20 +720,20 @@ body.plannke-revamp > .fab-btn {
     background: transparent !important;
 }
 
-.plannke-revamp #entityDetailModal #detail-footer-pay .pay-fatura-section > .d-flex:last-child {
+.plannke-presentation #entityDetailModal #detail-footer-pay .pay-fatura-section > .d-flex:last-child {
     justify-content: flex-end;
 }
 
-.plannke-revamp #entityDetailModal #detail-pay-acc-select {
+.plannke-presentation #entityDetailModal #detail-pay-acc-select {
     min-width: 270px;
 }
 
-.plannke-revamp #entityDetailModal #detail-pay-btn {
+.plannke-presentation #entityDetailModal #detail-pay-btn {
     min-width: 180px;
 }
 
 /* -------------------- Data and assisted import -------------------- */
-.plannke-revamp .revamp-backup-status {
+.plannke-presentation .presentation-backup-status {
     display: grid;
     grid-template-columns: 44px minmax(0, 1fr) auto;
     gap: 14px;
@@ -745,7 +745,7 @@ body.plannke-revamp > .fab-btn {
     background: rgba(80, 199, 167, 0.065);
 }
 
-.plannke-revamp .revamp-backup-status-icon {
+.plannke-presentation .presentation-backup-status-icon {
     width: 44px;
     height: 44px;
     display: grid;
@@ -756,23 +756,23 @@ body.plannke-revamp > .fab-btn {
     font-size: 1.2rem;
 }
 
-.plannke-revamp .revamp-backup-status strong,
-.plannke-revamp .revamp-backup-status small {
+.plannke-presentation .presentation-backup-status strong,
+.plannke-presentation .presentation-backup-status small {
     display: block;
 }
 
-.plannke-revamp .revamp-backup-status strong {
+.plannke-presentation .presentation-backup-status strong {
     color: var(--rv-text);
     font-size: 0.9rem;
 }
 
-.plannke-revamp .revamp-backup-status small {
+.plannke-presentation .presentation-backup-status small {
     margin-top: 3px;
     color: var(--rv-muted);
     line-height: 1.4;
 }
 
-.plannke-revamp .revamp-backup-status-badge {
+.plannke-presentation .presentation-backup-status-badge {
     white-space: nowrap;
     color: var(--rv-success);
     font-size: 0.7rem;
@@ -781,8 +781,8 @@ body.plannke-revamp > .fab-btn {
     text-transform: uppercase;
 }
 
-.plannke-revamp .revamp-backup > .row,
-.plannke-revamp .revamp-backup-grid {
+.plannke-presentation .presentation-backup > .row,
+.plannke-presentation .presentation-backup-grid {
     display: grid !important;
     grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
     gap: 16px !important;
@@ -790,22 +790,22 @@ body.plannke-revamp > .fab-btn {
     margin: 0 !important;
 }
 
-.plannke-revamp .revamp-backup > .row > [class*="col-"],
-.plannke-revamp .revamp-backup-grid > [class*="col-"] {
+.plannke-presentation .presentation-backup > .row > [class*="col-"],
+.plannke-presentation .presentation-backup-grid > [class*="col-"] {
     width: 100% !important;
     max-width: none !important;
     margin: 0 !important;
     padding: 0 !important;
 }
 
-.plannke-revamp .revamp-backup-primary,
-.plannke-revamp .revamp-bank-import-panel .card {
+.plannke-presentation .presentation-backup-primary,
+.plannke-presentation .presentation-bank-import-panel .card {
     height: 100%;
     min-height: 318px;
 }
 
-.plannke-revamp .revamp-backup-primary .card-body,
-.plannke-revamp .revamp-bank-import-panel .card-body {
+.plannke-presentation .presentation-backup-primary .card-body,
+.plannke-presentation .presentation-bank-import-panel .card-body {
     display: flex;
     flex-direction: column;
     align-items: flex-start !important;
@@ -814,15 +814,15 @@ body.plannke-revamp > .fab-btn {
     padding: 26px !important;
 }
 
-.plannke-revamp .revamp-backup-primary .backup-icon-wrap {
+.plannke-presentation .presentation-backup-primary .backup-icon-wrap {
     margin-inline: 0 !important;
 }
 
-.plannke-revamp .revamp-backup-primary h4 {
+.plannke-presentation .presentation-backup-primary h4 {
     font-size: 1.2rem;
 }
 
-.plannke-revamp .revamp-data-summary {
+.plannke-presentation .presentation-data-summary {
     width: 100%;
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -830,55 +830,55 @@ body.plannke-revamp > .fab-btn {
     margin: 4px 0 18px;
 }
 
-.plannke-revamp .revamp-data-summary-item {
+.plannke-presentation .presentation-data-summary-item {
     padding: 10px 11px;
     border: 1px solid var(--rv-border);
     border-radius: 11px;
     background: var(--rv-bg-soft);
 }
 
-.plannke-revamp .revamp-data-summary-item span,
-.plannke-revamp .revamp-data-summary-item strong {
+.plannke-presentation .presentation-data-summary-item span,
+.plannke-presentation .presentation-data-summary-item strong {
     display: block;
 }
 
-.plannke-revamp .revamp-data-summary-item span {
+.plannke-presentation .presentation-data-summary-item span {
     color: var(--rv-muted);
     font-size: 0.64rem;
     text-transform: uppercase;
 }
 
-.plannke-revamp .revamp-data-summary-item strong {
+.plannke-presentation .presentation-data-summary-item strong {
     margin-top: 3px;
     color: var(--rv-text);
     font-size: 1rem;
 }
 
-.plannke-revamp .revamp-backup-primary .d-flex.gap-3 {
+.plannke-presentation .presentation-backup-primary .d-flex.gap-3 {
     justify-content: flex-start !important;
     margin-top: auto;
 }
 
-.plannke-revamp .revamp-report-export {
+.plannke-presentation .presentation-report-export {
     border-color: var(--rv-border-strong) !important;
     color: var(--rv-text) !important;
 }
 
-.plannke-revamp .revamp-backup-primary .mt-4.pt-3.border-top {
+.plannke-presentation .presentation-backup-primary .mt-4.pt-3.border-top {
     width: 100%;
     margin-top: 14px !important;
     border-color: var(--rv-border) !important;
 }
 
-.plannke-revamp .revamp-bank-import-panel .product-card-title {
+.plannke-presentation .presentation-bank-import-panel .product-card-title {
     width: 100%;
 }
 
-.plannke-revamp .revamp-bank-import-panel #product-bank-result {
+.plannke-presentation .presentation-bank-import-panel #product-bank-result {
     min-height: 20px;
 }
 
-.plannke-revamp .revamp-import-review {
+.plannke-presentation .presentation-import-review {
     margin-top: 18px;
     overflow: hidden;
     border: 1px solid var(--rv-border);
@@ -886,7 +886,7 @@ body.plannke-revamp > .fab-btn {
     background: var(--rv-panel);
 }
 
-.plannke-revamp .revamp-import-review-header {
+.plannke-presentation .presentation-import-review-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
@@ -895,7 +895,7 @@ body.plannke-revamp > .fab-btn {
     border-bottom: 1px solid var(--rv-border);
 }
 
-.plannke-revamp .revamp-import-eyebrow {
+.plannke-presentation .presentation-import-eyebrow {
     display: block;
     margin-bottom: 4px;
     color: var(--rv-accent);
@@ -905,13 +905,13 @@ body.plannke-revamp > .fab-btn {
     text-transform: uppercase;
 }
 
-.plannke-revamp .revamp-import-review-header h3 {
+.plannke-presentation .presentation-import-review-header h3 {
     margin: 0;
     color: var(--rv-text);
     font-size: 1.12rem;
 }
 
-.plannke-revamp .revamp-import-review-header p {
+.plannke-presentation .presentation-import-review-header p {
     max-width: 760px;
     margin: 6px 0 0;
     color: var(--rv-muted);
@@ -919,7 +919,7 @@ body.plannke-revamp > .fab-btn {
     line-height: 1.5;
 }
 
-.plannke-revamp .revamp-import-count {
+.plannke-presentation .presentation-import-count {
     flex: 0 0 auto;
     padding: 5px 9px;
     border-radius: 999px;
@@ -929,15 +929,15 @@ body.plannke-revamp > .fab-btn {
     font-weight: 750;
 }
 
-.plannke-revamp .revamp-import-table-wrap {
+.plannke-presentation .presentation-import-table-wrap {
     overflow-x: auto;
 }
 
-.plannke-revamp .revamp-import-table {
+.plannke-presentation .presentation-import-table {
     min-width: 900px;
 }
 
-.plannke-revamp .revamp-import-row {
+.plannke-presentation .presentation-import-row {
     display: grid;
     grid-template-columns: 72px 92px minmax(250px, 1fr) 120px minmax(180px, 0.65fr) 96px;
     gap: 12px;
@@ -948,15 +948,15 @@ body.plannke-revamp > .fab-btn {
     transition: opacity 120ms ease, background 120ms ease;
 }
 
-.plannke-revamp .revamp-import-row:not(.revamp-import-row-head):hover {
+.plannke-presentation .presentation-import-row:not(.presentation-import-row-head):hover {
     background: var(--rv-bg-soft);
 }
 
-.plannke-revamp .revamp-import-row.excluded {
+.plannke-presentation .presentation-import-row.excluded {
     opacity: 0.48;
 }
 
-.plannke-revamp .revamp-import-row-head {
+.plannke-presentation .presentation-import-row-head {
     min-height: 38px;
     color: var(--rv-muted);
     background: var(--rv-bg-soft);
@@ -966,8 +966,8 @@ body.plannke-revamp > .fab-btn {
     text-transform: uppercase;
 }
 
-.plannke-revamp .revamp-import-check,
-.plannke-revamp .revamp-import-remember {
+.plannke-presentation .presentation-import-check,
+.plannke-presentation .presentation-import-remember {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -976,60 +976,60 @@ body.plannke-revamp > .fab-btn {
     font-size: 0.7rem;
 }
 
-.plannke-revamp .revamp-import-check input,
-.plannke-revamp .revamp-import-remember input {
+.plannke-presentation .presentation-import-check input,
+.plannke-presentation .presentation-import-remember input {
     width: 16px;
     height: 16px;
     accent-color: var(--rv-accent);
 }
 
-.plannke-revamp .revamp-import-date {
+.plannke-presentation .presentation-import-date {
     color: var(--rv-muted);
     font-size: 0.72rem;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-import-description {
+.plannke-presentation .presentation-import-description {
     min-width: 0;
 }
 
-.plannke-revamp .revamp-import-description strong,
-.plannke-revamp .revamp-import-description small {
+.plannke-presentation .presentation-import-description strong,
+.plannke-presentation .presentation-import-description small {
     display: block;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-import-description strong {
+.plannke-presentation .presentation-import-description strong {
     color: var(--rv-text);
     font-size: 0.78rem;
 }
 
-.plannke-revamp .revamp-import-description small {
+.plannke-presentation .presentation-import-description small {
     margin-top: 3px;
     color: var(--rv-muted);
     font-size: 0.65rem;
 }
 
-.plannke-revamp .revamp-import-value {
+.plannke-presentation .presentation-import-value {
     font-size: 0.78rem;
     font-weight: 760;
     text-align: right;
     white-space: nowrap;
 }
 
-.plannke-revamp .revamp-import-value.expense { color: var(--rv-danger); }
-.plannke-revamp .revamp-import-value.income { color: var(--rv-success); }
+.plannke-presentation .presentation-import-value.expense { color: var(--rv-danger); }
+.plannke-presentation .presentation-import-value.income { color: var(--rv-success); }
 
-.plannke-revamp .revamp-import-category {
+.plannke-presentation .presentation-import-category {
     min-height: 36px;
     border-color: var(--rv-border-strong);
     background-color: var(--rv-bg-soft);
     font-size: 0.72rem;
 }
 
-.plannke-revamp .revamp-import-review-footer {
+.plannke-presentation .presentation-import-review-footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1037,7 +1037,7 @@ body.plannke-revamp > .fab-btn {
     padding: 14px 20px;
 }
 
-.plannke-revamp .revamp-import-review-hint {
+.plannke-presentation .presentation-import-review-hint {
     min-width: 0;
     display: flex;
     align-items: center;
@@ -1047,42 +1047,42 @@ body.plannke-revamp > .fab-btn {
     line-height: 1.4;
 }
 
-.plannke-revamp .revamp-import-review-hint i {
+.plannke-presentation .presentation-import-review-hint i {
     flex: 0 0 auto;
     color: var(--rv-accent);
 }
 
-.plannke-revamp .revamp-import-actions {
+.plannke-presentation .presentation-import-actions {
     flex: 0 0 auto;
     display: flex;
     gap: 8px;
 }
 
-.plannke-revamp .revamp-import-actions .btn {
+.plannke-presentation .presentation-import-actions .btn {
     min-height: 38px;
     border-radius: 10px;
     font-size: 0.75rem;
 }
 
 /* Planning must always have a stable controls mount while visible. */
-.plannke-revamp #projecao-view:not(.hidden) > #revamp-planning-overview:not([hidden]) {
+.plannke-presentation #projecao-view:not(.hidden) > #presentation-planning-overview:not([hidden]) {
     display: block !important;
 }
 
 @media (max-width: 1179.98px) {
-    body.plannke-revamp { min-width: 1080px; }
-    .plannke-revamp #revamp-shell { grid-template-columns: 224px minmax(0, 1fr) !important; }
-    .plannke-revamp .revamp-sidebar { display: flex !important; }
-    .plannke-revamp .revamp-brand-copy,
-    .plannke-revamp .revamp-nav-label,
-    .plannke-revamp .revamp-settings span,
-    .plannke-revamp .revamp-local-status span { display: initial !important; }
-    .plannke-revamp .revamp-content > main.container-xl { padding-inline: 30px !important; }
+    body.plannke-presentation { min-width: 1080px; }
+    .plannke-presentation #presentation-shell { grid-template-columns: 224px minmax(0, 1fr) !important; }
+    .plannke-presentation .presentation-sidebar { display: flex !important; }
+    .plannke-presentation .presentation-brand-copy,
+    .plannke-presentation .presentation-nav-label,
+    .plannke-presentation .presentation-settings span,
+    .plannke-presentation .presentation-local-status span { display: initial !important; }
+    .plannke-presentation .presentation-content > main.container-xl { padding-inline: 30px !important; }
 }
 
 @media (max-width: 767.98px) {
-    .plannke-revamp #revamp-shell { display: grid !important; }
-    .plannke-revamp .revamp-sidebar { display: flex !important; }
-    .plannke-revamp .revamp-topbar { display: flex !important; }
-    .plannke-revamp .revamp-content > main.container-xl { display: block !important; }
+    .plannke-presentation #presentation-shell { display: grid !important; }
+    .plannke-presentation .presentation-sidebar { display: flex !important; }
+    .plannke-presentation .presentation-topbar { display: flex !important; }
+    .plannke-presentation .presentation-content > main.container-xl { display: block !important; }
 }

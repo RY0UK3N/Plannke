@@ -47,7 +47,7 @@
     }
 
     function markAutosaveAsPrimary() {
-        const status = document.querySelector('.revamp-local-status');
+        const status = document.querySelector('.presentation-local-status');
         if (status) {
             const label = status.querySelector('span');
             if (label && label.textContent !== 'Salvo automaticamente') label.textContent = 'Salvo automaticamente';
@@ -70,12 +70,12 @@
         const modal = document.getElementById(modalId);
         const header = modal?.querySelector('.modal-header');
         const title = header?.querySelector('.modal-title');
-        if (!modal || !header || !title || header.querySelector('.revamp-modal-heading')) return;
+        if (!modal || !header || !title || header.querySelector('.presentation-modal-heading')) return;
 
-        const heading = make('div', 'revamp-modal-heading');
+        const heading = make('div', 'presentation-modal-heading');
         header.insertBefore(heading, title);
         heading.appendChild(title);
-        heading.appendChild(make('p', 'revamp-modal-subtitle', subtitle));
+        heading.appendChild(make('p', 'presentation-modal-subtitle', subtitle));
     }
 
     function decorateForms() {
@@ -83,25 +83,25 @@
         modalHeading('accountModal', 'Identifique a conta e informe o saldo disponível de hoje.');
         modalHeading('cardModal', 'Configure o cartão para acompanhar limite, fechamento e vencimento.');
 
-        document.getElementById('transactionForm')?.classList.add('revamp-desktop-form');
-        document.getElementById('accountForm')?.classList.add('revamp-desktop-form');
-        document.getElementById('cardForm')?.classList.add('revamp-desktop-form');
-        document.getElementById('entityDetailModal')?.classList.add('revamp-detail-modal');
+        document.getElementById('transactionForm')?.classList.add('presentation-desktop-form');
+        document.getElementById('accountForm')?.classList.add('presentation-desktop-form');
+        document.getElementById('cardForm')?.classList.add('presentation-desktop-form');
+        document.getElementById('entityDetailModal')?.classList.add('presentation-detail-modal');
     }
 
     function decorateDetailWorkspace() {
         const modal = document.getElementById('entityDetailModal');
         if (!modal) return;
-        modal.classList.add('revamp-detail-modal');
+        modal.classList.add('presentation-detail-modal');
         const identity = modal.querySelector('.modal-header > .d-flex');
-        if (identity && !identity.querySelector('.revamp-detail-kicker')) {
+        if (identity && !identity.querySelector('.presentation-detail-kicker')) {
             const titleWrap = document.getElementById('detail-title')?.parentElement;
-            if (titleWrap) titleWrap.insertBefore(make('span', 'revamp-detail-kicker', 'Área de revisão'), titleWrap.firstChild);
+            if (titleWrap) titleWrap.insertBefore(make('span', 'presentation-detail-kicker', 'Área de revisão'), titleWrap.firstChild);
         }
 
         const type = root._detailContext?.type === 'card' ? 'card' : 'account';
         modal.dataset.detailType = type;
-        const kicker = modal.querySelector('.revamp-detail-kicker');
+        const kicker = modal.querySelector('.presentation-detail-kicker');
         const historyTitle = modal.querySelector('.modal-body .px-4.pb-4 h6');
         if (kicker) kicker.textContent = type === 'card' ? 'Fatura do cartão' : 'Extrato da conta';
         if (historyTitle) historyTitle.textContent = type === 'card' ? 'Compras e lançamentos da fatura' : 'Movimentações do período';
@@ -115,12 +115,12 @@
         const only = list.firstElementChild;
         const realTransaction = only.querySelector?.('.tx-item-body') || only.classList.contains('upcoming-item');
         if (realTransaction || !/Nenhum|Nenhuma/i.test(only.textContent || '')) return;
-        if (only.classList.contains('revamp-dashboard-empty')) return;
+        if (only.classList.contains('presentation-dashboard-empty')) return;
 
-        only.className = 'revamp-dashboard-empty';
-        const badge = make('span', 'revamp-dashboard-empty-icon');
+        only.className = 'presentation-dashboard-empty';
+        const badge = make('span', 'presentation-dashboard-empty-icon');
         badge.appendChild(icon(iconName));
-        const copy = make('div', 'revamp-dashboard-empty-copy');
+        const copy = make('div', 'presentation-dashboard-empty-copy');
         copy.append(make('strong', '', title), make('span', '', subtitle));
         only.replaceChildren(badge, copy);
     }
@@ -147,22 +147,22 @@
             const body = card?.querySelector('.card-body');
             const account = data.accounts?.[index];
             if (!card || !body || !account) return;
-            card.classList.add('revamp-entity-unified', 'revamp-account-card');
+            card.classList.add('presentation-entity-unified', 'presentation-account-card');
 
             const actions = body.querySelector(':scope > .d-flex.justify-content-end');
-            actions?.classList.add('revamp-entity-actions');
+            actions?.classList.add('presentation-entity-actions');
             const header = body.querySelector(':scope > .d-flex.align-items-center.gap-3');
-            header?.classList.add('revamp-entity-header');
+            header?.classList.add('presentation-entity-header');
             const footer = body.querySelector(':scope > .d-flex.justify-content-between.align-items-end');
-            footer?.classList.add('revamp-entity-footer');
+            footer?.classList.add('presentation-entity-footer');
 
-            let meta = body.querySelector('.revamp-account-meta');
+            let meta = body.querySelector('.presentation-account-meta');
             if (!meta) {
-                meta = make('div', 'revamp-account-meta');
+                meta = make('div', 'presentation-account-meta');
                 const activity = accountActivity(data, account.id);
-                const count = make('div', 'revamp-account-meta-item');
+                const count = make('div', 'presentation-account-meta-item');
                 count.append(make('span', '', 'Movimentações'), make('strong', '', activity.count));
-                const last = make('div', 'revamp-account-meta-item');
+                const last = make('div', 'presentation-account-meta-item');
                 last.append(make('span', '', 'Última atividade'), make('strong', '', activity.lastDate ? formatLocalDate(activity.lastDate) : 'Sem lançamentos'));
                 meta.append(count, last);
                 if (footer) body.insertBefore(meta, footer);
@@ -178,11 +178,11 @@
         [...(cardsGrid?.children || [])].forEach(column => {
             const card = column.querySelector('.entity-card.card-type');
             if (!card) return;
-            card.classList.add('revamp-entity-unified', 'revamp-credit-card');
-            card.querySelector('.card-body > .d-flex.justify-content-between.align-items-start')?.classList.add('revamp-entity-header');
-            card.querySelector('.billing-history')?.classList.add('revamp-card-history');
-            card.querySelector('.pay-fatura-section')?.classList.add('revamp-card-payment');
-            card.querySelector('.card-body > .border-top')?.classList.add('revamp-entity-footer');
+            card.classList.add('presentation-entity-unified', 'presentation-credit-card');
+            card.querySelector('.card-body > .d-flex.justify-content-between.align-items-start')?.classList.add('presentation-entity-header');
+            card.querySelector('.billing-history')?.classList.add('presentation-card-history');
+            card.querySelector('.pay-fatura-section')?.classList.add('presentation-card-payment');
+            card.querySelector('.card-body > .border-top')?.classList.add('presentation-entity-footer');
         });
     }
 
@@ -196,13 +196,13 @@
 
     function dataSummaryNode() {
         const data = getDataSafe() || { accounts: [], cards: [], transactions: [] };
-        const wrap = make('div', 'revamp-data-summary');
+        const wrap = make('div', 'presentation-data-summary');
         [
             ['Contas', data.accounts?.length || 0],
             ['Cartões', data.cards?.length || 0],
             ['Movimentações', data.transactions?.length || 0]
         ].forEach(([label, value]) => {
-            const item = make('div', 'revamp-data-summary-item');
+            const item = make('div', 'presentation-data-summary-item');
             item.append(make('span', '', label), make('strong', '', value));
             wrap.appendChild(item);
         });
@@ -214,28 +214,28 @@
         const row = view?.querySelector(':scope > .row');
         if (!view || !row) return;
 
-        view.classList.add('revamp-backup-desktop');
-        row.classList.add('revamp-backup-grid');
+        view.classList.add('presentation-backup-desktop');
+        row.classList.add('presentation-backup-grid');
 
-        let status = document.getElementById('revamp-backup-status');
+        let status = document.getElementById('presentation-backup-status');
         if (!status) {
-            status = make('section', 'revamp-backup-status');
-            status.id = 'revamp-backup-status';
-            const badgeIcon = make('div', 'revamp-backup-status-icon');
+            status = make('section', 'presentation-backup-status');
+            status.id = 'presentation-backup-status';
+            const badgeIcon = make('div', 'presentation-backup-status-icon');
             badgeIcon.appendChild(icon('ph-check-circle'));
             const copy = make('div');
             copy.append(
                 make('strong', '', 'Salvamento automático ativo'),
                 make('small', '', 'As alterações são gravadas localmente. O próximo ciclo substituirá esta persistência temporária por SQLite no aplicativo desktop.')
             );
-            status.append(badgeIcon, copy, make('span', 'revamp-backup-status-badge', 'Dados locais'));
+            status.append(badgeIcon, copy, make('span', 'presentation-backup-status-badge', 'Dados locais'));
             view.insertBefore(status, row);
         }
 
         const primaryColumn = [...row.children].find(node => node.id !== 'product-bank-import');
         const primary = primaryColumn?.querySelector('.card.text-center, .card');
         if (primary) {
-            primary.classList.add('revamp-backup-primary');
+            primary.classList.add('presentation-backup-primary');
             const iconWrap = primary.querySelector('.backup-icon-wrap');
             if (iconWrap && !iconWrap.dataset.revampDesktopIcon) {
                 iconWrap.replaceChildren(icon('ph-database'));
@@ -246,14 +246,14 @@
             const description = primary.querySelector('.card-body > p.text-muted');
             if (description) description.textContent = 'Consulte o volume de dados registrado no Plannke e gere uma planilha apenas quando quiser auditar ou analisar as informações fora do aplicativo.';
 
-            let summary = primary.querySelector('.revamp-data-summary');
+            let summary = primary.querySelector('.presentation-data-summary');
             const nextSummary = dataSummaryNode();
             if (summary) summary.replaceWith(nextSummary);
             else description?.after(nextSummary);
 
             const exportButton = primary.querySelector('button[data-plannke-onclick*="exportToExcel"], button[onclick*="exportToExcel"]');
             replaceActionContent(exportButton, 'ph-file-xls', 'Exportar relatório Excel');
-            exportButton?.classList.add('revamp-report-export');
+            exportButton?.classList.add('presentation-report-export');
 
             const importLabel = primary.querySelector('label:has(#excelUpload)');
             if (importLabel) {
@@ -268,7 +268,7 @@
 
         const bank = document.getElementById('product-bank-import');
         if (bank) {
-            bank.classList.add('revamp-bank-import-panel');
+            bank.classList.add('presentation-bank-import-panel');
             const copy = bank.querySelector('.small.text-muted');
             if (copy) copy.textContent = 'Selecione a conta e um OFX/CSV. Nada entra no histórico antes da revisão: duplicatas são removidas e categorias podem ser corrigidas ou memorizadas.';
             const label = bank.querySelector('label:has(#product-bank-file)');
@@ -306,7 +306,7 @@
 
     function cancelBankImport() {
         pendingBankImport = null;
-        document.getElementById('revamp-import-review')?.remove();
+        document.getElementById('presentation-import-review')?.remove();
         const result = document.getElementById('product-bank-result');
         if (result) result.textContent = 'Importação cancelada; nenhum lançamento foi alterado.';
     }
@@ -348,14 +348,14 @@
         const imported = selected.length;
         const learned = selected.filter(item => item.remember).length;
         pendingBankImport = null;
-        document.getElementById('revamp-import-review')?.remove();
+        document.getElementById('presentation-import-review')?.remove();
         const result = document.getElementById('product-bank-result');
         if (result) result.textContent = `${imported} movimentação${imported === 1 ? '' : 'ões'} confirmada${imported === 1 ? '' : 's'}${learned ? ` · ${learned} regra${learned === 1 ? '' : 's'} memorizada${learned === 1 ? '' : 's'}` : ''}.`;
         root.showToast?.(`${imported} movimentação${imported === 1 ? '' : 'ões'} importada${imported === 1 ? '' : 's'}.`);
     }
 
     function renderBankImportReview() {
-        const existing = document.getElementById('revamp-import-review');
+        const existing = document.getElementById('presentation-import-review');
         if (!pendingBankImport) {
             existing?.remove();
             return;
@@ -363,42 +363,42 @@
         const view = document.getElementById('backup-view');
         if (!view) return;
         const data = getDataSafe() || { transactions: [] };
-        const review = existing || make('section', 'revamp-import-review');
-        review.id = 'revamp-import-review';
+        const review = existing || make('section', 'presentation-import-review');
+        review.id = 'presentation-import-review';
         review.replaceChildren();
 
-        const header = make('div', 'revamp-import-review-header');
+        const header = make('div', 'presentation-import-review-header');
         const copy = make('div');
         copy.append(
-            make('span', 'revamp-import-eyebrow', 'Pré-importação'),
+            make('span', 'presentation-import-eyebrow', 'Pré-importação'),
             make('h3', '', 'Revisar movimentações'),
             make('p', '', `${pendingBankImport.items.length} lançamento${pendingBankImport.items.length === 1 ? '' : 's'} novo${pendingBankImport.items.length === 1 ? '' : 's'} encontrado${pendingBankImport.items.length === 1 ? '' : 's'} em ${pendingBankImport.fileName}. Ajuste as categorias antes de confirmar.`)
         );
-        header.append(copy, make('span', 'revamp-import-count', `${pendingBankImport.items.length} novas`));
+        header.append(copy, make('span', 'presentation-import-count', `${pendingBankImport.items.length} novas`));
 
-        const tableWrap = make('div', 'revamp-import-table-wrap');
-        const table = make('div', 'revamp-import-table');
-        const tableHead = make('div', 'revamp-import-row revamp-import-row-head');
+        const tableWrap = make('div', 'presentation-import-table-wrap');
+        const table = make('div', 'presentation-import-table');
+        const tableHead = make('div', 'presentation-import-row presentation-import-row-head');
         ['Importar', 'Data', 'Descrição', 'Valor', 'Categoria', 'Regra'].forEach(label => tableHead.appendChild(make('span', '', label)));
         table.appendChild(tableHead);
 
         pendingBankImport.items.forEach((item, index) => {
-            const row = make('div', 'revamp-import-row');
-            const includeCell = make('label', 'revamp-import-check');
+            const row = make('div', 'presentation-import-row');
+            const includeCell = make('label', 'presentation-import-check');
             const include = make('input');
             include.type = 'checkbox';
             include.checked = item.include;
             include.addEventListener('change', () => { item.include = include.checked; row.classList.toggle('excluded', !item.include); });
             includeCell.append(include, make('span', '', '')); 
 
-            const date = make('span', 'revamp-import-date', formatLocalDate(item.transaction.date));
-            const description = make('div', 'revamp-import-description');
+            const date = make('span', 'presentation-import-date', formatLocalDate(item.transaction.date));
+            const description = make('div', 'presentation-import-description');
             description.append(make('strong', '', item.transaction.description || 'Sem descrição'));
             const suggestion = item.suggested ? 'Categoria sugerida por regra existente' : 'Categoria precisa de revisão';
             description.append(make('small', '', suggestion));
 
-            const value = make('span', `revamp-import-value ${item.transaction.type || 'expense'}`, money(item.transaction.amount));
-            const category = make('select', 'form-select form-select-sm revamp-import-category');
+            const value = make('span', `presentation-import-value ${item.transaction.type || 'expense'}`, money(item.transaction.amount));
+            const category = make('select', 'form-select form-select-sm presentation-import-category');
             categoryOptions(data, item.transaction.type, item.category).forEach(name => {
                 const option = make('option', '', name);
                 option.value = name;
@@ -411,7 +411,7 @@
                 remember.disabled = !merchantRuleKey(item.transaction.description);
             });
 
-            const rememberCell = make('label', 'revamp-import-remember');
+            const rememberCell = make('label', 'presentation-import-remember');
             const remember = make('input');
             remember.type = 'checkbox';
             remember.checked = item.remember;
@@ -425,10 +425,10 @@
         });
         tableWrap.appendChild(table);
 
-        const footer = make('div', 'revamp-import-review-footer');
-        const hint = make('div', 'revamp-import-review-hint');
+        const footer = make('div', 'presentation-import-review-footer');
+        const hint = make('div', 'presentation-import-review-hint');
         hint.append(icon('ph-magic-wand'), make('span', '', 'Marque “Lembrar” para criar uma regra local baseada no estabelecimento e reutilizar a categoria em próximos extratos.'));
-        const actions = make('div', 'revamp-import-actions');
+        const actions = make('div', 'presentation-import-actions');
         const cancel = make('button', 'btn btn-outline-secondary', 'Cancelar');
         cancel.type = 'button';
         cancel.addEventListener('click', cancelBankImport);
@@ -483,7 +483,7 @@
                     })
                 };
                 renderBankImportReview();
-                document.getElementById('revamp-import-review')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                document.getElementById('presentation-import-review')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 const result = document.getElementById('product-bank-result');
                 if (result) result.textContent = `${incoming.length} encontradas · ${fresh.length} novas aguardando revisão.`;
             } catch (error) {
@@ -514,7 +514,7 @@
 
     function updateDesktopCopy() {
         document.body.dataset.plannkeTarget = 'desktop';
-        const brandSub = document.querySelector('.revamp-brand-copy span');
+        const brandSub = document.querySelector('.presentation-brand-copy span');
         if (brandSub) brandSub.textContent = 'Central financeira';
 
         const pages = root.PlannkePresentation?.pages;
@@ -524,24 +524,24 @@
             pages.backup.title = 'Dados e importação';
             pages.backup.subtitle = 'Salvamento local, relatórios e importação assistida de extratos.';
         }
-        const backupNav = document.querySelector('.revamp-nav-item[data-target="backup"] .revamp-nav-label');
+        const backupNav = document.querySelector('.presentation-nav-item[data-target="backup"] .presentation-nav-label');
         if (backupNav) backupNav.textContent = 'Dados';
         root.PlannkePresentation?.syncPage?.();
     }
 
     function ensurePlanningNavigation() {
-        const nav = document.querySelector('.revamp-nav');
+        const nav = document.querySelector('.presentation-nav');
         if (!nav) return;
-        let button = nav.querySelector('.revamp-nav-item[data-target="projecao"]');
+        let button = nav.querySelector('.presentation-nav-item[data-target="projecao"]');
         if (button) {
             button.hidden = false;
             return;
         }
-        button = make('button', 'revamp-nav-item');
+        button = make('button', 'presentation-nav-item');
         button.type = 'button';
         button.dataset.target = 'projecao';
         button.setAttribute('aria-label', 'Planejamento');
-        button.append(icon('ph-target'), make('span', 'revamp-nav-label', 'Planejamento'));
+        button.append(icon('ph-target'), make('span', 'presentation-nav-label', 'Planejamento'));
         button.addEventListener('click', () => root.PlannkePresentation?.navigate?.('projecao') || root._navigateTo?.('projecao'));
         const accounts = nav.querySelector('[data-target="accounts"]');
         nav.insertBefore(button, accounts || null);
@@ -559,7 +559,7 @@
 
         window.setTimeout(() => {
             const hub = document.getElementById('product-planning-hub');
-            const controls = document.getElementById('revamp-planning-overview');
+            const controls = document.getElementById('presentation-planning-overview');
             if (hub && !controls && !planningRepairEventPending) {
                 planningRepairEventPending = true;
                 root.dispatchEvent?.(new CustomEvent('plannke:data-changed', { detail: { source: 'desktop-planning-repair' } }));

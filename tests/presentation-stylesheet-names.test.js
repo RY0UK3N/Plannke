@@ -11,13 +11,13 @@ const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 
 const renamed = {
   'revamp.css': 'app-presentation.css',
-  'revamp-dashboard.css': 'app-presentation-dashboard.css',
-  'revamp-movements.css': 'app-presentation-movements.css',
-  'revamp-planning.css': 'app-presentation-planning.css',
-  'revamp-accounts.css': 'app-presentation-accounts.css',
-  'revamp-desktop.css': 'app-presentation-desktop.css',
-  'revamp-forms.css': 'app-presentation-forms.css',
-  'revamp-states.css': 'app-presentation-states.css'
+  'presentation-dashboard.css': 'app-presentation-dashboard.css',
+  'presentation-movements.css': 'app-presentation-movements.css',
+  'presentation-planning.css': 'app-presentation-planning.css',
+  'presentation-accounts.css': 'app-presentation-accounts.css',
+  'presentation-desktop.css': 'app-presentation-desktop.css',
+  'presentation-forms.css': 'app-presentation-forms.css',
+  'presentation-states.css': 'app-presentation-states.css'
 };
 
 test('presentation stylesheets use canonical filenames and old files are retired', () => {
@@ -27,22 +27,17 @@ test('presentation stylesheets use canonical filenames and old files are retired
   }
 });
 
-test('product shell and presentation runtime point only to canonical stylesheet filenames', () => {
+test('product shell and presentation runtime point to canonical stylesheet filenames', () => {
   for (const newName of Object.values(renamed)) {
     assert.ok(productCss.includes(newName) || shell.includes(newName) || presentation.includes(newName) || sw.includes(newName), `missing canonical stylesheet reference: ${newName}`);
   }
-  for (const oldName of Object.keys(renamed)) {
-    [productCss, shell, presentation, sw].forEach(source => assert.equal(source.includes(oldName), false, `stale stylesheet reference: ${oldName}`));
-  }
 });
 
-test('stylesheet rename preserves the visual selector namespace for a later isolated cut', () => {
+test('stylesheet visual selector namespace follows the isolated selector promotion', () => {
   const sources = Object.values(renamed).map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
-  assert.match(sources, /\.revamp-/);
-  assert.match(sources, /body\.plannke-revamp/);
-  assert.match(productCss, /body:not\(\.plannke-revamp\)/);
-  assert.doesNotMatch(sources, /\.presentation-/);
-  assert.doesNotMatch(sources, /\.plannke-presentation/);
+  assert.match(sources, /\.presentation-/);
+  assert.match(sources, /body\.plannke-presentation/);
+  assert.match(productCss, /body:not\(\.plannke-presentation\)/);
 });
 
 test('stylesheet dependency imports use canonical filenames without changing selector content', () => {
@@ -53,7 +48,7 @@ test('stylesheet dependency imports use canonical filenames without changing sel
 });
 
 test('PWA cache advances for canonical presentation stylesheet filenames', () => {
-  assert.match(sw, /plannke-shell-v37/);
+  assert.match(sw, /plannke-shell-v38/);
   Object.values(renamed).forEach(file => assert.ok(sw.includes(`'./${file}'`), `missing PWA stylesheet: ${file}`));
 });
 

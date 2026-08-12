@@ -9,7 +9,7 @@ const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
 
 test('app-shell is the only runtime that constructs the canonical desktop shell', () => {
   assert.match(shell, /function primeCanonicalShell\(/);
-  assert.match(shell, /shell\.id = 'revamp-shell'/);
+  assert.match(shell, /shell\.id = 'presentation-shell'/);
   assert.doesNotMatch(presentation, /function buildShell\(/);
   assert.doesNotMatch(presentation, /function createSidebar\(/);
   assert.doesNotMatch(presentation, /function createNavigation\(/);
@@ -36,6 +36,6 @@ test('data workspace copy no longer revives retired Backup or Memory Card produc
 });
 
 test('one-time presentation boundary migration artifacts are not shipped', () => {
-  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-duplicate-revamp-shell-once.js')), false);
-  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-duplicate-revamp-shell-once.yml')), false);
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-duplicate-presentation-shell-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-duplicate-presentation-shell-once.yml')), false);
 });

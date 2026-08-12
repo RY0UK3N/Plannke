@@ -9,10 +9,10 @@
 /* Canonical desktop boot: legacy shell structure stays available to the
    finance runtime, but is never painted as the primary interface. */
 @media (min-width: 1080px) {
-    body:not(.plannke-revamp) > .planner-nav,
-    body:not(.plannke-revamp) > main,
-    body:not(.plannke-revamp) > .mobile-tab-bar,
-    body:not(.plannke-revamp) > .fab-btn {
+    body:not(.plannke-presentation) > .planner-nav,
+    body:not(.plannke-presentation) > main,
+    body:not(.plannke-presentation) > .mobile-tab-bar,
+    body:not(.plannke-presentation) > .fab-btn {
         visibility: hidden !important;
     }
 }

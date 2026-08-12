@@ -23,7 +23,7 @@ test('navigation and keyboard shortcuts live outside application orchestration',
 });
 
 test('canonical navigation module owns desktop navigation only', () => {
-  assert.match(navigation, /\.revamp-nav-item\[data-target\]/);
+  assert.match(navigation, /\.presentation-nav-item\[data-target\]/);
   assert.match(navigation, /root\.setupNavigation = setupNavigation/);
   assert.match(navigation, /root\.setupKeyboardShortcuts = setupKeyboardShortcuts/);
   assert.match(navigation, /root\._navigateTo = navigateTo/);

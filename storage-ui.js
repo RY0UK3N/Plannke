@@ -45,7 +45,7 @@
     }
 
     function updateStatus(detail) {
-        const status = document.querySelector('.revamp-local-status');
+        const status = document.querySelector('.presentation-local-status');
         if (!status) return;
         const label = status.querySelector('span');
         const statusIcon = status.querySelector('i');
@@ -168,8 +168,8 @@
     }
 
     function finalizeCanonicalShell() {
-        const shell = document.getElementById('revamp-shell');
-        if (!shell || !document.body.classList.contains('plannke-revamp')) return;
+        const shell = document.getElementById('presentation-shell');
+        if (!shell || !document.body.classList.contains('plannke-presentation')) return;
 
         ['.planner-nav', '.mobile-tab-bar', '.fab-btn'].forEach(selector => {
             document.querySelectorAll(`body > ${selector}`).forEach(node => node.remove());
@@ -181,10 +181,10 @@
     }
 
     function protectSmallBankImport(event) {
-        const button = event.target?.closest?.('#revamp-import-review .revamp-import-actions .btn-primary');
+        const button = event.target?.closest?.('#presentation-import-review .presentation-import-actions .btn-primary');
         if (!button || !/Confirmar selecionadas/i.test(button.textContent || '')) return;
-        const rows = [...document.querySelectorAll('#revamp-import-review .revamp-import-row[data-import-index]')];
-        const selectedCount = rows.filter(row => row.querySelector('.revamp-import-check input[type="checkbox"]')?.checked).length;
+        const rows = [...document.querySelectorAll('#presentation-import-review .presentation-import-row[data-import-index]')];
+        const selectedCount = rows.filter(row => row.querySelector('.presentation-import-check input[type="checkbox"]')?.checked).length;
         if (selectedCount <= 0 || selectedCount >= 5) return;
         try {
             root.PlannkeStorage?.createSnapshot('before-bank-import');
