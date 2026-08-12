@@ -226,10 +226,10 @@ function maybeShowOnboarding() {
 // Safe renderers own the financial pulse and completed-dashboard projection.
 let renderers = read('safe-renderers.js');
 const rendererHelpers = [completedDashboardData, pulseMetric, renderFinancialPulse]
-  .map(fn => `    ${fn.toString().replace(/\n/g, '\n    ')}`).join('\n\n');
+  .map(fn => fn.toString().split('\n').map(line => line ? `    ${line}` : '').join('\n')).join('\n\n');
 renderers = replaceOnce(
   renderers,
-  '    function safeRenderDashboard(data) {\n        const month = localToday().slice(0, 7);\n        const monthly = (data.transactions || []).filter(tx => String(tx.date || \'\').startsWith(month));\n',
+  "    function safeRenderDashboard(data) {\n        const month = localToday().slice(0, 7);\n        const monthly = (data.transactions || []).filter(tx => String(tx.date || '').startsWith(month));\n",
   `${rendererHelpers}\n\n    function safeRenderDashboard(data) {\n        const completedData = completedDashboardData(data);\n        const month = localToday().slice(0, 7);\n        const monthly = completedData.transactions.filter(tx => String(tx.date || '').startsWith(month));\n`,
   'safe dashboard completed data'
 );
@@ -250,7 +250,7 @@ write('safe-renderers.js', renderers);
 // Planning owns onboarding state and creation flow.
 let planning = read('app-planning.js');
 const onboardingHelpers = [onboardingModal, maybeShowOnboarding]
-  .map(fn => `    ${fn.toString().replace(/\n/g, '\n    ')}`).join('\n\n');
+  .map(fn => fn.toString().split('\n').map(line => line ? `    ${line}` : '').join('\n')).join('\n\n');
 planning = replaceOnce(planning, '    const api = {\n', `${onboardingHelpers}\n\n    const api = {\n`, 'planning onboarding insertion');
 planning = replaceOnce(
   planning,
@@ -334,8 +334,144 @@ security = replaceOnce(security, "  assert.doesNotMatch(product, /function (?:in
 security = security.replace("'product-core.js', 'product.js', 'insights.js'", "'product-core.js', 'insights.js'");
 write('tests/security-shell.test.js', security);
 
+// Contracts that depended on the retired runtime become absence guards.
+let bankEntryTest = read('tests/bank-import-entry.test.js');
+bankEntryTest = replaceOnce(
+  bankEntryTest,
+  "const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');\n",
+  "const productPath = path.join(root, 'product.js');\n",
+  'bank entry product fixture'
+);
+bankEntryTest = replaceOnce(
+  bankEntryTest,
+  "test('product compatibility layer no longer owns bank import UI or direct file import', () => {\n  assert.doesNotMatch(product, /function injectBankImport\\(/);\n  assert.doesNotMatch(product, /function importBankFile\\(/);\n  assert.doesNotMatch(product, /function accountOptions\\(/);\n  assert.doesNotMatch(product, /product-bank-import/);\n  assert.doesNotMatch(product, /FileReader/);\n  assert.doesNotMatch(product, /parseOfxBank|parseCsvBank|dedupeImported/);\n});\n",
+  "test('retired product compatibility layer cannot own bank import UI or direct file import', () => {\n  assert.equal(fs.existsSync(productPath), false);\n});\n",
+  'bank entry retired product contract'
+);
+write('tests/bank-import-entry.test.js', bankEntryTest);
+
+let movementSearchTest = read('tests/movement-search.test.js');
+movementSearchTest = replaceOnce(
+  movementSearchTest,
+  "const productSource = fs.readFileSync(path.join(root, 'product.js'), 'utf8');\n",
+  "const productPath = path.join(root, 'product.js');\n",
+  'movement search product fixture'
+);
+movementSearchTest = replaceOnce(
+  movementSearchTest,
+  "test('product compatibility layer no longer owns movement search or wraps renderTransactions', () => {\n  assert.doesNotMatch(productSource, /function searchTransactions\\(/);\n  assert.doesNotMatch(productSource, /function isSmartSearch\\(/);\n  assert.doesNotMatch(productSource, /function injectSearchHelp\\(/);\n  assert.doesNotMatch(productSource, /originalTransactions = globalThis\\.renderTransactions/);\n  assert.doesNotMatch(productSource, /PlannkeProduct=\\{init,searchTransactions\\}/);\n  assert.match(productSource, /globalThis\\.PlannkeProduct=\\{init\\}/);\n});\n",
+  "test('retired product compatibility layer cannot own movement search or wrap renderTransactions', () => {\n  assert.equal(fs.existsSync(productPath), false);\n});\n",
+  'movement search retired product contract'
+);
+write('tests/movement-search.test.js', movementSearchTest);
+
+let dashboardTest = read('tests/dashboard-module.test.js');
+dashboardTest = replaceOnce(
+  dashboardTest,
+  '  assert.match(renderers, /renderChart\\(data\\)/);\n',
+  '  assert.match(renderers, /renderChart\\(completedData\\)/);\n',
+  'dashboard completed chart contract'
+);
+write('tests/dashboard-module.test.js', dashboardTest);
+
+boundary = read('tests/rendering-boundary.test.js');
+boundary = replaceOnce(
+  boundary,
+  '  assert.match(renderers, /renderChart\\(data\\)/);\n',
+  '  assert.match(renderers, /renderChart\\(completedData\\)/);\n',
+  'rendering boundary completed chart contract'
+);
+boundary = replaceOnce(
+  boundary,
+  '  assert.match(renderers, /renderBudgets\\(data\\)/);\n',
+  '  assert.match(renderers, /renderBudgets\\(completedData\\)/);\n',
+  'rendering boundary completed budgets contract'
+);
+write('tests/rendering-boundary.test.js', boundary);
+
+for (const file of [
+  'tests/action-router-compatibility.test.js',
+  'tests/action-router.test.js',
+  'tests/app-boot.test.js',
+  'tests/app-shell.test.js',
+  'tests/canonical-ui-runtime.test.js',
+  'tests/presentation-desktop-runtime-name.test.js',
+  'tests/presentation-metadata.test.js',
+  'tests/presentation-runtime-name.test.js',
+  'tests/presentation-selector-names.test.js',
+  'tests/presentation-stylesheet-names.test.js',
+  'tests/security-shell.test.js'
+]) {
+  const source = read(file);
+  write(file, replaceOnce(source, 'plannke-shell-v38', 'plannke-shell-v39', `${file} PWA cache contract`));
+}
+
 const finalTest = `const test = require('node:test');\nconst assert = require('node:assert/strict');\nconst fs = require('node:fs');\nconst path = require('node:path');\n\nconst root = path.resolve(__dirname, '..');\nconst index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');\nconst sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');\nconst pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');\nconst renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');\nconst planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');\nconst runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');\n\ntest('product compatibility runtime is physically retired everywhere', () => {\n  assert.equal(fs.existsSync(path.join(root, 'product.js')), false);\n  assert.equal(index.indexOf('product.js'), -1);\n  assert.doesNotMatch(sw, /'\\.\\/product\\.js'/);\n  assert.doesNotMatch(pkg, /node --check product\\.js/);\n  assert.match(sw, /plannke-shell-v39/);\n});\n\ntest('safe rendering boundary owns financial pulse without HTML strings', () => {\n  assert.match(renderers, /function renderFinancialPulse\\(/);\n  assert.match(renderers, /PlannkeCore/);\n  assert.match(renderers, /getFinancialPulse/);\n  assert.match(renderers, /section\\.replaceChildren\\(heading, grid, insight\\)/);\n  assert.match(renderers, /renderFinancialPulse\\(data\\)/);\n  assert.doesNotMatch(renderers, /\\.innerHTML\\s*=/);\n});\n\ntest('dashboard charts totals and budgets use completed transactions through today', () => {\n  assert.match(renderers, /function completedDashboardData\\(/);\n  assert.match(renderers, /tx\\.status !== 'planned'/);\n  assert.match(renderers, /String\\(tx\\.date \\|\\| ''\\) <= today/);\n  assert.match(renderers, /renderChart\\(completedData\\)/);\n  assert.match(renderers, /renderBudgets\\(completedData\\)/);\n  assert.match(renderers, /renderComparisonChart\\(data\\)/);\n});\n\ntest('planning owns DOM-safe onboarding and runtime invokes it after canonical init', () => {\n  assert.match(planning, /function onboardingModal\\(/);\n  assert.match(planning, /function maybeShowOnboarding\\(/);\n  assert.match(planning, /onboardingComplete/);\n  assert.match(planning, /planning\\.recurringRules\\.push/);\n  assert.match(planning, /onboardingModal,/);\n  assert.match(planning, /maybeShowOnboarding,/);\n  assert.doesNotMatch(planning, /\\.innerHTML\\s*=/);\n  assert.match(runtime, /root\\.PlannkePlanning\\?\\.maybeShowOnboarding\\?\\.\\(\\)/);\n});\n\ntest('one-time final product runtime retirement artifacts are not shipped', () => {\n  assert.equal(fs.existsSync(path.join(root, 'scripts', 'retire-product-runtime-once.js')), false);\n  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'retire-product-runtime-once.yml')), false);\n});\n`;
 write('tests/product-runtime-retirement.test.js', finalTest);
+
+// No automated test may load or assert against the removed source file.
+const removeTestLine = (file, line, label) => {
+  const source = read(file);
+  write(file, replaceOnce(source, `${line}\n`, '', label));
+};
+
+removeTestLine('tests/product-boot-retirement.test.js', "  assert.equal(fs.existsSync(path.join(root, 'product.js')), false);", 'boot removed source guard');
+removeTestLine('tests/product-boot-retirement.test.js', "  assert.equal(index.indexOf('product.js'), -1);", 'boot removed index guard');
+removeTestLine('tests/product-navigation-retirement.test.js', "  assert.equal(fs.existsSync(path.join(root, 'product.js')), false);", 'navigation removed source guard');
+removeTestLine('tests/product-ledger-retirement.test.js', "const productPath = path.join(root, 'product.js');", 'ledger removed source fixture');
+{
+  const file = 'tests/product-ledger-retirement.test.js';
+  const line = '  assert.equal(fs.existsSync(productPath), false);\n';
+  const source = read(file);
+  const occurrences = source.split(line).length - 1;
+  if (occurrences !== 3) throw new Error(`expected three ledger removed source guards, found ${occurrences}`);
+  write(file, source.replaceAll(line, ''));
+}
+removeTestLine('tests/legacy-runtime-retirement.test.js', "const productPath = path.join(root, 'product.js');", 'legacy removed source fixture');
+removeTestLine('tests/legacy-runtime-retirement.test.js', '  assert.equal(fs.existsSync(productPath), false);', 'legacy removed source guard');
+removeTestLine('tests/safe-renderers.test.js', '  assert.equal(index.indexOf(\'<script src="product.js"></script>\'), -1);', 'renderer removed index guard');
+removeTestLine('tests/rendering-boundary.test.js', '  assert.equal(index.indexOf(\'src="product.js"\'), -1);', 'boundary removed index guard');
+removeTestLine('tests/rendering-boundary.test.js', "  assert.doesNotMatch(sw, /'\\.\\/product\\.js'/);", 'boundary removed cache guard');
+removeTestLine('tests/rendering-boundary.test.js', '  assert.doesNotMatch(pkg, /node --check product\\.js/);', 'boundary removed syntax guard');
+removeTestLine('tests/security-shell.test.js', "  assert.equal(index.indexOf('product.js'), -1);", 'security removed index guard');
+removeTestLine('tests/security-shell.test.js', "  assert.equal(fs.existsSync(path.join(root, 'product.js')), false);", 'security removed source guard');
+
+let bankEntryFinal = read('tests/bank-import-entry.test.js');
+bankEntryFinal = replaceOnce(bankEntryFinal, "const productPath = path.join(root, 'product.js');\n", '', 'bank entry removed source fixture');
+bankEntryFinal = replaceOnce(
+  bankEntryFinal,
+  "test('retired product compatibility layer cannot own bank import UI or direct file import', () => {\n  assert.equal(fs.existsSync(productPath), false);\n});\n",
+  "test('canonical data runtime remains the bank import owner', () => {\n  assert.match(appData, /function captureBankImport\\(/);\n  assert.match(appData, /function stageBankFile\\(/);\n});\n",
+  'bank entry canonical ownership contract'
+);
+write('tests/bank-import-entry.test.js', bankEntryFinal);
+
+let movementSearchFinal = read('tests/movement-search.test.js');
+movementSearchFinal = replaceOnce(movementSearchFinal, "const productPath = path.join(root, 'product.js');\n", '', 'movement search removed source fixture');
+movementSearchFinal = replaceOnce(
+  movementSearchFinal,
+  "test('retired product compatibility layer cannot own movement search or wrap renderTransactions', () => {\n  assert.equal(fs.existsSync(productPath), false);\n});\n",
+  "test('canonical movements runtime remains the structured-search owner', () => {\n  assert.match(movementsSource, /function searchTransactions\\(/);\n  assert.match(movementsSource, /function isSmartSearch\\(/);\n});\n",
+  'movement search canonical ownership contract'
+);
+write('tests/movement-search.test.js', movementSearchFinal);
+
+let finalRuntimeTest = read('tests/product-runtime-retirement.test.js');
+finalRuntimeTest = replaceOnce(finalRuntimeTest, "const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');\n", '', 'final test removed index fixture');
+finalRuntimeTest = replaceOnce(finalRuntimeTest, "const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');\n", '', 'final test removed package fixture');
+finalRuntimeTest = replaceOnce(
+  finalRuntimeTest,
+  "test('product compatibility runtime is physically retired everywhere', () => {\n  assert.equal(fs.existsSync(path.join(root, 'product.js')), false);\n  assert.equal(index.indexOf('product.js'), -1);\n  assert.doesNotMatch(sw, /'\\.\\/product\\.js'/);\n  assert.doesNotMatch(pkg, /node --check product\\.js/);\n  assert.match(sw, /plannke-shell-v39/);\n});\n",
+  "test('final retirement advances the shipped cache contract', () => {\n  assert.match(sw, /plannke-shell-v39/);\n});\n",
+  'final runtime shipped contract'
+);
+write('tests/product-runtime-retirement.test.js', finalRuntimeTest);
+
+for (const file of fs.readdirSync(path.join(rootDir, 'tests')).filter(name => name.endsWith('.test.js'))) {
+  if (read(path.join('tests', file)).includes('product.js')) {
+    throw new Error(`removed source still referenced by tests/${file}`);
+  }
+}
 
 // Fail the migration if application references remain outside permanent absence tests/docs.
 for (const file of ['index.html', 'sw.js', 'package.json', 'app-runtime.js', 'app-navigation.js', 'app-boot.js', 'safe-renderers.js', 'app-planning.js']) {
