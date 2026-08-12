@@ -18,6 +18,157 @@
         return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     }
 
+    function normalizeSearch(value) {
+      return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    }
+
+    function movementToday() {
+      if (root.PlannkeCore?.localDateString) return root.PlannkeCore.localDateString();
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    function movementAddDays(dateStr, days) {
+      if (root.PlannkeCore?.addDays) return root.PlannkeCore.addDays(dateStr, days);
+      const match = String(dateStr || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!match) return dateStr;
+      const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+      date.setDate(date.getDate() + Number(days || 0));
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    }
+
+    function accountName(data, id) {
+      return (data?.accounts || []).find(account => account.id === id)?.name
+        || (data?.cards || []).find(card => card.id === id)?.name
+        || '';
+    }
+
+    function previousMonth(month) {
+      const [year, monthNumber] = String(month || '').split('-').map(Number);
+      const date = new Date(year, monthNumber - 2, 1);
+      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+    }
+
+    function searchTransactions(data, query) {
+      const q = normalizeSearch(query).trim();
+      const transactions = Array.isArray(data?.transactions) ? data.transactions : [];
+      if (!q) return transactions;
+    
+      let items = [...transactions];
+      const today = movementToday();
+      const thisMonth = today.slice(0, 7);
+      const tokens = q.match(/"[^"]+"|\S+/g) || [];
+      const free = [];
+    
+      tokens.forEach(raw => {
+        const token = raw.replace(/^"|"$/g, '');
+        if (['gasto', 'gastos', 'despesa', 'despesas'].includes(token)) { items = items.filter(tx => tx.type === 'expense'); return; }
+        if (['entrada', 'entradas', 'receita', 'receitas'].includes(token)) { items = items.filter(tx => tx.type === 'income'); return; }
+        if (['transferencia', 'transferencias'].includes(token)) { items = items.filter(tx => tx.type === 'transfer'); return; }
+        if (['prevista', 'previstas', 'pendente', 'pendentes'].includes(token)) { items = items.filter(tx => tx.status === 'planned'); return; }
+        if (['realizada', 'realizadas', 'pago', 'pagos'].includes(token)) { items = items.filter(tx => tx.status !== 'planned'); return; }
+        if (token === 'hoje') { items = items.filter(tx => tx.date === today); return; }
+        if (token === 'ontem') { items = items.filter(tx => tx.date === movementAddDays(today, -1)); return; }
+        if (token === 'mes-atual' || token === 'estemes') { items = items.filter(tx => String(tx.date || '').startsWith(thisMonth)); return; }
+        if (token === 'mes-passado') { const monthValue = previousMonth(thisMonth); items = items.filter(tx => String(tx.date || '').startsWith(monthValue)); return; }
+        if (token.startsWith('#')) {
+          const tag = token.slice(1);
+          items = items.filter(tx => (tx.tags || []).some(value => normalizeSearch(value) === tag || normalizeSearch(value).includes(tag)));
+          return;
+        }
+        if (token.startsWith('categoria:')) {
+          const value = token.slice(10);
+          items = items.filter(tx => normalizeSearch(tx.category).includes(value));
+          return;
+        }
+        if (token.startsWith('conta:')) {
+          const value = token.slice(6);
+          items = items.filter(tx => normalizeSearch(accountName(data, tx.accountId)).includes(value) || normalizeSearch(accountName(data, tx.destinationId)).includes(value));
+          return;
+        }
+        const amount = token.match(/^(>=|<=|>|<)(\d+(?:[.,]\d+)?)$/);
+        if (amount) {
+          const value = Number(amount[2].replace(',', '.'));
+          items = items.filter(tx => amount[1] === '>' ? Number(tx.amount) > value
+            : amount[1] === '<' ? Number(tx.amount) < value
+              : amount[1] === '>=' ? Number(tx.amount) >= value
+                : Number(tx.amount) <= value);
+          return;
+        }
+        free.push(token);
+      });
+    
+      if (q.includes('este mes')) items = items.filter(tx => String(tx.date || '').startsWith(thisMonth));
+      if (q.includes('mes passado')) {
+        const monthValue = previousMonth(thisMonth);
+        items = items.filter(tx => String(tx.date || '').startsWith(monthValue));
+      }
+      const months = q.match(/ultimos?\s+(\d+)\s+mes/);
+      if (months) {
+        const count = Math.max(1, Math.min(60, Number(months[1])));
+        const [year, monthNumber] = thisMonth.split('-').map(Number);
+        const date = new Date(year, monthNumber - count, 1);
+        const min = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`;
+        items = items.filter(tx => tx.date >= min && tx.date <= today);
+      }
+    
+      const noise = new Set(['este', 'mes', 'passado', 'ultimos', 'ultimo', 'com', 'de', 'do', 'da', 'em']);
+      const words = free.filter(word => !noise.has(word) && !/^\d+$/.test(word));
+      if (words.length) {
+        items = items.filter(tx => {
+          const haystack = normalizeSearch([
+            tx.description,
+            tx.category,
+            accountName(data, tx.accountId),
+            ...(tx.tags || [])
+          ].join(' '));
+          return words.every(word => haystack.includes(word));
+        });
+      }
+      return items;
+    }
+
+    function isSmartSearch(query) {
+      const q = normalizeSearch(query);
+      return /(^|\s)(#\S+|categoria:|conta:|[<>]=?\d|gastos?|despesas?|entradas?|receitas?|previstas?|realizadas?|hoje|ontem|mes passado|este mes|ultimos? \d+ mes)/.test(q);
+    }
+
+    function installSearchHelp() {
+      if (typeof document === 'undefined') return;
+      const input = byId('tx-search');
+      if (!input) return;
+      input.placeholder = 'Buscar ou filtrar: #viagem, gastos >200, mês passado…';
+      if (byId('product-search-help')) return;
+    
+      const help = document.createElement('div');
+      help.id = 'product-search-help';
+      help.className = 'product-search-help tiny text-muted mt-2';
+      const iconNode = document.createElement('i');
+      iconNode.className = 'ph ph-magic-wand me-1';
+      help.append(iconNode, document.createTextNode('Exemplos: '));
+    
+      [
+        ['gastos >200', 'gastos >200'],
+        ['#viagem', '#viagem'],
+        ['previstas este mes', 'previstas este mês'],
+        ['categoria:supermercado mes passado', 'supermercado mês passado']
+      ].forEach(([queryValue, label]) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.query = queryValue;
+        button.textContent = label;
+        help.appendChild(button);
+      });
+    
+      help.addEventListener('click', event => {
+        const button = event.target.closest?.('[data-query]');
+        if (!button) return;
+        input.value = button.dataset.query;
+        renderMovimentacao(root.getData?.());
+      });
+      input.parentElement?.after(help);
+    }
+
     function formatCurrency(value) {
         return typeof root.formatCurrency === 'function'
             ? root.formatCurrency(Number(value || 0))
@@ -352,7 +503,9 @@
     }
 
     function bindMovementControls() {
-        if (controlsBound || typeof document === 'undefined') return;
+        if (typeof document === 'undefined') return;
+        installSearchHelp();
+        if (controlsBound) return;
         controlsBound = true;
 
         const renderCurrentMovement = () => renderMovimentacao(root.getData?.());
@@ -385,6 +538,9 @@
         clearTxSearch,
         filterDashboardToTransactions,
         updateMonthNavigator,
+        searchTransactions,
+        isSmartSearch,
+        installSearchHelp,
         disposeChart
     };
 

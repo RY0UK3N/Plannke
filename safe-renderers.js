@@ -197,7 +197,15 @@
 
     function safeRenderTransactions(data) {
         if (!data) data = getData();
-        root.renderMonthTabs?.(data);
+        const searchRaw = document.getElementById('tx-search')?.value || '';
+        const searchTerm = searchRaw.toLowerCase().trim();
+        const movementSearch = root.PlannkeMovements;
+        const smartSearch = !!searchTerm && !!movementSearch?.isSmartSearch?.(searchRaw);
+        const renderData = smartSearch
+            ? { ...data, transactions: movementSearch.searchTransactions(data, searchRaw) }
+            : data;
+
+        root.renderMonthTabs?.(renderData);
         const tbody = document.getElementById('all-transactions-body');
         const mobileList = document.getElementById('all-transactions-mobile');
         if (!tbody || !mobileList) return;
@@ -207,17 +215,15 @@
         const filter = document.getElementById('tx-filter')?.value || 'all';
         const filterCat = document.getElementById('tx-filter-category')?.value || 'all';
         const filterAcc = document.getElementById('tx-filter-account')?.value || 'all';
-        const searchRaw = document.getElementById('tx-search')?.value || '';
-        const searchTerm = searchRaw.toLowerCase().trim();
         document.getElementById('tx-search-clear')?.classList.toggle('hidden', !searchTerm);
 
-        let filtered = Array.isArray(data.transactions) ? data.transactions : [];
+        let filtered = Array.isArray(renderData.transactions) ? renderData.transactions : [];
         if (filter !== 'all') filtered = filtered.filter(t => t.type === filter);
         if (filterCat !== 'all') filtered = filtered.filter(t => t.category === filterCat);
         if (filterAcc !== 'all') filtered = filtered.filter(t => t.accountId === filterAcc || t.destinationId === filterAcc);
         const currentMonth = root.PlannkeMovements?.currentMonth || '';
         if (currentMonth) filtered = filtered.filter(t => String(t.date || '').startsWith(currentMonth));
-        if (searchTerm) filtered = filtered.filter(t => String(t.description || '').toLowerCase().includes(searchTerm));
+        if (searchTerm && !smartSearch) filtered = filtered.filter(t => String(t.description || '').toLowerCase().includes(searchTerm));
 
         const countBadge = document.getElementById('tx-result-count');
         const hasFilter = filter !== 'all' || filterCat !== 'all' || filterAcc !== 'all' || !!searchTerm;
