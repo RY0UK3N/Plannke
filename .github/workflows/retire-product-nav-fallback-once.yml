@@ -1,0 +1,40 @@
+name: Retire product navigation fallback once
+
+on:
+  push:
+    branches:
+      - refactor/retire-product-nav-fallback
+
+permissions:
+  contents: write
+
+jobs:
+  retire:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate retirement script
+        run: node --check scripts/retire-product-nav-fallback-once.js
+
+      - name: Retire dead product navigation fallback
+        run: node scripts/retire-product-nav-fallback-once.js
+
+      - name: Run full test suite
+        run: npm test
+
+      - name: Commit validated retirement
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "refactor: retire dead product navigation fallback"
+          git push
