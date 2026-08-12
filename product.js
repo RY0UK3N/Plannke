@@ -9,7 +9,6 @@
     const money = value => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(value || 0));
     const text = (value, max = 160) => C.cleanText(value, max);
     const escapeAttr = value => text(value, 200).replace(/"/g, '&quot;');
-    const normalize = value => String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
     function planningData(data) {
         C.ensurePlanning(data);
@@ -262,77 +261,6 @@
         });
     }
 
-    function accountName(data, id) {
-        return data.accounts.find(a => a.id === id)?.name || data.cards.find(c => c.id === id)?.name || '';
-    }
-
-    function previousMonth(month) {
-        const [y, m] = month.split('-').map(Number); const d = new Date(y, m - 2, 1);
-        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-    }
-
-    function searchTransactions(data, query) {
-        const q = normalize(query).trim();
-        if (!q) return data.transactions || [];
-        let items = [...(data.transactions || [])];
-        const today = C.localDateString();
-        const thisMonth = today.slice(0, 7);
-        const tokens = q.match(/"[^"]+"|\S+/g) || [];
-        const free = [];
-
-        tokens.forEach(raw => {
-            const token = raw.replace(/^"|"$/g, '');
-            if (['gasto', 'gastos', 'despesa', 'despesas'].includes(token)) { items = items.filter(t => t.type === 'expense'); return; }
-            if (['entrada', 'entradas', 'receita', 'receitas'].includes(token)) { items = items.filter(t => t.type === 'income'); return; }
-            if (['transferencia', 'transferencias'].includes(token)) { items = items.filter(t => t.type === 'transfer'); return; }
-            if (['prevista', 'previstas', 'pendente', 'pendentes'].includes(token)) { items = items.filter(t => t.status === 'planned'); return; }
-            if (['realizada', 'realizadas', 'pago', 'pagos'].includes(token)) { items = items.filter(t => t.status !== 'planned'); return; }
-            if (token === 'hoje') { items = items.filter(t => t.date === today); return; }
-            if (token === 'ontem') { items = items.filter(t => t.date === C.addDays(today, -1)); return; }
-            if (token === 'mes-atual' || token === 'estemes') { items = items.filter(t => t.date.startsWith(thisMonth)); return; }
-            if (token === 'mes-passado') { const m = previousMonth(thisMonth); items = items.filter(t => t.date.startsWith(m)); return; }
-            if (token.startsWith('#')) { const tag = token.slice(1); items = items.filter(t => (t.tags || []).some(x => normalize(x) === tag || normalize(x).includes(tag))); return; }
-            if (token.startsWith('categoria:')) { const v = token.slice(10); items = items.filter(t => normalize(t.category).includes(v)); return; }
-            if (token.startsWith('conta:')) { const v = token.slice(6); items = items.filter(t => normalize(accountName(data, t.accountId)).includes(v) || normalize(accountName(data, t.destinationId)).includes(v)); return; }
-            const amount = token.match(/^(>=|<=|>|<)(\d+(?:[.,]\d+)?)$/);
-            if (amount) {
-                const val = Number(amount[2].replace(',', '.'));
-                items = items.filter(t => amount[1] === '>' ? Number(t.amount) > val : amount[1] === '<' ? Number(t.amount) < val : amount[1] === '>=' ? Number(t.amount) >= val : Number(t.amount) <= val);
-                return;
-            }
-            free.push(token);
-        });
-
-        if (q.includes('este mes')) items = items.filter(t => t.date.startsWith(thisMonth));
-        if (q.includes('mes passado')) { const m = previousMonth(thisMonth); items = items.filter(t => t.date.startsWith(m)); }
-        const months = q.match(/ultimos?\s+(\d+)\s+mes/);
-        if (months) {
-            const n = Math.max(1, Math.min(60, Number(months[1]))); const [y, m] = thisMonth.split('-').map(Number);
-            const d = new Date(y, m - n, 1); const min = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-01`;
-            items = items.filter(t => t.date >= min && t.date <= today);
-        }
-        const noise = new Set(['este', 'mes', 'passado', 'ultimos', 'ultimo', 'com', 'de', 'do', 'da', 'em']);
-        const words = free.filter(w => !noise.has(w) && !/^\d+$/.test(w));
-        if (words.length) items = items.filter(t => {
-            const hay = normalize([t.description, t.category, accountName(data, t.accountId), ...(t.tags || [])].join(' '));
-            return words.every(word => hay.includes(word));
-        });
-        return items;
-    }
-
-    function isSmartSearch(query) {
-        const q = normalize(query);
-        return /(^|\s)(#\S+|categoria:|conta:|[<>]=?\d|gastos?|despesas?|entradas?|receitas?|previstas?|realizadas?|hoje|ontem|mes passado|este mes|ultimos? \d+ mes)/.test(q);
-    }
-
-    function injectSearchHelp() {
-        const input = document.getElementById('tx-search'); if (!input || document.getElementById('product-search-help')) return;
-        input.placeholder = 'Buscar ou filtrar: #viagem, gastos >200, mês passado…';
-        const help = document.createElement('div'); help.id = 'product-search-help'; help.className = 'product-search-help tiny text-muted mt-2';
-        help.innerHTML = '<i class="ph ph-magic-wand me-1"></i>Exemplos: <button type="button" data-query="gastos >200">gastos &gt;200</button><button type="button" data-query="#viagem">#viagem</button><button type="button" data-query="previstas este mes">previstas este mês</button><button type="button" data-query="categoria:supermercado mes passado">supermercado mês passado</button>';
-        input.parentElement?.after(help);
-        help.addEventListener('click', e => { const b = e.target.closest('[data-query]'); if (!b) return; input.value = b.dataset.query; renderMovimentacao(getData()); });
-    }
 
     function patchRenderers() {
         const originalDashboard = globalThis.renderDashboard;
@@ -349,17 +277,6 @@
         const originalBudgets = globalThis.renderBudgets;
         if (typeof originalBudgets === 'function') globalThis.renderBudgets = data => originalBudgets({ ...data, transactions: (data.transactions || []).filter(t => t.status !== 'planned' && t.date <= C.localDateString()) });
 
-        const originalTransactions = globalThis.renderTransactions;
-        if (typeof originalTransactions === 'function') globalThis.renderTransactions = function (data) {
-            const input = document.getElementById('tx-search'); const query = input?.value || ''; let renderData = data || getData(); let restore = null;
-            if (query && isSmartSearch(query)) {
-                renderData = { ...renderData, transactions: searchTransactions(renderData, query) };
-                restore = query; input.value = '';
-            }
-            const result = originalTransactions(renderData);
-            if (restore !== null) { input.value = restore; document.getElementById('tx-search-clear')?.classList.remove('hidden'); const badge = document.getElementById('tx-result-count'); if (badge) { badge.classList.remove('hidden'); badge.textContent = `${renderData.transactions.length} resultado${renderData.transactions.length === 1 ? '' : 's'}`; } }
-            decorateTransactionStatuses(renderData); return result;
-        };
     }
 
     function renderFinancialPulse(data) {
@@ -371,14 +288,6 @@
         section.innerHTML = `<div class="product-section-heading"><div><span class="product-eyebrow">Visão rápida</span><h5>Seu dinheiro hoje</h5></div><span class="product-privacy"><i class="ph ph-device-mobile"></i> dados locais</span></div><div class="product-pulse-grid"><div class="product-metric"><span>Saldo atual</span><strong>${money(pulse.balance)}</strong><small>nas contas bancárias</small></div><div class="product-metric"><span>Comprometido</span><strong>${money(pulse.committed)}</strong><small>cartões, reservas e previstos</small></div><div class="product-metric ${freeClass}"><span>Dinheiro livre</span><strong>${money(pulse.free)}</strong><small>até ${horizon}</small></div><div class="product-metric"><span>Livre por dia</span><strong>${money(pulse.daily)}</strong><small>${pulse.days} dia${pulse.days === 1 ? '' : 's'} no horizonte</small></div></div><div class="product-insight"><i class="ph ph-sparkle"></i><span>${insight}</span></div>`;
     }
 
-    function decorateTransactionStatuses(data) {
-        document.querySelectorAll('.tx-item, #all-transactions-body tr, .tx-mobile-card').forEach(row => {
-            if (row.querySelector('.product-status-badge')) return;
-            const raw = row.textContent || ''; const planned = (data.transactions || []).find(tx => tx.status === 'planned' && raw.includes(tx.description) && raw.includes(formatDate(tx.date))); if (!planned) return;
-            const target = row.querySelector('.tx-item-tags, td:first-child .mt-1, .tx-mobile-info .d-flex'); if (!target) return;
-            const badge = document.createElement('span'); badge.className = 'tag product-status-badge'; badge.textContent = 'Prevista'; target.appendChild(badge);
-        });
-    }
 
     function accountOptions(data, selected = '') { return (data.accounts || []).map(a => `<option value="${escapeAttr(a.id)}" ${a.id === selected ? 'selected' : ''}>${text(a.name)} · ${money(a.balance)}</option>`).join(''); }
 
@@ -408,9 +317,9 @@
     }
 
     function init() {
-        if(initialized)return;initialized=true;injectAssets();installLedgerHooks();simplifyNavigation();injectTransactionFields();patchRenderers();injectSearchHelp();injectBankImport();improveWelcome();maybeShowOnboarding();try{renderAll();}catch(err){console.warn('Atualização visual do produto:',err);}globalThis.addEventListener('plannke:data-changed',()=>setTimeout(()=>{injectBankImport();injectSearchHelp();},0));
+        if(initialized)return;initialized=true;injectAssets();installLedgerHooks();simplifyNavigation();injectTransactionFields();patchRenderers();injectBankImport();improveWelcome();maybeShowOnboarding();try{renderAll();}catch(err){console.warn('Atualização visual do produto:',err);}globalThis.addEventListener('plannke:data-changed',()=>setTimeout(()=>{injectBankImport();},0));
     }
 
-    globalThis.PlannkeProduct={init,searchTransactions};
+    globalThis.PlannkeProduct={init};
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
