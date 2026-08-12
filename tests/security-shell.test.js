@@ -170,12 +170,14 @@ test('revamp and final desktop assets are loaded locally and in deterministic or
   assert.match(desktopCss, /min-width: 1080px/);
 });
 
-test('bank files are intercepted for review before the legacy direct-import listener can run', () => {
+test('bank files are intercepted for review by the desktop presentation boundary', () => {
   assert.match(desktop, /document\.addEventListener\('change', captureBankImport, true\)/);
   assert.match(desktop, /event\.stopImmediatePropagation\(\)/);
   assert.match(desktop, /pendingBankImport/);
   assert.match(desktop, /function confirmBankImport\(/);
   assert.match(desktop, /data\.transactions\.push\(transaction\)/);
+  assert.doesNotMatch(product, /function (?:injectBankImport|importBankFile)\(/);
+  assert.match(appData, /function ensureBankImportPanel\(/);
 });
 
 test('third-party runtime dependencies are vendored and pinned', () => {
