@@ -21,6 +21,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Tighten ProductCore migration anchor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('scripts/promote-product-ledger-once.js')
+          s = p.read_text()
+          old = "core = replaceOnce(core, '    return {\\n', `${coreHelpers}\\n\\n    return {\\n`, 'product core return');"
+          new = "core = replaceOnce(core, '    return {\\n        DAY_MS,\\n', `${coreHelpers}\\n\\n    return {\\n        DAY_MS,\\n`, 'product core return');"
+          if s.count(old) != 1:
+              raise SystemExit(f'expected one generic core anchor, found {s.count(old)}')
+          p.write_text(s.replace(old, new))
+          PY
       - name: Validate migration script
         run: node --check scripts/promote-product-ledger-once.js
       - name: Promote product ledger ownership
