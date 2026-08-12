@@ -21,6 +21,12 @@ test('product core loads before StorageAdapter boot and owns product data prepar
   assert.match(adapter, /root\.PlannkeCore\?\.prepareProductData/);
 });
 
+test('StorageAdapter is the only runtime consumer of product data preparation', () => {
+  assert.match(adapter, /root\.PlannkeCore\?\.prepareProductData/);
+  assert.doesNotMatch(product, /prepareProductData/);
+  assert.doesNotMatch(transactions, /prepareProductData/);
+});
+
 test('canonical finance core owns opening balance changes without product wrappers', () => {
   assert.match(storage, /item\.openingBalance = openingBalance \+ \(parsed - currentBalance\)/);
   assert.match(storage, /openingBalance: parsed, balance: parsed/);
