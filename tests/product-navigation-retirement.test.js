@@ -22,8 +22,9 @@ test('canonical navigation remains the only product workspace navigation boundar
   assert.doesNotMatch(presentation, /planner-pill-nav/);
 });
 
-test('product initialization keeps active enhancements without navigation mutation', () => {
-  assert.match(product, /injectAssets\(\);installLedgerHooks\(\);injectTransactionFields\(\);patchRenderers\(\);improveWelcome\(\);maybeShowOnboarding\(\);/);
+test('product initialization keeps only active product enhancements without navigation or boot mutation', () => {
+  assert.match(product, /installLedgerHooks\(\);injectTransactionFields\(\);patchRenderers\(\);maybeShowOnboarding\(\);/);
+  assert.doesNotMatch(product, /injectAssets\(\)|improveWelcome\(\)/);
 });
 
 test('one-time product navigation retirement artifacts are not shipped', () => {
