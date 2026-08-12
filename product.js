@@ -178,21 +178,6 @@
         if (legacyRecurringChanged || sharedChanged || migrated.changed) globalThis.saveData(existing);
     }
 
-    function injectAssets() {
-        if (!document.querySelector('link[href="product.css"]')) {
-            const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'product.css'; document.head.appendChild(css);
-        }
-        if (!document.querySelector('link[rel="manifest"]')) {
-            const manifest = document.createElement('link'); manifest.rel = 'manifest'; manifest.href = 'manifest.webmanifest'; document.head.appendChild(manifest);
-        }
-        if (!document.querySelector('script[src="insights.js"]')) {
-            const script = document.createElement('script');
-            script.src = 'insights.js';
-            script.defer = true;
-            document.body.appendChild(script);
-        }
-        if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('./sw.js').catch(err => console.warn('PWA indisponível:', err));
-    }
 
     function memberOptions(data, selected = '', includeEmpty = true) {
         const h = householdData(data);
@@ -296,12 +281,9 @@
         const data=getData();const p=planningData(data);if(data.accounts.length){if(!p.onboardingComplete){p.onboardingComplete=true;data.planning=C.sanitizePlanning(p);globalThis.saveData(data);}return;}if(p.onboardingComplete)return;const welcome=document.getElementById('welcomeModal');const show=()=>bootstrap.Modal.getOrCreateInstance(onboardingModal()).show();if(welcome){welcome.addEventListener('hidden.bs.modal',()=>setTimeout(()=>{if(!getData().accounts.length&&!planningData(getData()).onboardingComplete)show();},150),{once:true});}else setTimeout(show,400);
     }
 
-    function improveWelcome() {
-        const modal=document.getElementById('welcomeModal'); if(!modal)return; const tagline=modal.querySelector('.welcome-tagline');if(tagline)tagline.textContent='Seu dinheiro, sob seu controle.';const intro=modal.querySelector('.welcome-header .text-muted');if(intro)intro.textContent='Como você quer começar?';const options=modal.querySelector('.welcome-options');if(options&&!options.querySelector('.product-import-option')){const item=document.createElement('div');item.className='welcome-option-card product-import-option';item.innerHTML='<div class="opt-icon browser"><i class="ph ph-file-arrow-up"></i></div><div class="opt-text"><h6>Importar extrato</h6><p>Começar com um arquivo OFX ou CSV do banco</p></div>';item.addEventListener('click',()=>{bootstrap.Modal.getInstance(modal)?.hide();_navigateTo?.('backup');setTimeout(()=>document.getElementById('product-bank-file')?.click(),200);});options.appendChild(item);}
-    }
 
     function init() {
-        if(initialized)return;initialized=true;injectAssets();installLedgerHooks();injectTransactionFields();patchRenderers();improveWelcome();maybeShowOnboarding();try{renderAll();}catch(err){console.warn('Atualização visual do produto:',err);}
+        if(initialized)return;initialized=true;installLedgerHooks();injectTransactionFields();patchRenderers();maybeShowOnboarding();try{renderAll();}catch(err){console.warn('Atualização visual do produto:',err);}
     }
 
     globalThis.PlannkeProduct={init};
