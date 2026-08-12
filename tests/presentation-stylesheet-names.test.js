@@ -48,7 +48,7 @@ test('stylesheet dependency imports use canonical filenames without changing sel
 });
 
 test('PWA cache advances for canonical presentation stylesheet filenames', () => {
-  assert.match(sw, /plannke-shell-v38/);
+  assert.match(sw, /plannke-shell-v39/);
   Object.values(renamed).forEach(file => assert.ok(sw.includes(`'./${file}'`), `missing PWA stylesheet: ${file}`));
 });
 

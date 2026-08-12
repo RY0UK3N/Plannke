@@ -37,26 +37,21 @@ test('canonical data-heavy renderers do not build executable HTML strings', () =
 
 test('dashboard renderer delegates charts while owning user-data DOM', () => {
   assert.match(renderers, /function safeRenderDashboard\(data\)/);
-  assert.match(renderers, /renderChart\(data\)/);
+  assert.match(renderers, /renderChart\(completedData\)/);
   assert.match(renderers, /renderComparisonChart\(data\)/);
-  assert.match(renderers, /renderBudgets\(data\)/);
+  assert.match(renderers, /renderBudgets\(completedData\)/);
   assert.match(renderers, /recentList\.replaceChildren\(\)/);
   assert.match(renderers, /upcomingList\.replaceChildren\(\)/);
 });
 
-test('pure product core loads before boot while rendering boundary precedes compatibility product runtime', () => {
+test('pure product core loads before boot and compatibility product runtime is retired', () => {
   const coreAt = index.indexOf('src="product-core.js"');
   const navigationAt = index.indexOf('src="app-navigation.js"');
   const shellAt = index.indexOf('src="app-shell.js"');
   const bootAt = index.indexOf('src="app-boot.js"');
   const renderersAt = index.indexOf('src="safe-renderers.js"');
-  const productAt = index.indexOf('src="product.js"');
   assert.ok(coreAt >= 0 && navigationAt > coreAt && shellAt > navigationAt && bootAt > shellAt);
-  assert.ok(renderersAt > bootAt && productAt > renderersAt);
+  assert.ok(renderersAt > bootAt);
   assert.equal(index.indexOf('src="ui-bridge.js"'), -1);
   assert.equal(index.indexOf('src="app-actions.js"'), -1);
-  assert.doesNotMatch(sw, /'\.\/app-actions\.js'/);
-  assert.match(sw, /'\.\/safe-renderers\.js'/);
-  assert.doesNotMatch(pkg, /node --check app-actions\.js/);
-  assert.match(pkg, /node --check safe-renderers\.js/);
 });

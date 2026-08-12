@@ -5,7 +5,6 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
-const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const desktop = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8');
 
 test('canonical data runtime owns the bank import entry panel', () => {
@@ -24,13 +23,9 @@ test('bank import entry is DOM-safe and does not read files directly', () => {
   assert.doesNotMatch(appData, /FileReader/);
 });
 
-test('product compatibility layer no longer owns bank import UI or direct file import', () => {
-  assert.doesNotMatch(product, /function injectBankImport\(/);
-  assert.doesNotMatch(product, /function importBankFile\(/);
-  assert.doesNotMatch(product, /function accountOptions\(/);
-  assert.doesNotMatch(product, /product-bank-import/);
-  assert.doesNotMatch(product, /FileReader/);
-  assert.doesNotMatch(product, /parseOfxBank|parseCsvBank|dedupeImported/);
+test('canonical data runtime remains the bank import owner', () => {
+  assert.match(appData, /function captureBankImport\(/);
+  assert.match(appData, /function stageBankFile\(/);
 });
 
 test('data runtime owns bank import staging while presentation only renders the review', () => {

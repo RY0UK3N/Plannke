@@ -37,14 +37,12 @@ test('card availability uses all outstanding unpaid billings', () => {
   assert.match(code, /limite comprometido/i);
 });
 
-test('pure product core loads before boot while safe renderers precede compatibility product runtime', () => {
+test('pure product core loads before boot and safe renderers need no product compatibility runtime', () => {
   const core = index.indexOf('<script src="product-core.js"></script>');
   const runtime = index.indexOf('<script src="app-runtime.js"></script>');
   const boot = index.indexOf('<script src="app-boot.js"></script>');
   const safe = index.indexOf('<script src="safe-renderers.js"></script>');
-  const product = index.indexOf('<script src="product.js"></script>');
   assert.ok(core >= 0 && core < runtime, 'product-core.js must load before application orchestration');
   assert.ok(boot > runtime && safe > boot, 'safe-renderers.js must load after canonical boot');
   assert.equal(index.indexOf('<script src="app.js"></script>'), -1);
-  assert.ok(product > safe, 'product.js compatibility runtime must remain after safe renderers');
 });

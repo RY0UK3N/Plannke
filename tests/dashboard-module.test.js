@@ -22,7 +22,7 @@ test('dashboard chart runtime replaces chart globals used by the safe renderer',
   assert.match(dashboard, /root\.renderChart = renderChart/);
   assert.match(dashboard, /root\.renderComparisonChart = renderComparisonChart/);
   assert.match(dashboard, /root\.PlannkeDashboard = \{/);
-  assert.match(renderers, /renderChart\(data\)/);
+  assert.match(renderers, /renderChart\(completedData\)/);
   assert.match(renderers, /renderComparisonChart\(data\)/);
 });
 

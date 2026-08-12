@@ -37,6 +37,7 @@
         root.applyTheme?.(root.getSettings?.().theme || 'dark');
         renderAll();
         root._navigateTo?.('dashboard');
+        root.PlannkePlanning?.maybeShowOnboarding?.();
     }
 
     const api = { initApp, renderAll, refreshOpenDetail };
