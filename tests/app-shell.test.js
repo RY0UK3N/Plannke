@@ -49,7 +49,7 @@ test('insights fallback loads only the canonical shell', () => {
 test('canonical shell is syntax-checked and available offline without action router', () => {
   assert.match(pkg, /node --check app-shell\.js/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
-  assert.match(sw, /plannke-shell-v38/);
+  assert.match(sw, /plannke-shell-v39/);
   assert.match(sw, /'\.\/app-shell\.js'/);
   assert.doesNotMatch(sw, /'\.\/(?:ui-bridge|app-actions)\.js'/);
 });

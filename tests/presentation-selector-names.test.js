@@ -52,7 +52,7 @@ test('presentation shell test file is promoted with the selector namespace', () 
 });
 
 test('PWA cache advances for canonical presentation selectors', () => {
-  assert.match(sw, /plannke-shell-v38/);
+  assert.match(sw, /plannke-shell-v39/);
 });
 
 test('one-time selector migration artifacts are not shipped', () => {

@@ -6,7 +6,6 @@ const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
 const movementsSource = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
-const productSource = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const rendererSource = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
 
 function loadMovements() {
@@ -62,13 +61,9 @@ test('safe transaction renderer delegates structured queries to movements and ke
   assert.match(rendererSource, /root\.renderMonthTabs\?\.\(renderData\)/);
 });
 
-test('product compatibility layer no longer owns movement search or wraps renderTransactions', () => {
-  assert.doesNotMatch(productSource, /function searchTransactions\(/);
-  assert.doesNotMatch(productSource, /function isSmartSearch\(/);
-  assert.doesNotMatch(productSource, /function injectSearchHelp\(/);
-  assert.doesNotMatch(productSource, /originalTransactions = globalThis\.renderTransactions/);
-  assert.doesNotMatch(productSource, /PlannkeProduct=\{init,searchTransactions\}/);
-  assert.match(productSource, /globalThis\.PlannkeProduct=\{init\}/);
+test('canonical movements runtime remains the structured-search owner', () => {
+  assert.match(movementsSource, /function searchTransactions\(/);
+  assert.match(movementsSource, /function isSmartSearch\(/);
 });
 
 test('movement search help is built with DOM APIs instead of HTML strings', () => {

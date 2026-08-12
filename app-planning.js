@@ -460,6 +460,158 @@
     }
     canonicalRenderProjection.__plannkeCanonicalPlanning = true;
 
+    function onboardingModal() {
+        if (typeof document === 'undefined') return null;
+        const existing = document.getElementById('productOnboardingModal');
+        if (existing) return existing;
+
+        const modal = make('div', 'modal fade');
+        modal.id = 'productOnboardingModal';
+        modal.tabIndex = -1;
+        const dialog = make('div', 'modal-dialog modal-dialog-centered');
+        const content = make('div', 'modal-content product-onboarding');
+        const body = make('div', 'modal-body p-4 p-md-5');
+        const badge = make('div', 'product-onboarding-icon');
+        badge.appendChild(icon('ph-wallet'));
+        body.append(
+            badge,
+            make('span', 'product-eyebrow', 'Primeiros passos'),
+            make('h3', 'fw-bold mt-1', 'Prepare seu Plannke'),
+            make('p', 'text-muted small', 'Com três informações o Início já consegue calcular saldo, compromissos e dinheiro livre.')
+        );
+
+        const form = make('form');
+        form.id = 'product-onboarding-form';
+
+        const accountGroup = make('div', 'mb-3');
+        accountGroup.appendChild(make('label', 'form-label small fw-semibold', 'Sua conta principal'));
+        const accountName = input('accountName', 'text', 'Ex.: Nubank', { className: 'form-control mb-2', value: 'Conta principal', required: true });
+        const balanceGroup = make('div', 'input-group');
+        balanceGroup.append(make('span', 'input-group-text', 'R$'), input('balance', 'number', 'Saldo de hoje', { step: '0.01', required: true }));
+        accountGroup.append(accountName, balanceGroup);
+
+        const incomeGroup = make('div', 'mb-3');
+        const incomeLabel = make('label', 'form-label small fw-semibold');
+        incomeLabel.append(document.createTextNode('Renda mensal '), make('span', 'text-muted fw-normal', '(opcional)'));
+        const incomeRow = make('div', 'row g-2');
+        const incomeValueCol = make('div', 'col-8');
+        const incomeValueGroup = make('div', 'input-group');
+        incomeValueGroup.append(make('span', 'input-group-text', 'R$'), input('salary', 'number', 'Salário / renda', { min: 0, step: '0.01' }));
+        incomeValueCol.appendChild(incomeValueGroup);
+        const incomeDayCol = make('div', 'col-4');
+        incomeDayCol.appendChild(input('salaryDay', 'number', 'Dia', { min: 1, max: 31 }));
+        incomeRow.append(incomeValueCol, incomeDayCol);
+        incomeGroup.append(incomeLabel, incomeRow);
+
+        const cardDetails = make('details', 'product-details mb-3');
+        cardDetails.appendChild(make('summary', '', 'Também uso cartão de crédito'));
+        const cardWrap = make('div', 'mt-2');
+        cardWrap.appendChild(input('cardName', 'text', 'Nome do cartão', { className: 'form-control mb-2' }));
+        const cardRow = make('div', 'row g-2');
+        const limitCol = make('div', 'col-6');
+        limitCol.appendChild(input('cardLimit', 'number', 'Limite', { min: 0, step: '0.01' }));
+        const closingCol = make('div', 'col-3');
+        closingCol.appendChild(input('closingDay', 'number', 'Fecha', { min: 1, max: 31 }));
+        const dueCol = make('div', 'col-3');
+        dueCol.appendChild(input('dueDay', 'number', 'Vence', { min: 1, max: 31 }));
+        cardRow.append(limitCol, closingCol, dueCol);
+        cardWrap.appendChild(cardRow);
+        cardDetails.appendChild(cardWrap);
+
+        const submit = make('button', 'btn btn-primary w-100 rounded-pill py-2 fw-bold', 'Começar');
+        submit.type = 'submit';
+        const later = make('button', 'btn btn-link text-muted w-100 mt-2', 'Configurar depois');
+        later.type = 'button';
+        later.dataset.bsDismiss = 'modal';
+        form.append(accountGroup, incomeGroup, cardDetails, submit);
+        body.append(form, later);
+        content.appendChild(body);
+        dialog.appendChild(content);
+        modal.appendChild(dialog);
+        document.body.appendChild(modal);
+
+        form.addEventListener('submit', event => {
+            event.preventDefault();
+            const values = new FormData(event.currentTarget);
+            const data = root.getData();
+            const planning = planningData(data);
+            const accountId = root.generateId?.() || C.safeId('', 'account');
+            const balance = Number(values.get('balance') || 0);
+            data.accounts.push({
+                id: accountId,
+                name: clean(values.get('accountName') || 'Conta principal', 120),
+                openingBalance: balance,
+                balance
+            });
+
+            const salary = Number(values.get('salary') || 0);
+            const salaryDay = Math.min(31, Math.max(1, Number(values.get('salaryDay') || 1)));
+            if (salary > 0) {
+                planning.recurringRules.push({
+                    id: C.safeId('', 'rule'),
+                    type: 'income',
+                    description: 'Renda mensal',
+                    category: 'Salário',
+                    amount: salary,
+                    dayOfMonth: salaryDay,
+                    accountId,
+                    startDate: C.localDateString(),
+                    endDate: '',
+                    active: true
+                });
+            }
+
+            const cardName = clean(values.get('cardName'), 120);
+            const limit = Number(values.get('cardLimit') || 0);
+            if (cardName && limit > 0) {
+                data.cards.push({
+                    id: root.generateId?.() || C.safeId('', 'card'),
+                    name: cardName,
+                    limit,
+                    closingDay: Math.min(31, Math.max(1, Number(values.get('closingDay') || 1))),
+                    dueDay: Math.min(31, Math.max(1, Number(values.get('dueDay') || 1)))
+                });
+            }
+
+            planning.onboardingComplete = true;
+            data.planning = C.sanitizePlanning(planning);
+            root.saveData(data);
+            root.bootstrap?.Modal.getInstance(modal)?.hide();
+            root.renderAll?.();
+            root.showToast?.('Plannke configurado.');
+        });
+
+        modal.addEventListener('hidden.bs.modal', () => {
+            const data = root.getData();
+            const planning = planningData(data);
+            if (data.accounts.length && !planning.onboardingComplete) {
+                planning.onboardingComplete = true;
+                data.planning = C.sanitizePlanning(planning);
+                root.saveData(data);
+            }
+        });
+        return modal;
+    }
+
+    function maybeShowOnboarding() {
+        if (typeof document === 'undefined' || !C || typeof root.getData !== 'function') return;
+        const data = root.getData();
+        const planning = planningData(data);
+        if (data.accounts.length) {
+            if (!planning.onboardingComplete) {
+                planning.onboardingComplete = true;
+                data.planning = C.sanitizePlanning(planning);
+                root.saveData(data);
+            }
+            return;
+        }
+        if (planning.onboardingComplete) return;
+        root.setTimeout?.(() => {
+            const modal = onboardingModal();
+            if (modal) root.bootstrap?.Modal.getOrCreateInstance(modal)?.show();
+        }, 400);
+    }
+
     const api = {
         get ready() { return ready; },
         planningData,
@@ -468,6 +620,8 @@
         buildProjectionData,
         renderPlanningHub,
         handlePlanningAction,
+        onboardingModal,
+        maybeShowOnboarding,
         renderProjection: canonicalRenderProjection
     };
 

@@ -5,7 +5,6 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const coreSource = fs.readFileSync(path.join(root, 'product-core.js'), 'utf8');
 const adapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
 const storage = fs.readFileSync(path.join(root, 'storage.js'), 'utf8');
@@ -23,14 +22,12 @@ test('product core loads before StorageAdapter boot and owns product data prepar
 
 test('StorageAdapter is the only runtime consumer of product data preparation', () => {
   assert.match(adapter, /root\.PlannkeCore\?\.prepareProductData/);
-  assert.doesNotMatch(product, /prepareProductData/);
   assert.doesNotMatch(transactions, /prepareProductData/);
 });
 
 test('canonical finance core owns opening balance changes without product wrappers', () => {
   assert.match(storage, /item\.openingBalance = openingBalance \+ \(parsed - currentBalance\)/);
   assert.match(storage, /openingBalance: parsed, balance: parsed/);
-  assert.doesNotMatch(product, /function installLedgerHooks\(|__productWrapped|globalThis\.saveAccount =|globalThis\.saveTransaction =/);
 });
 
 test('canonical transaction runtime owns status tags and household sharing with DOM APIs', () => {
@@ -39,7 +36,6 @@ test('canonical transaction runtime owns status tags and household sharing with 
   assert.match(transactions, /function applySavedTransactionMetadata\(/);
   assert.match(transactions, /replaceChildren\(\)/);
   assert.doesNotMatch(transactions, /\.innerHTML\s*=/);
-  assert.doesNotMatch(product, /tx-status|tx-tags|tx-paid-by|tx-shared-with|function injectTransactionFields\(/);
 });
 
 test('product data preparation migrates recurring items and preserves sharing metadata', () => {

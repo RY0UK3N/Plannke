@@ -11,7 +11,6 @@ const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const manifest = fs.readFileSync(path.join(root, 'manifest.webmanifest'), 'utf8');
-const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
 const insights = fs.readFileSync(path.join(root, 'insights.js'), 'utf8');
 const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
@@ -34,7 +33,6 @@ test('product layer, app shell and safe renderers are loaded in the required ord
   assert.match(index, /<script src="app-shell\.js" data-plannke-shell="true"><\/script>/);
   assert.match(index, /<script src="safe-renderers\.js"><\/script>/);
   assert.match(index, /<script src="product-core\.js"><\/script>/);
-  assert.match(index, /<script src="product\.js"><\/script>/);
   assert.equal(index.indexOf('app.js'), -1);
   assert.ok(index.indexOf('app-runtime.js') < index.indexOf('app-shell.js'));
   assert.equal(index.indexOf('app-actions.js'), -1);
@@ -43,7 +41,7 @@ test('product layer, app shell and safe renderers are loaded in the required ord
   assert.ok(index.indexOf('storage.js') < index.indexOf('product-core.js'));
   assert.ok(index.indexOf('product-core.js') < index.indexOf('app-boot.js'));
   assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
-  assert.ok(index.indexOf('safe-renderers.js') < index.indexOf('product.js'));
+  assert.ok(index.indexOf('app-boot.js') < index.indexOf('safe-renderers.js'));
   assert.match(boot, /script\.src = 'insights\.js'/);
   assert.match(boot, /serviceWorker\.register\('.\/sw\.js'\)/);
   assert.match(insights, /shell\.src = '\.\/app-shell\.js'/);
@@ -184,7 +182,6 @@ test('bank import controller is canonical data code while presentation only rend
   assert.doesNotMatch(appData, /FileReader/);
   assert.match(desktop, /function renderBankImportReview\(/);
   assert.doesNotMatch(desktop, /let pendingBankImport|function (?:captureBankImport|stageBankFile|confirmBankImport|cancelBankImport)\(/);
-  assert.doesNotMatch(product, /function (?:injectBankImport|importBankFile)\(/);
 });
 
 test('third-party runtime dependencies are vendored and pinned', () => {
@@ -243,7 +240,7 @@ test('index has no external scripts or stylesheets after vendoring', () => {
 });
 
 test('installed PWA prefers current local assets and falls back to cache offline', () => {
-  assert.match(sw, /CACHE_NAME = 'plannke-shell-v38'/);
+  assert.match(sw, /CACHE_NAME = 'plannke-shell-v39'/);
   assert.match(sw, /event\.request\.mode === 'navigate'/);
   const navigationBlock = sw.slice(sw.indexOf("event.request.mode === 'navigate'"), sw.indexOf("if (url.origin === self.location.origin)"));
   assert.ok(navigationBlock.indexOf('fetch(event.request)') < navigationBlock.indexOf("caches.match('./index.html')"));
@@ -260,7 +257,7 @@ test('installed PWA prefers current local assets and falls back to cache offline
 
   [
     'app-ui.js', 'app-runtime.js', 'app-shell.js', 'app-boot.js', 'app-navigation.js', 'app-data.js',
-    'product-core.js', 'product.js', 'insights.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
+    'product-core.js', 'insights.js', 'storage-adapter.js', 'storage-ui.js', 'storage-ui.css', 'safe-renderers.js',
     'app-presentation.js', 'app-presentation.css', 'app-presentation-desktop.js', 'app-presentation-desktop.css',
     'app-presentation-dashboard.css', 'app-presentation-movements.css', 'app-presentation-planning.css',
     'app-presentation-accounts.css', 'app-presentation-forms.css', 'app-presentation-states.css',

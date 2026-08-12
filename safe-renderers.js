@@ -495,9 +495,69 @@
         return item;
     }
 
+    function completedDashboardData(data) {
+        const today = localToday();
+        return {
+            ...data,
+            transactions: (data?.transactions || []).filter(tx => tx.status !== 'planned' && String(tx.date || '') <= today)
+        };
+    }
+
+    function pulseMetric(label, value, detail, stateClass = '') {
+        const metric = make('div', `product-metric${stateClass ? ` ${stateClass}` : ''}`);
+        metric.append(
+            make('span', '', label),
+            make('strong', '', value),
+            make('small', '', detail)
+        );
+        return metric;
+    }
+
+    function renderFinancialPulse(data) {
+        const dashboard = document.getElementById('dashboard-view');
+        const core = root.PlannkeCore;
+        if (!dashboard || typeof core?.getFinancialPulse !== 'function') return;
+
+        let section = document.getElementById('financial-pulse');
+        if (!section) {
+            section = make('section', 'product-pulse mb-3');
+            section.id = 'financial-pulse';
+            dashboard.prepend(section);
+        }
+
+        const pulse = core.getFinancialPulse(data, localToday());
+        const horizon = formatDate(pulse.horizon);
+        const freeClass = Number(pulse.free || 0) >= 0 ? 'good' : 'bad';
+        const insightText = Number(pulse.free || 0) < 0
+            ? `Se todos os compromissos forem mantidos, faltam ${formatCurrency(Math.abs(pulse.free))} até ${horizon}.`
+            : pulse.nextIncome
+                ? `Você tem cerca de ${formatCurrency(pulse.daily)} por dia livres até a próxima entrada em ${horizon}.`
+                : `Sem próxima entrada cadastrada; o cálculo usa o fim do mês (${horizon}).`;
+
+        const heading = make('div', 'product-section-heading');
+        const title = make('div');
+        title.append(make('span', 'product-eyebrow', 'Visão rápida'), make('h5', '', 'Seu dinheiro hoje'));
+        const privacy = make('span', 'product-privacy');
+        privacy.append(icon('ph-device-mobile'), document.createTextNode(' dados locais'));
+        heading.append(title, privacy);
+
+        const grid = make('div', 'product-pulse-grid');
+        grid.append(
+            pulseMetric('Saldo atual', formatCurrency(pulse.balance), 'nas contas bancárias'),
+            pulseMetric('Comprometido', formatCurrency(pulse.committed), 'cartões, reservas e previstos'),
+            pulseMetric('Dinheiro livre', formatCurrency(pulse.free), `até ${horizon}`, freeClass),
+            pulseMetric('Livre por dia', formatCurrency(pulse.daily), `${pulse.days} dia${pulse.days === 1 ? '' : 's'} no horizonte`)
+        );
+
+        const insight = make('div', 'product-insight');
+        insight.append(icon('ph-sparkle'), make('span', '', insightText));
+        section.replaceChildren(heading, grid, insight);
+    }
+
     function safeRenderDashboard(data) {
+        const completedData = completedDashboardData(data);
         const month = localToday().slice(0, 7);
-        const monthly = (data.transactions || []).filter(tx => String(tx.date || '').startsWith(month));
+        const monthly = completedData.transactions.filter(tx => String(tx.date || '').startsWith(month));
         const income = monthly.filter(tx => tx.type === 'income').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
         const expense = monthly.filter(tx => tx.type === 'expense').reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
         const balance = (data.accounts || []).reduce((sum, acc) => sum + Number(acc.balance || 0), 0);
@@ -528,9 +588,10 @@
             if (!data.accounts.length && !data.cards.length) qa.appendChild(make('li', 'py-2 small text-muted', 'Nenhuma conta cadastrada.'));
         }
 
-        renderChart(data);
+        renderChart(completedData);
         renderComparisonChart(data);
-        renderBudgets(data);
+        renderBudgets(completedData);
+        renderFinancialPulse(data);
 
         const today = localToday();
         const recentList = document.getElementById('recent-transactions');
@@ -583,6 +644,7 @@
         renderAccounts: safeRenderAccounts,
         renderCards: safeRenderCards,
         renderBudgets: safeRenderBudgets,
-        renderDashboard: safeRenderDashboard
+        renderDashboard: safeRenderDashboard,
+        renderFinancialPulse
     };
 })(typeof globalThis !== 'undefined' ? globalThis : window);
