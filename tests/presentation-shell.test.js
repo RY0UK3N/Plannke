@@ -20,6 +20,12 @@ test('presentation shell stays DOM-safe and does not evaluate dynamic code', () 
   assert.doesNotMatch(js, /new\s+Function\s*\(/);
 });
 
+test('canonical product stylesheet prevents duplicate presentation links', () => {
+  assert.match(js, /const canonicalBundle = document\.querySelector\('link\[href="product\.css"\], link\[href\$="\/product\.css"\]'\)/);
+  assert.match(js, /if \(canonicalBundle\) return;/);
+  assert.match(js, /VIEW_STYLES\.forEach\(asset =>/);
+});
+
 test('presentation navigation covers product views through the canonical navigation boundary', () => {
   ['dashboard', 'movimentacao', 'projecao', 'accounts', 'backup'].forEach(target => {
     assert.match(js, new RegExp(`${target}:\\s*\\{`));
