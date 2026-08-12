@@ -35,3 +35,4 @@ jobs:
           git diff --cached --quiet && exit 0
           git commit -m "refactor: retire product boot compatibility"
           git push
+# rerun after canonical product-init contract update
