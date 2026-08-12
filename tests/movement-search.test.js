@@ -77,3 +77,8 @@ test('movement search help is built with DOM APIs instead of HTML strings', () =
   assert.match(movementsSource, /button\.dataset\.query = queryValue/);
   assert.doesNotMatch(movementsSource, /\.innerHTML\s*=/);
 });
+
+test('one-time movement search migration artifacts are not shipped', () => {
+  assert.equal(fs.existsSync(path.join(root, 'scripts', 'promote-movement-search-once.js')), false);
+  assert.equal(fs.existsSync(path.join(root, '.github', 'workflows', 'promote-movement-search-once.yml')), false);
+});
