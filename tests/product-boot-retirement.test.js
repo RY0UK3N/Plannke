@@ -25,6 +25,12 @@ test('product compatibility layer no longer bootstraps assets or PWA', () => {
 test('retired welcome modal fallback stays out of product runtime', () => {
   assert.doesNotMatch(product, /function improveWelcome\(/);
   assert.doesNotMatch(product, /product-import-option|welcome-options|welcome-tagline/);
+  assert.doesNotMatch(product, /document\.getElementById\('welcomeModal'\)[\s\S]*product-bank-file/);
+});
+
+test('product runtime cannot reclaim canonical boot ownership', () => {
+  assert.doesNotMatch(product, /loadProductEnhancements|data-plannke-insights/);
+  assert.doesNotMatch(product, /navigator\.serviceWorker|document\.head\.appendChild/);
 });
 
 test('one-time product boot migration artifacts are not shipped', () => {
