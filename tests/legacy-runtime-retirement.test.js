@@ -6,7 +6,7 @@ const path = require('node:path');
 const root = path.resolve(__dirname, '..');
 const product = fs.readFileSync(path.join(root, 'product.js'), 'utf8');
 const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
-const productUiLogic = fs.readFileSync(path.join(root, 'tests', 'product-ui-logic.test.js'), 'utf8');
+const movementSearch = fs.readFileSync(path.join(root, 'tests', 'movement-search.test.js'), 'utf8');
 const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
 const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
 const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
@@ -30,8 +30,8 @@ test('product layer no longer owns the planning projection runtime', () => {
   assert.doesNotMatch(product, /function renderPlanningHub\(|function attachPlanningEvents\(|function householdBalances\(/);
   assert.match(planning, /function canonicalRenderProjection\(/);
   assert.match(planning, /function renderPlanningHub\(/);
-  assert.match(product, /globalThis\.PlannkeProduct=\{init,searchTransactions\};/);
-  assert.doesNotMatch(productUiLogic, /PlannkeProduct\.householdBalances/);
+  assert.match(product, /globalThis\.PlannkeProduct=\{init\};/);
+  assert.doesNotMatch(movementSearch, /PlannkeProduct\.householdBalances/);
   assert.match(planning, /householdBalances,/);
 });
 
