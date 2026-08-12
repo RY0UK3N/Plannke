@@ -1,0 +1,42 @@
+name: Release Windows
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE }}
+      CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Require signing certificate
+        shell: pwsh
+        run: |
+          if (-not $env:CSC_LINK -or -not $env:CSC_KEY_PASSWORD) {
+            throw 'Configure WINDOWS_CERTIFICATE e WINDOWS_CERTIFICATE_PASSWORD antes de publicar.'
+          }
+      - run: npm ci
+      - run: npm test
+      - run: npm audit --audit-level=high
+      - run: npm run dist:win
+      - name: Create checksum
+        shell: pwsh
+        run: |
+          $installer = Get-Item 'release/Plannke-Setup-*.exe'
+          $hash = (Get-FileHash $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $($installer.Name)" | Set-Content 'release/SHA256SUMS.txt' -Encoding ascii
+      - name: Publish GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create '${{ github.ref_name }}' release/Plannke-Setup-*.exe release/Plannke-Setup-*.exe.blockmap release/SHA256SUMS.txt --generate-notes --verify-tag

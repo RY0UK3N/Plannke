@@ -98,6 +98,36 @@ xdg-open index.html    # Linux
 2. Selecione a branch `main` e a pasta `/ (root)`.
 3. A URL padrão será `https://ry0uk3n.github.io/Plannke/`.
 
+### Aplicativo para Windows
+
+Requer Node.js 18 ou superior. Para abrir o aplicativo em modo de desenvolvimento:
+
+```bash
+npm install
+npm run desktop
+```
+
+Para gerar o instalador do Windows:
+
+```bash
+npm run dist:win
+```
+
+O instalador será criado em `release/Plannke-Setup-<versão>.exe`. Ele permite escolher a pasta de instalação e cria atalhos no Menu Iniciar e na área de trabalho. Os dados continuam armazenados localmente no perfil do aplicativo; o backup `.xlsx` segue recomendado.
+
+Pull requests também compilam o instalador em um runner Windows e disponibilizam o resultado como artefato do GitHub Actions.
+
+#### Publicar uma versão
+
+Cadastre o certificado de assinatura de código nos secrets `WINDOWS_CERTIFICATE` e `WINDOWS_CERTIFICATE_PASSWORD`. Depois, crie e envie uma tag compatível com a versão de `package.json`:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+O workflow de release exige o certificado, executa testes e auditoria de dependências, assina o instalador e publica o `.exe`, seu blockmap e o arquivo `SHA256SUMS.txt` em GitHub Releases.
+
 ---
 
 ## 🧪 Testes
