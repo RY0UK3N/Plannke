@@ -180,19 +180,6 @@
         }
     }
 
-    function protectSmallBankImport(event) {
-        const button = event.target?.closest?.('#presentation-import-review .presentation-import-actions .btn-primary');
-        if (!button || !/Confirmar selecionadas/i.test(button.textContent || '')) return;
-        const rows = [...document.querySelectorAll('#presentation-import-review .presentation-import-row[data-import-index]')];
-        const selectedCount = rows.filter(row => row.querySelector('.presentation-import-check input[type="checkbox"]')?.checked).length;
-        if (selectedCount <= 0 || selectedCount >= 5) return;
-        try {
-            root.PlannkeStorage?.createSnapshot('before-bank-import');
-        } catch (error) {
-            console.warn('Ponto de recuperação da importação indisponível:', error);
-        }
-    }
-
     function refresh() {
         updateStatus();
         retireLegacyMemoryCardPrompt();
@@ -222,7 +209,6 @@
             const panel = document.getElementById('plannke-recovery-panel');
             if (panel) renderSnapshotList(panel);
         });
-        document.addEventListener('click', protectSmallBankImport, true);
 
         const observer = new MutationObserver(scheduleObserverRefresh);
         observer.observe(document.documentElement, { childList: true, subtree: true });

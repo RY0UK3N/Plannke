@@ -134,8 +134,10 @@ test('storage status and recovery UI are local and DOM-safe', () => {
   assert.match(storageUi, /Recuperação local/);
   assert.match(storageUi, /createSnapshot\('manual'\)/);
   assert.match(storageUi, /restoreSnapshot\(snapshot\.id\)/);
-  assert.match(storageUi, /before-bank-import/);
-  assert.match(storageUi, /selectedCount <= 0 \|\| selectedCount >= 5/);
+  assert.match(storageUi, /'before-bank-import': 'Antes de importar extrato'/);
+  assert.match(appData, /selected\.length < 5/);
+  assert.match(appData, /createSnapshot\?\.\('before-bank-import'\)/);
+  assert.doesNotMatch(storageUi, /protectSmallBankImport|selectedCount/);
   assert.match(storageUiCss, /\.plannke-recovery-panel/);
   assert.doesNotMatch(storageUi, /\.innerHTML\s*=/);
   assert.doesNotMatch(storageUi, /\.outerHTML\s*=/);
@@ -170,14 +172,17 @@ test('revamp and final desktop assets are loaded locally and in deterministic or
   assert.match(desktopCss, /min-width: 1080px/);
 });
 
-test('bank files are intercepted for review by the desktop presentation boundary', () => {
-  assert.match(desktop, /document\.addEventListener\('change', captureBankImport, true\)/);
-  assert.match(desktop, /event\.stopImmediatePropagation\(\)/);
-  assert.match(desktop, /pendingBankImport/);
-  assert.match(desktop, /function confirmBankImport\(/);
-  assert.match(desktop, /data\.transactions\.push\(transaction\)/);
+test('bank import controller is canonical data code while presentation only renders review UI', () => {
+  assert.match(appData, /document\.addEventListener\('change', captureBankImport, true\)/);
+  assert.match(appData, /event\.stopImmediatePropagation\(\)/);
+  assert.match(appData, /let pendingBankImport = null/);
+  assert.match(appData, /function confirmBankImport\(/);
+  assert.match(appData, /data\.transactions\.push\(transaction\)/);
+  assert.match(appData, /new Decoder\(encoding\)\.decode\(await file\.arrayBuffer\(\)\)/);
+  assert.doesNotMatch(appData, /FileReader/);
+  assert.match(desktop, /function renderBankImportReview\(/);
+  assert.doesNotMatch(desktop, /let pendingBankImport|function (?:captureBankImport|stageBankFile|confirmBankImport|cancelBankImport)\(/);
   assert.doesNotMatch(product, /function (?:injectBankImport|importBankFile)\(/);
-  assert.match(appData, /function ensureBankImportPanel\(/);
 });
 
 test('third-party runtime dependencies are vendored and pinned', () => {
