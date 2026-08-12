@@ -5,16 +5,16 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'src', 'app', 'app-transactions.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
 test('transaction runtime is required before canonical app boot executes', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);
   assert.match(navigation, /function loadTransactionActions\(/);
-  assert.match(navigation, /script\.src = 'app-transactions\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-transactions\.js'/);
   assert.match(navigation, /root\.PlannkeTransactionsReady = transactionsReady/);
   assert.match(navigation, /const legacyInitApp = root\.initApp/);
   assert.match(navigation, /transactionsReady[\s\S]*Módulo canônico de movimentações não inicializou/);
@@ -81,6 +81,6 @@ test('transaction form renders user-controlled names with DOM APIs', () => {
 });
 
 test('transaction module stays available offline and is syntax-checked in CI', () => {
-  assert.match(sw, /'\.\/app-transactions\.js'/);
-  assert.match(pkg, /node --check app-transactions\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-transactions\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-transactions\.js/);
 });

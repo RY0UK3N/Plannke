@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
 
 function idsIn(html) {
   return new Set([...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]));

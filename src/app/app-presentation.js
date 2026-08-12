@@ -73,14 +73,14 @@
     }
 
     function ensureViewStyles() {
-        const canonicalBundle = document.querySelector('link[href="product.css"], link[href$="/product.css"]');
+        const canonicalBundle = document.querySelector('link[href="src/styles/product.css"], link[href$="/src/styles/product.css"]');
         if (canonicalBundle) return;
 
         VIEW_STYLES.forEach(asset => {
-            if (document.querySelector(`link[href="${asset}"]`)) return;
+            if (document.querySelector(`link[href="src/styles/${asset}"], link[href$="/src/styles/${asset}"]`)) return;
             const link = document.createElement('link');
             link.rel = 'stylesheet';
-            link.href = asset;
+            link.href = `src/styles/${asset}`;
             link.dataset.plannkePresentationView = asset;
             document.head.appendChild(link);
         });

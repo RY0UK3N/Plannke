@@ -15,7 +15,7 @@ function createWindow() {
         minHeight: 700,
         backgroundColor: '#0b0d12',
         title: 'Plannke',
-        icon: path.join(__dirname, '..', 'plannke-icon.svg'),
+        icon: path.join(__dirname, '..', 'assets', 'icons', 'plannke-icon.svg'),
         show: false,
         webPreferences: {
             contextIsolation: true,

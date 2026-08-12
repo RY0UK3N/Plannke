@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
+const settings = fs.readFileSync(path.join(root, 'src', 'app', 'app-settings.js'), 'utf8');
 
 test('settings-owned static controls no longer store compatibility code', () => {
   ['settings-theme-toggle', 'cat-modal-tab-expense', 'cat-modal-tab-income', 'cat-tab-expense', 'cat-tab-income', 'cat-modal-add', 'cat-add']

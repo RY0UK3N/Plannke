@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-const source = fs.readFileSync('app-data.js', 'utf8');
+const source = fs.readFileSync('src/app/app-data.js', 'utf8');
 
 function load(overrides = {}) {
   const saved = [];

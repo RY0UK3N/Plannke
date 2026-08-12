@@ -4,8 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const presentation = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
+const presentation = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 
 test('shell exposes presentation loader and metadata without revamp runtime vocabulary', () => {
@@ -32,15 +32,16 @@ test('body and view metadata use presentation names while visual selectors stay 
 });
 
 test('presentation metadata names do not rename the visual stylesheet boundary', () => {
-  assert.match(shell, /stylesheet\.href = 'app-presentation\.css'/);
-  assert.match(shell, /desktopStyle\.href = 'app-presentation-desktop\.css'/);
+  assert.match(shell, /stylesheet\.href = 'src\/styles\/app-presentation\.css'/);
+  assert.match(shell, /desktopStyle\.href = 'src\/styles\/app-presentation-desktop\.css'/);
   assert.match(presentation, /const VIEW_STYLES = \['app-presentation-dashboard\.css', 'app-presentation-movements\.css', 'app-presentation-planning\.css', 'app-presentation-accounts\.css'\]/);
+  assert.match(presentation, /link\.href = `src\/styles\/\$\{asset\}`/);
 });
 
 test('PWA cache advances for presentation metadata update without renaming visual assets', () => {
-  assert.match(sw, /plannke-shell-v39/);
-  assert.match(sw, /'\.\/app-presentation\.css'/);
-  assert.match(sw, /'\.\/app-presentation-desktop\.css'/);
+  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /'\.\/src\/styles\/app-presentation\.css'/);
+  assert.match(sw, /'\.\/src\/styles\/app-presentation-desktop\.css'/);
 });
 
 test('one-time presentation metadata migration artifacts are not shipped', () => {

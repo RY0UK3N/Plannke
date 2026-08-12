@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const source = fs.readFileSync(path.resolve(__dirname, '..', 'storage-adapter.js'), 'utf8');
+const source = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'app', 'storage-adapter.js'), 'utf8');
 
 function clone(value) {
   return JSON.parse(JSON.stringify(value));

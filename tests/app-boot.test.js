@@ -4,16 +4,16 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const boot = fs.readFileSync(path.join(root, 'src', 'app', 'app-boot.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
 test('canonical boot owns StorageAdapter readiness and application start', () => {
   assert.match(boot, /function waitForStorageReady\(/);
-  assert.match(boot, /script\.src = 'storage-adapter\.js'/);
+  assert.match(boot, /script\.src = 'src\/app\/storage-adapter\.js'/);
   assert.match(boot, /const applicationInit = root\?\.initApp/);
   assert.match(boot, /const storageReady = loadStorageAdapter\(\)/);
   assert.match(boot, /function startApplication\(\)/);
@@ -29,11 +29,11 @@ test('shell owns construction while boot alone owns application start', () => {
 });
 
 test('boot loads after navigation and shell before canonical renderers', () => {
-  const runtimeAt = index.indexOf('src="app-runtime.js"');
-  const navigationAt = index.indexOf('src="app-navigation.js"');
-  const shellAt = index.indexOf('src="app-shell.js"');
-  const bootAt = index.indexOf('src="app-boot.js"');
-  const renderersAt = index.indexOf('src="safe-renderers.js"');
+  const runtimeAt = index.indexOf('src="src/app/app-runtime.js"');
+  const navigationAt = index.indexOf('src="src/app/app-navigation.js"');
+  const shellAt = index.indexOf('src="src/app/app-shell.js"');
+  const bootAt = index.indexOf('src="src/app/app-boot.js"');
+  const renderersAt = index.indexOf('src="src/app/safe-renderers.js"');
   assert.ok(runtimeAt >= 0 && navigationAt > runtimeAt);
   assert.ok(shellAt > navigationAt && bootAt > shellAt && renderersAt > bootAt);
   assert.doesNotMatch(index, /src="(?:ui-bridge|app-actions)\.js"/);
@@ -41,12 +41,12 @@ test('boot loads after navigation and shell before canonical renderers', () => {
 });
 
 test('canonical boot and shell are syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-shell\.js/);
-  assert.match(pkg, /node --check app-boot\.js/);
+  assert.match(pkg, /node --check src\/app\/app-shell\.js/);
+  assert.match(pkg, /node --check src\/app\/app-boot\.js/);
   assert.doesNotMatch(pkg, /node --check app-actions\.js/);
-  assert.match(sw, /plannke-shell-v39/);
-  assert.match(sw, /'\.\/app-shell\.js'/);
-  assert.match(sw, /'\.\/app-boot\.js'/);
+  assert.match(sw, /plannke-shell-v40/);
+  assert.match(sw, /'\.\/src\/app\/app-shell\.js'/);
+  assert.match(sw, /'\.\/src\/app\/app-boot\.js'/);
   assert.doesNotMatch(sw, /'\.\/(?:ui-bridge|app-actions)\.js'/);
 });
 

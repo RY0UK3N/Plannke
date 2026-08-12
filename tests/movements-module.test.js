@@ -5,9 +5,9 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const movements = fs.readFileSync(path.join(root, 'src', 'app', 'app-movements.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
@@ -20,7 +20,7 @@ function runtime() {
 
 test('canonical movements runtime is required before legacy init', () => {
   assert.match(navigation, /function loadMovementRuntime\(/);
-  assert.match(navigation, /script\.src = 'app-movements\.js'/);
+  assert.match(navigation, /script\.src = 'src\/app\/app-movements\.js'/);
   assert.match(navigation, /root\.PlannkeMovementsReady = movementsReady/);
   assert.match(navigation, /Promise\.all\(\[transactionsReady, dashboardReady, entitiesReady, settingsReady, projectionReady, planningReady, movementsReady, renderersReady\]\)/);
   assert.match(navigation, /Runtime canônico de Movimentações não inicializou/);
@@ -90,6 +90,6 @@ test('one-time movement integration files are not shipped', () => {
 });
 
 test('movements runtime is syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-movements\.js/);
-  assert.match(sw, /'\.\/app-movements\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-movements\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-movements\.js'/);
 });

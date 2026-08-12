@@ -5,11 +5,11 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const coreSource = fs.readFileSync(path.join(root, 'product-core.js'), 'utf8');
-const adapter = fs.readFileSync(path.join(root, 'storage-adapter.js'), 'utf8');
-const storage = fs.readFileSync(path.join(root, 'storage.js'), 'utf8');
-const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
-const core = require('../product-core.js');
+const coreSource = fs.readFileSync(path.join(root, 'src', 'core', 'product-core.js'), 'utf8');
+const adapter = fs.readFileSync(path.join(root, 'src', 'app', 'storage-adapter.js'), 'utf8');
+const storage = fs.readFileSync(path.join(root, 'src', 'core', 'storage.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'src', 'app', 'app-transactions.js'), 'utf8');
+const core = require('../src/core/product-core.js');
 
 test('product core loads before StorageAdapter boot and owns product data preparation', () => {
   assert.ok(index.indexOf('product-core.js') < index.indexOf('app-boot.js'));

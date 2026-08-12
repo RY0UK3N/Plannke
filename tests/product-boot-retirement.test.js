@@ -4,18 +4,18 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const boot = fs.readFileSync(path.join(root, 'app-boot.js'), 'utf8');
+const boot = fs.readFileSync(path.join(root, 'src', 'app', 'app-boot.js'), 'utf8');
 const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
 
 test('canonical boot owns optional insights and PWA registration', () => {
   assert.match(boot, /function loadProductEnhancements\(/);
-  assert.match(boot, /script\.src = 'insights\.js'/);
+  assert.match(boot, /script\.src = 'src\/app\/insights\.js'/);
   assert.match(boot, /serviceWorker\.register\('.\/sw\.js'\)/);
 });
 
 test('retired product compatibility runtime cannot reclaim boot ownership', () => {
   assert.match(index, /<link rel="manifest" href="manifest\.webmanifest">/);
-  assert.match(index, /<link rel="stylesheet" href="product\.css">/);
+  assert.match(index, /<link rel="stylesheet" href="src\/styles\/product\.css">/);
 });
 
 test('one-time product boot migration artifacts are not shipped', () => {

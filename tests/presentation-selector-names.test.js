@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const shell = fs.readFileSync(path.join(root, 'app-shell.js'), 'utf8');
-const presentation = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
-const desktop = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8');
-const productCss = fs.readFileSync(path.join(root, 'product.css'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'src', 'app', 'app-shell.js'), 'utf8');
+const presentation = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
+const desktop = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation-desktop.js'), 'utf8');
+const productCss = fs.readFileSync(path.join(root, 'src', 'styles', 'product.css'), 'utf8');
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const stylesheets = [
   'app-presentation.css',
@@ -20,7 +20,7 @@ const stylesheets = [
   'app-presentation-states.css'
 ];
 
-const visualSources = [shell, presentation, desktop, productCss, ...stylesheets.map(file => fs.readFileSync(path.join(root, file), 'utf8'))];
+const visualSources = [shell, presentation, desktop, productCss, ...stylesheets.map(file => fs.readFileSync(path.join(root, 'src', 'styles', file), 'utf8'))];
 
 test('canonical shell and presentation runtime use the presentation visual namespace', () => {
   assert.match(shell, /shell\.id = 'presentation-shell'/);
@@ -39,7 +39,7 @@ test('old revamp structural identifiers are absent from runtime and CSS', () => 
 });
 
 test('all presentation stylesheets use the canonical selector namespace', () => {
-  const css = stylesheets.map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
+  const css = stylesheets.map(file => fs.readFileSync(path.join(root, 'src', 'styles', file), 'utf8')).join('\n');
   assert.match(css, /\.presentation-/);
   assert.match(css, /body\.plannke-presentation/);
   assert.match(productCss, /body:not\(\.plannke-presentation\)/);
@@ -52,7 +52,7 @@ test('presentation shell test file is promoted with the selector namespace', () 
 });
 
 test('PWA cache advances for canonical presentation selectors', () => {
-  assert.match(sw, /plannke-shell-v39/);
+  assert.match(sw, /plannke-shell-v40/);
 });
 
 test('one-time selector migration artifacts are not shipped', () => {

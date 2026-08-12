@@ -4,8 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const presentation = fs.readFileSync(path.join(root, 'app-presentation.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const presentation = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation.js'), 'utf8');
 
 test('retired product layer cannot reach navigation markup', () => {
   assert.doesNotMatch(navigation, /planner-pill-nav/);

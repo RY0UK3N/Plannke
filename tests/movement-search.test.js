@@ -5,14 +5,14 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const movementsSource = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
-const rendererSource = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
+const movementsSource = fs.readFileSync(path.join(root, 'src', 'app', 'app-movements.js'), 'utf8');
+const rendererSource = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
 
 function loadMovements() {
   const context = { console, Intl, Math, Date, Set, Map, String, Number, Array, Object, RegExp, JSON };
   context.globalThis = context;
   vm.createContext(context);
-  vm.runInContext(fs.readFileSync(path.join(root, 'product-core.js'), 'utf8'), context);
+  vm.runInContext(fs.readFileSync(path.join(root, 'src', 'core', 'product-core.js'), 'utf8'), context);
   vm.runInContext(movementsSource, context);
   return context.PlannkeMovements;
 }

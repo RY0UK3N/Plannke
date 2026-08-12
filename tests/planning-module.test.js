@@ -5,9 +5,9 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const root = path.resolve(__dirname, '..');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
-const core = require(path.join(root, 'product-core.js'));
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const planning = fs.readFileSync(path.join(root, 'src', 'app', 'app-planning.js'), 'utf8');
+const core = require(path.join(root, 'src', 'core', 'product-core.js'));
 const sw = fs.readFileSync(path.join(root, 'sw.js'), 'utf8');
 const pkg = fs.readFileSync(path.join(root, 'package.json'), 'utf8');
 
@@ -161,6 +161,6 @@ test('removing a household member clears live and persisted sharing references',
 });
 
 test('planning runtime is syntax-checked and available offline', () => {
-  assert.match(pkg, /node --check app-planning\.js/);
-  assert.match(sw, /'\.\/app-planning\.js'/);
+  assert.match(pkg, /node --check src\/app\/app-planning\.js/);
+  assert.match(sw, /'\.\/src\/app\/app-planning\.js'/);
 });

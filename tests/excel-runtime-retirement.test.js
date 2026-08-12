@@ -4,10 +4,10 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
-const data = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'src', 'app', 'app-ui.js'), 'utf8');
+const data = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
 
 test('retired application runtime has no Excel parser or backup-format dependency', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);

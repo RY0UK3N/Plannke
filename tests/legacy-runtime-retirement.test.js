@@ -4,19 +4,19 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const planning = fs.readFileSync(path.join(root, 'app-planning.js'), 'utf8');
+const planning = fs.readFileSync(path.join(root, 'src', 'app', 'app-planning.js'), 'utf8');
 const movementSearch = fs.readFileSync(path.join(root, 'tests', 'movement-search.test.js'), 'utf8');
-const runtime = fs.readFileSync(path.join(root, 'app-runtime.js'), 'utf8');
-const ui = fs.readFileSync(path.join(root, 'app-ui.js'), 'utf8');
-const navigation = fs.readFileSync(path.join(root, 'app-navigation.js'), 'utf8');
-const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
-const transactions = fs.readFileSync(path.join(root, 'app-transactions.js'), 'utf8');
-const settings = fs.readFileSync(path.join(root, 'app-settings.js'), 'utf8');
-const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
-const renderers = fs.readFileSync(path.join(root, 'safe-renderers.js'), 'utf8');
-const dashboard = fs.readFileSync(path.join(root, 'app-dashboard.js'), 'utf8');
-const movements = fs.readFileSync(path.join(root, 'app-movements.js'), 'utf8');
-const projection = fs.readFileSync(path.join(root, 'app-projection.js'), 'utf8');
+const runtime = fs.readFileSync(path.join(root, 'src', 'app', 'app-runtime.js'), 'utf8');
+const ui = fs.readFileSync(path.join(root, 'src', 'app', 'app-ui.js'), 'utf8');
+const navigation = fs.readFileSync(path.join(root, 'src', 'app', 'app-navigation.js'), 'utf8');
+const entities = fs.readFileSync(path.join(root, 'src', 'app', 'app-entities.js'), 'utf8');
+const transactions = fs.readFileSync(path.join(root, 'src', 'app', 'app-transactions.js'), 'utf8');
+const settings = fs.readFileSync(path.join(root, 'src', 'app', 'app-settings.js'), 'utf8');
+const appData = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
+const renderers = fs.readFileSync(path.join(root, 'src', 'app', 'safe-renderers.js'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'src', 'app', 'app-dashboard.js'), 'utf8');
+const movements = fs.readFileSync(path.join(root, 'src', 'app', 'app-movements.js'), 'utf8');
+const projection = fs.readFileSync(path.join(root, 'src', 'app', 'app-projection.js'), 'utf8');
 
 test('legacy app monolith is physically retired', () => {
   assert.equal(fs.existsSync(path.join(root, 'app.js')), false);

@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const data = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
+const data = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
 
 test('settings reset button is inert markup with an explicit ID', () => {
   assert.match(html, /id="settings-clear-data"/);

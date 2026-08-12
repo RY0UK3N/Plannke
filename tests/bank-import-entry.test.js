@@ -4,8 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
-const appData = fs.readFileSync(path.join(root, 'app-data.js'), 'utf8');
-const desktop = fs.readFileSync(path.join(root, 'app-presentation-desktop.js'), 'utf8');
+const appData = fs.readFileSync(path.join(root, 'src', 'app', 'app-data.js'), 'utf8');
+const desktop = fs.readFileSync(path.join(root, 'src', 'app', 'app-presentation-desktop.js'), 'utf8');
 
 test('canonical data runtime owns the bank import entry panel', () => {
   assert.match(appData, /function ensureBankImportPanel\(/);

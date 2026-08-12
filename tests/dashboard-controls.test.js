@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const dashboard = fs.readFileSync(path.join(root, 'app-dashboard.js'), 'utf8');
+const dashboard = fs.readFileSync(path.join(root, 'src', 'app', 'app-dashboard.js'), 'utf8');
 
 function dashboardMarkup() {
   const start = html.indexOf('<div class="content-view" id="dashboard-view">');

@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const entities = fs.readFileSync(path.join(root, 'app-entities.js'), 'utf8');
+const entities = fs.readFileSync(path.join(root, 'src', 'app', 'app-entities.js'), 'utf8');
 
 function accountsMarkup() {
   const start = html.indexOf('<div class="content-view hidden" id="accounts-view">');

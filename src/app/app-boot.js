@@ -19,7 +19,7 @@
 
     function hasCanonicalStyles() {
         if (typeof document === 'undefined') return false;
-        return !!document.querySelector('link[href="product.css"], link[href$="/product.css"]');
+        return !!document.querySelector('link[href="src/styles/product.css"], link[href$="/src/styles/product.css"]');
     }
 
     function loadStorageAdapter() {
@@ -40,7 +40,7 @@
 
         return new Promise((resolve, reject) => {
             const script = document.createElement('script');
-            script.src = 'storage-adapter.js';
+            script.src = 'src/app/storage-adapter.js';
             script.async = false;
             script.dataset.plannkeStorageAdapter = 'true';
             script.addEventListener('load', () => waitForStorageReady(root.PlannkeStorage).then(resolve, reject), { once: true });
@@ -54,13 +54,13 @@
         if (!hasCanonicalStyles() && !document.querySelector('link[data-plannke-storage-ui]')) {
             const stylesheet = document.createElement('link');
             stylesheet.rel = 'stylesheet';
-            stylesheet.href = 'storage-ui.css';
+            stylesheet.href = 'src/styles/storage-ui.css';
             stylesheet.dataset.plannkeStorageUi = 'true';
             document.head.appendChild(stylesheet);
         }
         if (!document.querySelector('script[data-plannke-storage-ui]')) {
             const script = document.createElement('script');
-            script.src = 'storage-ui.js';
+            script.src = 'src/app/storage-ui.js';
             script.async = false;
             script.dataset.plannkeStorageUi = 'true';
             document.body.appendChild(script);
@@ -71,7 +71,7 @@
         if (!root || typeof document === 'undefined') return;
         if (!document.querySelector('script[data-plannke-insights]')) {
             const script = document.createElement('script');
-            script.src = 'insights.js';
+            script.src = 'src/app/insights.js';
             script.async = false;
             script.dataset.plannkeInsights = 'true';
             document.body.appendChild(script);
