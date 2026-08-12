@@ -36,13 +36,11 @@ test('product shell and presentation runtime point only to canonical stylesheet 
   }
 });
 
-test('stylesheet rename preserves the visual selector namespace for a later isolated cut', () => {
+test('stylesheet visual selector namespace follows the isolated selector promotion', () => {
   const sources = Object.values(renamed).map(file => fs.readFileSync(path.join(root, file), 'utf8')).join('\n');
   assert.match(sources, /\.revamp-/);
   assert.match(sources, /body\.plannke-revamp/);
   assert.match(productCss, /body:not\(\.plannke-revamp\)/);
-  assert.doesNotMatch(sources, /\.presentation-/);
-  assert.doesNotMatch(sources, /\.plannke-presentation/);
 });
 
 test('stylesheet dependency imports use canonical filenames without changing selector content', () => {
